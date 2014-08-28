@@ -1,0 +1,3 @@
+class CeBet < CrapsBet
+
+end
