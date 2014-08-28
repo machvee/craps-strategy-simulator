@@ -1,3 +1,5 @@
+require 'test_helper'
+
 class DiceTest < Test::Unit::TestCase
   def setup
     @seed = 74199164493423645483384711128

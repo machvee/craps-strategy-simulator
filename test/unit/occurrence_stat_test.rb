@@ -1,3 +1,5 @@
+require 'test_helper'
+
 class OccurrenceStatTest < Test::Unit::TestCase
   def test_can_reset_and_count_correctly_no_guard
      vals = %w{red red blue blue blue red red blue blue red red red red}
