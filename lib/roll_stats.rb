@@ -14,6 +14,6 @@ class RollStats < TableStatsCollection
   end
 
   def possible_rolls
-    [*table.dice.value_range]
+    [*table.dice_value_range]
   end
 end

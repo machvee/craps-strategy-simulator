@@ -42,12 +42,12 @@ class Table
   NUM_SHOOTER_DIE=2
   HOUSE_BANK=10000000
 
-  def initialize(name=nil, config=TableConfig.new, quiet_table=false)
+  def initialize(name=nil, config=TableConfig.new, seed=nil, quiet_table=false)
     set_table_off
     @name = name
     @quiet_table = quiet_table
     @point = nil
-    @tray = Dice.new(NUM_TRAY_DIE)
+    @tray = Dice.new(NUM_TRAY_DIE, seed)
     @dice = nil
     @players = []
     @last_shooter = @shooter = nil
@@ -105,6 +105,13 @@ class Table
 
   def take_dice(offsets=[0,1])
     @dice = tray.extract(offsets)
+  end
+
+  def dice_value_range
+    take_dice
+    r = dice.value_range
+    return_dice
+    r
   end
 
   def return_dice

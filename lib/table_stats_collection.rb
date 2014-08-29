@@ -6,7 +6,8 @@ class TableStatsCollection
 
   def initialize(table)
     @table = table
-    @stats = init_stats
+    @stats = []
+    init_stats
     make_occurred_convenience_methods
   end
 

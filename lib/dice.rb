@@ -7,19 +7,18 @@ class Dice
 
   include Enumerable
 
-  def initialize(set_size, seed=Random.new_seed)
-    # pass in a seed argument to guarantee
-    # that two sets of Dice will always yield the
+  def initialize(set_size, opt_seed=nil)
+    # pass in an optional seed argument to guarantee
+    # that the Dice will always yield the
     # same roll sequence (useful in testing and for comparing
     # strategy to strategy).  Pass no seed argument to ensure
-    # that two sets of Dice never have the same
-    # roll sequence
+    # that the Dice will have a 'psuedo-random' roll sequence 
     #
-    seeder = Random.new(seed)
     @num_rolls = 0
     @set = []
-    set_size.times {set << Die.new(seeder.rand(211308946028030853166801005918724002264))}
-    randomize
+    die_seeder = Random.new(opt_seed||Random.new_seed)
+    set_size.times {set << Die.new(die_seeder.rand(211308946028030853166801005918724002264))}
+    shake_dice
   end
 
   def min_value
@@ -59,8 +58,16 @@ class Dice
 
   def roll
     @num_rolls += 1
-    randomize
+    shake_dice
     @value
+  end
+
+  def gather(num_rolls)
+    a = []
+    num_rolls.times {
+      a << roll
+    }
+    a
   end
 
   def each
@@ -112,7 +119,7 @@ class Dice
 
   private
 
-  def randomize
+  def shake_dice
     @value = set.inject(0) { |s, d| s += d.roll }
   end
 

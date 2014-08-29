@@ -81,4 +81,12 @@ class DiceTest < Test::Unit::TestCase
       assert d2.same?
     }
   end
+
+  def test_gather
+    d1 = Dice.new(2, 838338)
+    d2 = Dice.new(2, 838338)
+    a = []
+    100.times {a << d1.roll}
+    assert_equal a, d2.gather(100), "didn't gather same dice"
+  end
 end
