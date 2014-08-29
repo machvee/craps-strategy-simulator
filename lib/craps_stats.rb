@@ -12,7 +12,7 @@ class CrapsStats < TableStatsCollection
     add OccurrenceStat.new('seven_outs', table_on_p) {table.seven_out?}
     add Table::POINTS.map {|v|
       [OccurrenceStat.new('points_%d' % v, point_established_p) {table.point_established?(v)},
-       OccurrenceStat.new('points_made_%d' % v, point_was_p(v)) {table.point_made?(v)}]
+       OccurrenceStat.new('points_made_%d' % v, point_is_p(v)) {table.point_made?(v)}]
     }.flatten
     add Table::WINNERS.map {|v|
       OccurrenceStat.new('winners_%d' % v, front_line_winner_p) {table.front_line_winner?(v)}
@@ -37,8 +37,8 @@ class CrapsStats < TableStatsCollection
     Proc.new {table.front_line_winner?}
   end
 
-  def point_established_p(v=nil)
-    Proc.new {table.point_established?(v)}
+  def point_established_p
+    Proc.new {table.point_established?}
   end
 
   def craps_p
@@ -49,7 +49,7 @@ class CrapsStats < TableStatsCollection
     Proc.new {table.dice.value == v}
   end
 
-  def point_was_p(v)
+  def point_is_p(v)
     Proc.new {table.point == v}
   end
 

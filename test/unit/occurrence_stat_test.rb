@@ -16,33 +16,33 @@ class OccurrenceStatTest < Test::Unit::TestCase
      assert_counts?(s, 0, 0, 0, 0)
   end
 
-  def test_can_reset_and_count_correctly_with_guard
-     vals  = %w{red red blue blue blue red  red blue blue red red red red red}
-     @stops = %w{go  go  stop go   go   stop go  go   go   go  go  go  go  stop}
+  def test_can_reset_and_count_correctly_with_not_occurred_condition
+     vals  = %w{red red green blue yellow blue blue red yellow red blue
+                blue red red red green red blue red}
      @val = nil
-     @name = 'reds_with_stopper'
-     red_count = vals.grep(/red/).length - 2 # two stops
-     blue_count = vals.grep(/blue/).length - 1 # one stop
-     s = OccurrenceStat.new(@name, occurrence_guard) {@val == 'red'}
+     @name = 'reds_vs_blue'
+     red_count = vals.grep(/red/).length
+     blue_count = vals.grep(/blue/).length
+     s = OccurrenceStat.new(@name, equals_blue_proc) {@val == 'red'}
      assert_equal @name, s.name
      assert_counts?(s, 0, 0, 0, 0)
-     stopper = @stops.each
-     vals.each {|v| @stop = stopper.next; @val = v; s.update}
-     assert_counts?(s, red_count, blue_count, 4, 2)
+     vals.each {|v| @val = v; s.update}
+     assert_counts?(s, red_count, blue_count, 4, 3)
      s.reset
      assert_counts?(s, 0, 0, 0, 0)
   end
 
   def test_prints_correctly
-     vals = %w{red red blue blue blue red red blue blue red red red red}
+     vals  = %w{red red green blue yellow blue blue red yellow red blue
+                blue red red red green red blue red}
      @val = nil
      @name = 'reds'
      red_count = vals.grep(/red/).length
-     blue_count = vals.grep(/blue/).length
+     not_red_count = vals.length - red_count
      s = OccurrenceStat.new(@name) {@val == 'red'}
      assert_match %r{#@name.*0 */ *0 *0 */ *0}, s.to_s
      vals.each {|v| @val = v; s.update}
-     assert_match %r{#@name *#{red_count} */ *4 *#{blue_count} */ *3}, s.to_s
+     assert_match %r{#@name *#{red_count} */ *3 *#{not_red_count} */ *5}, s.to_s
   end
 
   def test_inspect_calls_to_s
@@ -51,8 +51,8 @@ class OccurrenceStatTest < Test::Unit::TestCase
     s.inspect
   end
 
-  def occurrence_guard
-    Proc.new {@stop == 'go'}
+  def equals_blue_proc
+    Proc.new {@val == 'blue'}
   end
 
   def assert_counts?(s, otot, dnotot, omax, dnomax)

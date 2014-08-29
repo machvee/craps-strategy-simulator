@@ -7,23 +7,33 @@ class OccurrenceStat
   attr_reader  :max_consecs
   attr_reader  :total_counts
   attr_reader  :running_totals
-  attr_reader  :condition
-  attr_reader  :guard
+  attr_reader  :occurred
+  attr_reader  :not_occurred
 
   OCCURRED=true
   DID_NOT_OCCUR=!OCCURRED
+  NEITHER=nil
+
   REPORT_FORMATTER= "%14s   %7s / %7s      %7s / %7s"
 
-  def initialize(name, guard_condition = Proc.new {true}, &condition)
+  def initialize(name, not_occurred_condition = Proc.new {true}, &occurred_condition)
     @name = name
-    @condition = condition
-    @guard = guard_condition
+    @occurred = occurred_condition
+    @not_occurred = not_occurred_condition
     reset
   end
 
   def update
-    return unless guard.call
-    occurrence = condition.call
+    occurrence = if occurred.call
+      OCCURRED
+    elsif not_occurred.call
+      DID_NOT_OCCUR
+    else
+      NEITHER
+    end
+
+    return if occurrence == NEITHER
+
     total_counts[occurrence] += 1
     running_totals[occurrence] += 1
     running_totals[!occurrence] = 0

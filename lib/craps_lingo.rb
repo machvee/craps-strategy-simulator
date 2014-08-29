@@ -1,6 +1,9 @@
 module CrapsLingo
   #
-  # depends on last_roll (dice.value), on? and off?
+  # Table dependencies
+  # depends on last_roll (dice.value)
+  # depends on on? and off? prior to updating the table state with the current dice.value
+  # depends on point
   #
 
   CRAPS   = [2,3,12]
