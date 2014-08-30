@@ -1,5 +1,26 @@
 require 'die'
 
+class DefaultDieSeeder
+
+  VERY_BIG_NUMBER=211308946028030853166801005918724002264
+
+  attr_reader :die_seeder
+
+  def initialize(opt_seed=nil)
+    # pass in an optional seed argument to guarantee
+    # that the Dice will always yield the
+    # same roll sequence (useful in testing and for comparing
+    # strategy to strategy).  Pass no seed argument to ensure
+    # that the Dice will have a 'psuedo-random' roll sequence 
+    #
+    @die_seeder = Random.new(opt_seed||Random.new_seed)
+  end
+
+  def rand
+    die_seeder.rand(VERY_BIG_NUMBER)
+  end
+end
+
 class Dice
   attr_reader   :set
   attr_reader   :value
@@ -7,17 +28,10 @@ class Dice
 
   include Enumerable
 
-  def initialize(set_size, opt_seed=nil)
-    # pass in an optional seed argument to guarantee
-    # that the Dice will always yield the
-    # same roll sequence (useful in testing and for comparing
-    # strategy to strategy).  Pass no seed argument to ensure
-    # that the Dice will have a 'psuedo-random' roll sequence 
-    #
+  def initialize(set_size, die_seeder=DefaultDieSeeder.new)
     @num_rolls = 0
     @set = []
-    die_seeder = Random.new(opt_seed||Random.new_seed)
-    set_size.times {set << Die.new(die_seeder.rand(211308946028030853166801005918724002264))}
+    set_size.times {set << Die.new(die_seeder.rand)}
     shake_dice
   end
 

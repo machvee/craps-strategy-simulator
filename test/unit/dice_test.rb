@@ -2,12 +2,11 @@ require 'test_helper'
 
 class DiceTest < Test::Unit::TestCase
   def setup
-    @seed = 74199164493423645483384711128
-    @dice = Dice.new(6, @seed)
+    @dice = Dice.new(6, seeder)
   end
 
   def test_rolls_with_fixed_seed_repeat
-    d2 = Dice.new(6, @seed)
+    d2 = Dice.new(6, seeder)
     432.times { |i|
       assert_equal @dice.roll, d2.roll, "rolls deviated on roll #{i}"
       assert_equal @dice.map {|v| v}, d2.map {|v| v}
@@ -69,8 +68,8 @@ class DiceTest < Test::Unit::TestCase
   end
 
   def test_same
-    d1 = Dice.new(1, 9999)
-    d2 = Dice.new(1, 9999)
+    d1 = Dice.new(1, DefaultDieSeeder.new(9999))
+    d2 = Dice.new(1, DefaultDieSeeder.new(9999))
     d1.roll
     d2.roll
     d2.join(d1)
@@ -83,10 +82,14 @@ class DiceTest < Test::Unit::TestCase
   end
 
   def test_gather
-    d1 = Dice.new(2, 838338)
-    d2 = Dice.new(2, 838338)
+    d1 = Dice.new(2, DefaultDieSeeder.new(838338))
+    d2 = Dice.new(2, DefaultDieSeeder.new(838338))
     a = []
     100.times {a << d1.roll}
     assert_equal a, d2.gather(100), "didn't gather same dice"
+  end
+
+  def seeder
+    DefaultDieSeeder.new(74199164493423645483384711128)
   end
 end

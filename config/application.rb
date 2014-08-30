@@ -16,10 +16,7 @@ module Whalemaker
     # -- all .rb files in that directory are automatically loaded.
 
     # Custom directories with classes and modules you want to be autoloadable.
-    # config.autoload_paths += %W(#{config.root}/extras)
-    Dir[File.join(Rails.root, 'lib', '*.rb')].each do |f|
-      require f
-    end
+    config.autoload_paths += %W(#{config.root}/lib #{config.root}/lib/bets)
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
@@ -60,4 +57,3 @@ module Whalemaker
     config.assets.version = '1.0'
   end
 end
-require 'craps'

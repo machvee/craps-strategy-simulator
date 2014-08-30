@@ -1,41 +1,16 @@
-require 'dice'
-require 'bets/craps_bet'
-require 'player'
-require 'table_config'
-require 'craps_lingo'
-require 'roll_stats'
-require 'craps_stats'
-
-require 'bets/ce_bet'
-require 'bets/come_bet'
-require 'bets/come_odds_bet'
-require 'bets/come_out_bet'
-require 'bets/field_bet'
-require 'bets/hardways_bet'
-require 'bets/pass_line_bet'
-require 'bets/pass_odds_bet'
-require 'bets/place_bet'
-
-require 'player_bet'
-
 class Table
   attr_reader    :name
-  attr_reader    :play_state
-  attr_reader    :table_state
   attr_reader    :craps_bets
   attr_reader    :roll_stats
   attr_reader    :craps_stats
   attr_reader    :config
-  attr_reader    :point # off? => nil, on? => 4,5,6,8,9,10
   attr_reader    :tray  # 8 dice
-  attr_reader    :dice  # 2 dice the player has selected
+  attr_reader    :dice  # 2 dice the shooter has selected
   attr_reader    :players
   attr_reader    :shooter      # one of the above players or nil
   attr_reader    :last_shooter # one of the above players or nil
   attr_reader    :house   # dollar amount of chips the house has
   attr_accessor  :quiet_table # not verbose about all actions
-
-  include CrapsLingo
 
   PLAY_STATES = {:on => true, :off => false}
   NUM_TRAY_DIE=8
@@ -43,18 +18,19 @@ class Table
   HOUSE_BANK=10000000
 
   def initialize(name=nil, config=TableConfig.new, seed=nil, quiet_table=false)
-    set_table_off
+    @table_state = TableState.new(self)
+    @table_state.table_off
+
     @name = name
     @quiet_table = quiet_table
-    @point = nil
-    @tray = Dice.new(NUM_TRAY_DIE, seed)
+    @tray = CrapsDice.new(NUM_TRAY_DIE, seed)
     @dice = nil
     @players = []
     @last_shooter = @shooter = nil
     @house = HOUSE_BANK
     @config = config
     @roll_stats = RollStats.new(self)
-    @craps_stats = CrapsStats.new(self)
+    @craps_stats = TableStatsCollection.new(self)
     create_craps_bets
   end
 
@@ -67,7 +43,7 @@ class Table
       #
       roll
       settle_bets
-      update_table_state
+      @table_state.update
     end
     return
   end
@@ -130,6 +106,60 @@ class Table
       end
     end
     return !players.empty?
+  end
+
+  def point
+    @table_state.point
+  end
+
+  def point_established?(value=nil)
+    @table_state.point_established? && match_roll?(value)
+  end
+
+  def point_made?(value=nil)
+    @table_state.point_made? && match_roll?(value)
+  end
+
+  def seven_out?
+    @table_state.seven_out?
+  end
+
+  def front_line_winner?(value=nil)
+    off? && dice.winner? && match_roll?(value)
+  end
+
+  def crapped_out?(value=nil)
+    off? && dice.craps? && match_roll?(value)
+  end
+
+  def yo_eleven?
+    front_line_winner?(11)
+  end
+
+  def winner_seven?
+    front_line_winner?(7)
+  end
+
+  def rolled?(value)
+    last_roll == value
+  end
+
+  def stickman_says
+    if @table_state.point_made?
+      "winner #{last_roll}. pay the line" 
+    elsif seven_out?
+      "7 out"
+    elsif front_line_winner?
+      "7 front line winner!"
+    elsif yo_eleven?
+      "yo 11!" 
+    elsif crapped_out?
+      "crap!" 
+    elsif point_established?
+      "the point is #{last_roll}"
+    else
+      ""
+    end
   end
 
   def settle_bets
@@ -195,11 +225,11 @@ class Table
   end
 
   def on?
-    play_state == PLAY_STATES[:on]
+    @table_state.on?
   end
 
   def off?
-    play_state == PLAY_STATES[:off]
+    @table_state.off?
   end
 
   def last_roll
@@ -254,24 +284,6 @@ class Table
     @shooter
   end
 
-  def update_table_state
-    if point_established?
-      set_table_on
-    elsif point_made? || seven_out?
-      set_table_off
-    end
-  end
-
-  def set_table_on
-    @play_state = PLAY_STATES[:on]
-    @point = last_roll
-  end
-
-  def set_table_off
-    @play_state = PLAY_STATES[:off]
-    @point = nil
-  end
-
   def shooter_done
     @shooter = nil
     return_dice
@@ -299,6 +311,10 @@ class Table
   end
 
   private
+
+  def match_roll?(value)
+    value.nil? || (value == last_roll)
+  end
 
   def create_craps_bets
     @craps_bets = []

@@ -7,8 +7,14 @@ class TableStatsCollection
   def initialize(table)
     @table = table
     @stats = []
-    init_stats
-    make_occurred_convenience_methods
+    init_stats.each do |stat|
+      add stat
+    end
+  end
+
+  def init_stats
+    # optional subclass override with initial stats created at new
+    []
   end
 
   def update
@@ -38,24 +44,19 @@ class TableStatsCollection
   end
 
   def add(stat)
+    make_occurred_convenience_methods(stat)
     @stats += Array(stat)
   end
 
   private
 
-  def init_stats
-    [] # override this method with your OccurenceStat.new() array
-  end
-
-  def make_occurred_convenience_methods
+  def make_occurred_convenience_methods(stat)
     #
     # be careful not to make stats names that conflict with defined methods above
     #
-    each do |s|
-      self.class.instance_eval do
-        define_method(s.name) do
-          s.total
-        end
+    self.class.instance_eval do
+      define_method(stat.name) do
+        stat.total
       end
     end
   end

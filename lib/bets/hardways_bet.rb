@@ -21,7 +21,12 @@ class HardwaysBet < CrapsBet
     outcome
   end
 
+  def bet_stats
+    OccurrenceStat.new('hard_%d' % number, Proc.new {table.rolled?(number)}) {table.hard?(number)}
+  end
+
   def self.gen_number_bets(table)
     Table::HARDS.map {|number| HardwaysBet.new(table, number)}
   end
+
 end

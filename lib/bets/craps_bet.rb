@@ -18,10 +18,19 @@ class CrapsBet
   def initialize(table, number=nil)
     @table = table
     @number = number
+    add_stats
   end
 
   def name
     raise "give the CrapsBet a name"
+  end
+
+  def bet_stats
+    [] # override with a(n array) of OccurrenceStats related to the craps bet subclass
+  end
+
+  def add_stats
+    table.craps_stats.add bet_stats unless bet_stats.empty?
   end
 
   def bet_remains_after_win?

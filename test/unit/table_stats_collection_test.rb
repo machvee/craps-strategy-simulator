@@ -4,8 +4,10 @@ require 'test_helper'
 class TableStatsCollectionTest < Test::Unit::TestCase
   class TestStatsCollection < TableStatsCollection
     def init_stats
-      add(OccurrenceStat.new('alpha') {table.alpha == 100})
-      add(OccurrenceStat.new('beta') {table.beta == 200})
+      [
+        OccurrenceStat.new('alpha') {table.alpha == 100},
+        OccurrenceStat.new('beta') {table.beta == 200}
+      ]
     end
   end
 
