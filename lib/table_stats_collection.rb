@@ -44,8 +44,10 @@ class TableStatsCollection
   end
 
   def add(stat)
-    make_occurred_convenience_methods(stat)
-    @stats += Array(stat)
+    Array(stat).each do |stat|
+      @stats << stat
+      make_occurred_convenience_methods(stat)
+    end
   end
 
   private

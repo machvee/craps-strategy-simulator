@@ -5,8 +5,7 @@ class TableStatsCollectionTest < Test::Unit::TestCase
   class TestStatsCollection < TableStatsCollection
     def init_stats
       [
-        OccurrenceStat.new('alpha') {table.alpha == 100},
-        OccurrenceStat.new('beta') {table.beta == 200}
+        OccurrenceStat.new('alpha') {table.alpha == 100}
       ]
     end
   end
@@ -14,6 +13,7 @@ class TableStatsCollectionTest < Test::Unit::TestCase
   def setup
     @table = mock()
     @c = TestStatsCollection.new(@table)
+    @c.add(OccurrenceStat.new('beta') {@table.beta == 200})
 
     @total_alpha = 187
     @total_beta = 213
