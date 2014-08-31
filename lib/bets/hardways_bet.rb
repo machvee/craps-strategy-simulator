@@ -8,21 +8,21 @@ class HardwaysBet < CrapsBet
     OnStatus::FOLLOW # follows the table on/off status
   end
 
-  def determine_outcome(player_bet)
-    outcome = if player_bet.off?
+  def outcome(player_bet)
+    result = if player_bet.off?
       Outcome::NONE
-    elsif made_the_number? && table.hard?(number)
+    elsif made_the_number? && dice.hard?(number)
       Outcome::WIN
-    elsif table.seven? || (made_the_number? && table.easy?(number))
+    elsif dice.seven? || (made_the_number? && dice.easy?(number))
       Outcome::LOSE
     else
       Outcome::NONE
     end
-    outcome
+    result
   end
 
   def bet_stats
-    OccurrenceStat.new('hard_%d' % number, Proc.new {table.rolled?(number)}) {table.hard?(number)}
+    # OccurrenceStat.new('hard_%d' % number, Proc.new {dice.rolled?(number)}) {dice.hard?(number)}
   end
 
   def self.gen_number_bets(table)

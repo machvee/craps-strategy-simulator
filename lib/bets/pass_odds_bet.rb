@@ -18,12 +18,12 @@ class PassOddsBet < CrapsBet
 
   def validate(player_bet, amount)
     super
-    raise "point must be established" unless table.on?
+    raise "point must be established" unless state.on?
     raise "you must have a Pass Line Bet" unless player_bet.player.has_bet?(PassLineBet)
   end
 
-  def determine_outcome(player_bet)
-    outcome = if player_bet.off?
+  def outcome(player_bet)
+    result = if player_bet.off?
       Outcome::NONE
     elsif table.point_made?
       Outcome::WIN
@@ -32,7 +32,11 @@ class PassOddsBet < CrapsBet
     else
       Outcome::NONE
     end
-    outcome
+    result
+  end
+
+  def bet_stats
+    []
   end
 
   def self.gen_number_bets(table)

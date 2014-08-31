@@ -3,13 +3,22 @@ class FieldBet < CrapsBet
     "Field Bet"
   end
 
-  def determine_outcome(player_bet)
-    outcome = if player_bet.off? 
+  def outcome(player_bet)
+    result = if player_bet.off? 
       Outcome::NONE
-    elsif table.fields?
+    elsif dice.fields?
       Outcome::WIN
     end
       Outcome::LOSE
-    outcome
+    result
+  end
+
+  def bet_stats
+    [
+      OccurrenceState.new('field_win') {dice.fields?},
+      *[2,12].map { |v|
+        OccurrenceState.new('field_%d_win'%v, Proc.new {dice.fields?}) {dice.rolled?(v)}
+      }
+    ]
   end
 end

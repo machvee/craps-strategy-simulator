@@ -1,6 +1,9 @@
 class CrapsBet
   attr_reader :number
   attr_reader :table
+  attr_reader :player_bets
+
+  delegate :dice,:state,:bet_stats,  to: :table
 
   module Outcome
     WIN=1    # player gets payoff
@@ -18,19 +21,37 @@ class CrapsBet
   def initialize(table, number=nil)
     @table = table
     @number = number
-    add_stats
+    @player_bets = []
+    bet_stats.add OccurrenceStat.new(win_stat_name)
+    bet_stats.add OccurrenceStat.new(made_stat_name)
+  end
+
+  def add_bet(player_bet)
+    player_bets << player_bet
+    made_stat_update(player_bet)
+  end
+
+  def remove_bet(player_bet)
+    player_bets.delete(player_bet)
   end
 
   def name
     raise "give the CrapsBet a name"
   end
 
-  def bet_stats
-    [] # override with a(n array) of OccurrenceStats related to the craps bet subclass
+  def determine_outcome(player_bet)
+    case result = outcome(player_bet)
+      when Outcome::WIN
+        win_stat_update(player_bet)
+      when Outcome::LOSE
+        lose_stat_update(player_bet)
+    end
+    result
   end
 
-  def add_stats
-    table.craps_stats.add bet_stats unless bet_stats.empty?
+  def outcome(player_bet)
+    # subclass override and uses table state and dice value to
+    # determine if the bet won or lost
   end
 
   def bet_remains_after_win?
@@ -53,7 +74,7 @@ class CrapsBet
       when OnStatus::ON
         true
       when OnStatus::FOLLOW
-        table.on?
+        state.on?
     end
   end
 
@@ -102,4 +123,35 @@ class CrapsBet
       for_every > 1 && bet_amount % for_every != 0
     return
   end
+
+  def win_stat_update(player_bet)
+    bet_stats.occurred(win_stat_name)
+    player_bet.stat_occurred(win_stat_name)
+  end
+
+  def lose_stat_update(player_bet)
+    bet_stats.did_not_occur(win_stat_name)
+    player_bet.stat_did_not_occur(win_stat_name)
+  end
+
+  def made_stat_update(player_bet)
+    bet_stats.incr(made_stat_name)
+    player_bet.stat_incr(made_stat_name)
+  end
+
+  def made_stat_name
+    @_msn ||= stat_name('s_made')
+  end
+
+  def win_stat_name
+    @_wsn ||= stat_name('s_won')
+  end
+
+  def stat_name(suffix)
+    bet_class_name = self.class.name.underscore
+    number_part_if_any = number.nil? ? '' : "_#{number}"
+    s_name = bet_class_name + number_part_if_any + suffix
+    s_name
+  end
+
 end

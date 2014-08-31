@@ -3,16 +3,12 @@ require 'test_helper'
 
 class TableStatsCollectionTest < Test::Unit::TestCase
   class TestStatsCollection < TableStatsCollection
-    def init_stats
-      [
-        OccurrenceStat.new('alpha') {table.alpha == 100}
-      ]
-    end
   end
 
   def setup
     @table = mock()
-    @c = TestStatsCollection.new(@table)
+    @c = TestStatsCollection.new('test', @table)
+    @c.add(OccurrenceStat.new('alpha') {@table.alpha == 100})
     @c.add(OccurrenceStat.new('beta') {@table.beta == 200})
 
     @total_alpha = 187
@@ -26,10 +22,46 @@ class TableStatsCollectionTest < Test::Unit::TestCase
     assert_equal 0, @c.beta
   end
 
+  def test_new_instance_of_table_independent_from_origin_table
+    runit(@c, @table)
+    @c2 = @c.new_instance('another alpha_beta')
+    assert_equal 0, @c2.alpha
+    assert_equal 0, @c2.beta
+    runit(@c2, @table)
+    assert_equal @total_alpha+@total_combined, @c.alpha
+    assert_equal @total_beta+@total_combined, @c.beta
+    assert_equal @total_alpha+@total_combined, @c2.alpha
+    assert_equal @total_beta+@total_combined, @c2.beta
+    @c.reset
+    assert_equal 0, @c.alpha
+    assert_equal 0, @c.beta
+    assert_equal @total_alpha+@total_combined, @c2.alpha
+    assert_equal @total_beta+@total_combined, @c2.beta
+  end
+
   def test_convenience_methods
     runit(@c, @table)
     assert_equal @total_alpha+@total_combined, @c.alpha
     assert_equal @total_beta+@total_combined, @c.beta
+  end
+
+  def test_occurred_by_name
+    c = TestStatsCollection.new('test2', @table)
+    c.add(OccurrenceStat.new('alpha'))
+    c.add(OccurrenceStat.new('beta'))
+    c.occurred('alpha')
+    c.occurred('alpha')
+    c.occurred('alpha')
+    c.occurred('beta')
+    c.occurred('beta')
+    c.occurred('beta')
+    c.incr('beta')
+    c.did_not_occur('alpha')
+    c.did_not_occur('beta')
+    assert_equal 3, c.alpha
+    assert_equal 4, c.beta
+    assert_equal 1, c.stat_by_name('alpha').total_did_not_occur
+    assert_equal 1, c.stat_by_name('beta').total_did_not_occur
   end
 
   def test_reset

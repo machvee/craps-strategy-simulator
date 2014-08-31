@@ -47,4 +47,9 @@ class CrapsDice < Dice
   def fields?
     FIELDS.include?(value)
   end
+
+  def rolled?(number)
+    number == value
+  end
+
 end

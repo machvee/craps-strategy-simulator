@@ -1,5 +1,14 @@
 class PassLineBet < CrapsBet
 
+  FRONT_LINE_WINNER_STAT_NAME = 'front_line_winner'
+  POINT_MADE_STAT_NAME = 'point_made'
+
+  def initialize(table, number=nil)
+    super
+    bet_stats.add OccurrenceStat.new(FRONT_LINE_WINNER_STAT_NAME)
+    bet_stats.add OccurrenceStat.new(POINT_MADE_STAT_NAME)
+  end
+
   def name
     "Pass Line Bet"
   end
@@ -10,47 +19,46 @@ class PassLineBet < CrapsBet
 
   def validate(player_bet, amount)
     super
-    raise "point must be off" if table.on?
+    raise "point must be off" if state.on?
   end
 
-  def determine_outcome(player_bet)
-    outcome = if table.front_line_winner? 
+  def outcome(player_bet)
+    result = if state.front_line_winner? 
+      update_front_line_winner_stats(player_bet)
       Outcome::WIN
-    elsif table.crapped_out?
+    elsif state.crapped_out?
+      update_crapped_out_stats(player_bet)
       Outcome::LOSE
-    elsif table.point_made?
+    elsif state.point_made?
+      update_point_made_stats(player_bet)
       Outcome::WIN
-    elsif table.seven_out?
+    elsif state.seven_out?
+      update_seven_out_stats(player_bet)
       Outcome::LOSE
     else
       Outcome::NONE
     end
-    outcome
+    result
   end
 
-  def bet_stats
-    stat_table = [
-      #  name           did_not_occur_when        occurred_when
-      ['winners', Proc.new {table.off?},  Proc.new {table.front_line_winner?}],
-      *CrapsDice::WINNERS.map {|v|
-        ['winners_%d'%v, Proc.new {table.front_line_winner?}, Proc.new {table.front_line_winner?(v)}]
-      },
-      ['craps', Proc.new {table.off?}, Proc.new {table.crapped_out?}],
-      *CrapsDice::CRAPS.map {|v| 
-        ['craps_%d'%v, Proc.new {table.crapped_out?}, Proc.new {table.crapped_out?(v)}]
-      },
-      ['points', Proc.new {table.off?}, Proc.new {table.point_established?],
-      *CrapsDice::POINTS.map { |v|
-        ['points_%d', Proc.new {table.point_established?}, Proc.new {table.point_established?(v)}]
-      },
-      ['points_made', Proc.new {table.seven_out?}, Proce.new {table.point_made?}],
-      *CrapsDice::POINTS.map {|v|
-        ['points_made_%d'%v, Proc.new {table.point_made?}, Proce.new {table.point_made?(v)}]
-      },
-    ]
-    stats_table.map { |stat_name, did_not_occur_proc, occurred_proc|
-      OccurrenceStat.new(stat_name, did_not_occur_proc, &occurred_proc)
-    }
+  def update_front_line_winner_stats(player_bet)
+    bet_stats.occurred(FRONT_LINE_WINNER_STAT_NAME)
+    player_bet.stat_occurred(FRONT_LINE_WINNER_STAT_NAME)
+  end
+
+  def update_crapped_out_stats(player_bet)
+    bet_stats.did_not_occur(FRONT_LINE_WINNER_STAT_NAME)
+    player_bet.stat_did_not_occur(FRONT_LINE_WINNER_STAT_NAME)
+  end
+
+  def update_point_made_stats(player_bet)
+    bet_stats.occurred(POINT_MADE_STAT_NAME)
+    player_bet.stat_occurred(POINT_MADE_STAT_NAME)
+  end
+
+  def update_seven_out_stats(player_bet)
+    bet_stats.did_not_occur(POINT_MADE_STAT_NAME)
+    player_bet.stat_did_not_occur(POINT_MADE_STAT_NAME)
   end
 
 end

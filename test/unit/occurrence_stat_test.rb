@@ -1,7 +1,7 @@
 require 'test_helper'
 
 class OccurrenceStatTest < Test::Unit::TestCase
-  def test_can_reset_and_count_correctly_no_guard
+  def test_can_reset_and_count_correctly_no_not_occurred
      vals = %w{red red blue blue blue red red blue blue red red red red}
      @val = nil
      @name = 'reds'
@@ -14,6 +14,30 @@ class OccurrenceStatTest < Test::Unit::TestCase
      assert_counts?(s, red_count, blue_count, 4, 3)
      s.reset
      assert_counts?(s, 0, 0, 0, 0)
+  end
+
+  def test_can_manually_incr_like_a_simple_counter
+     s = OccurrenceStat.new('wins')
+     s.incr
+     s.incr
+     s.incr
+     s.incr
+     assert_equal 4, s.total
+  end
+
+  def test_can_manually_occur_not_occur
+     s = OccurrenceStat.new('wins')
+     s.occurred
+     s.occurred
+     s.occurred
+     s.did_not_occur
+     s.occurred
+     s.did_not_occur
+     s.did_not_occur
+     assert_equal 4, s.total_occurred
+     assert_equal 3, s.total_did_not_occur
+     assert_equal 3, s.max_consec_occurred
+     assert_equal 2, s.max_consec_did_not_occur
   end
 
   def test_can_reset_and_count_correctly_with_not_occurred_condition

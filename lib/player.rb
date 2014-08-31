@@ -1,13 +1,13 @@
 require 'player_stats'
 
 class Player
-  attr_reader :name
-  attr_reader :bets
-  attr_reader :table
-  attr_reader :start_rail # amount started with
-  attr_reader :rail    # amount of money in rail
-  attr_reader :wagers  # amount of money bet
-  attr_reader :stats
+  attr_reader   :name
+  attr_reader   :bets
+  attr_reader   :table
+  attr_reader   :start_rail # amount started with
+  attr_reader   :rail    # amount of money in rail
+  attr_reader   :wagers  # amount of money bet
+  attr_accessor :dice # when shooter
 
   def initialize(name, table, amount)
     @bets = []
@@ -16,7 +16,7 @@ class Player
     @wagers = 0
     @rail = amount
     @start_rail = rail
-    @stats = PlayerStats.new(rail)
+    @stats = PlayerStats.new(self, rail)
   end
 
   def self.join_table(table, name, start_amount)
@@ -47,6 +47,17 @@ class Player
 
   def po
     pass_odds_bet
+  end
+
+  def roll
+    raise "not the shooter" if dice.nil?
+    dice.roll
+  end
+
+  def return_dice
+    raise "not the shooter" if dice.nil?
+    table.dice_tray.return(dice)
+    @dice = nil
   end
 
   def pass_odds_bet(amount=nil)
@@ -116,6 +127,7 @@ class Player
   end
 
   def remove_bet(bet)
+    bet.remove_from_table
     bets.delete(bet)
   end
 

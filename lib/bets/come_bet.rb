@@ -11,15 +11,15 @@ class ComeBet < CrapsBet
     false
   end
 
-  def determine_outcome(player_bet)
-    outcome = if made_the_number?
+  def outcome(player_bet)
+    result = if made_the_number?
       Outcome::WIN
-    elsif table.seven?
+    elsif dice.seven?
       Outcome::LOSE
     else
       Outcome::NONE
     end
-    outcome
+    result
   end
 
   def self.gen_number_bets(table)

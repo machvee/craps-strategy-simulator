@@ -7,40 +7,53 @@ class OccurrenceStat
   attr_reader  :max_consecs
   attr_reader  :total_counts
   attr_reader  :running_totals
-  attr_reader  :occurred
-  attr_reader  :not_occurred
+  attr_reader  :occurred_condition
+  attr_reader  :not_occurred_condition
 
   OCCURRED=true
   DID_NOT_OCCUR=!OCCURRED
-  NEITHER=nil
 
   REPORT_FORMATTER= "%14s   %7s / %7s      %7s / %7s"
 
   def initialize(name, not_occurred_condition = Proc.new {true}, &occurred_condition)
     @name = name
-    @occurred = occurred_condition
-    @not_occurred = not_occurred_condition
+    @occurred_condition = occurred_condition
+    @not_occurred_condition = not_occurred_condition
     reset
   end
 
   def update
-    occurrence = if occurred.call
-      OCCURRED
-    elsif not_occurred.call
-      DID_NOT_OCCUR
-    else
-      NEITHER
+    # update counts based on predefined occurred and did_not_occur proc calls
+    if occurred_condition.call
+      occurred 
+    elsif not_occurred_condition.call
+      did_not_occur
     end
+    return
+  end
 
-    return if occurrence == NEITHER
+  def incr
+    # for use like a simple counter
+    occurred
+  end
 
+  def occurred
+    # manually increment the occurred count
+    bump(OCCURRED)
+  end
+
+  def did_not_occur
+    # manually increment the did not occur count
+    bump(DID_NOT_OCCUR)
+  end
+
+  def bump(occurrence)
     total_counts[occurrence] += 1
     running_totals[occurrence] += 1
     running_totals[!occurrence] = 0
     if running_totals[occurrence] > max_consecs[occurrence]
       max_consecs[occurrence] = running_totals[occurrence] 
     end
-    return
   end
 
   def max(did=OCCURRED)
@@ -49,6 +62,22 @@ class OccurrenceStat
 
   def total(did=OCCURRED)
     total_counts[did]
+  end
+
+  def total_occurred
+    total(OCCURRED)
+  end
+
+  def total_did_not_occur
+    total(DID_NOT_OCCUR)
+  end
+
+  def max_consec_occurred
+    max(OCCURRED)
+  end
+
+  def max_consec_did_not_occur
+    max(DID_NOT_OCCUR)
   end
 
   def reset

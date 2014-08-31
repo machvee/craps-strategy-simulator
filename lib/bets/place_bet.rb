@@ -8,17 +8,21 @@ class PlaceBet < CrapsBet
     OnStatus::FOLLOW # follows the table on/off status
   end
 
-  def determine_outcome(player_bet)
-    outcome = if player_bet.off?
+  def outcome(player_bet)
+    result = if player_bet.off?
       Outcome::NONE
     elsif made_the_number?
       Outcome::WIN
-    elsif table.seven_out?
+    elsif state.seven_out?
       Outcome::LOSE
     else
       Outcome::NONE
     end
-    outcome
+    result
+  end
+
+  def bet_stats
+    []
   end
 
   def self.gen_number_bets(table)

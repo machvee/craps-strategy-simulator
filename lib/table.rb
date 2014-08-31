@@ -1,98 +1,99 @@
 class Table
   attr_reader    :name
   attr_reader    :craps_bets
-  attr_reader    :roll_stats
-  attr_reader    :craps_stats
+  attr_reader    :bet_stats
+  attr_reader    :state
   attr_reader    :config
-  attr_reader    :tray  # 8 dice
-  attr_reader    :dice  # 2 dice the shooter has selected
+  attr_reader    :dice_tray
   attr_reader    :players
   attr_reader    :shooter      # one of the above players or nil
   attr_reader    :last_shooter # one of the above players or nil
   attr_reader    :house   # dollar amount of chips the house has
   attr_accessor  :quiet_table # not verbose about all actions
 
-  PLAY_STATES = {:on => true, :off => false}
-  NUM_TRAY_DIE=8
-  NUM_SHOOTER_DIE=2
-  HOUSE_BANK=10000000
+  delegate :on?, :off?, to: :state
+  delegate :dice, to: :shooter
+  delegate :min_bet, :max_bet, to: :config
 
-  def initialize(name=nil, config=TableConfig.new, seed=nil, quiet_table=false)
-    @table_state = TableState.new(self)
-    @table_state.table_off
+  DEFAULT_OPTIONS = {
+    config:      TableConfig.new,
+    die_seeder:  nil,
+    quiet_table: false
+  }
 
+  def initialize(name="craps table", options = DEFAULT_OPTIONS)
     @name = name
-    @quiet_table = quiet_table
-    @tray = CrapsDice.new(NUM_TRAY_DIE, seed)
-    @dice = nil
+    @config = options[:config]
+
+    @state = TableState.new(self)
+    state.table_off
+
+    @house = config.house_bank
+    @quiet_table = options[:quiet_table]
+
+    @dice_tray = DiceTray.new(self, options[:die_seeder])
+
+    @bet_stats = TableStatsCollection.new("bet result", self)
+    create_craps_bets
+
     @players = []
     @last_shooter = @shooter = nil
-    @house = HOUSE_BANK
-    @config = config
-    @roll_stats = RollStats.new(self)
-    @craps_stats = TableStatsCollection.new(self)
-    create_craps_bets
+  end
+
+  def last_roll
+    dice.value
+  end
+
+  def max_odds(number)
+    config.max_odds(number)
   end
 
   def play(quiet_option=quiet_table)
-    quietly(quiet_option) do
+    #
+    # one roll of the dice, and the outcomes
+    #
+    quietly?(quiet_option) do
       # 1. shooter rolls dice
       # 2. set table state if on
       # 3. table pay players on winning bets, takes losing bets
       # 4. if 7-out, shooter will return_dice
       #
-      roll
+      shooter_rolls
       settle_bets
-      @table_state.update
+      state.update
     end
     return
   end
 
   def play_points(number_of_points, quiet_option=quiet_table)
-    start_points = craps_stats.points
-    while (craps_stats.points - start_points < number_of_points)
+    #
+    # roll as many times from as many shooters as it takes
+    # to make and end number_of_points points
+    #
+    start_points = bet_stats.points
+    while (bet_stats.points - start_points < number_of_points)
       play(quiet_option)
     end
     #
     # play until points_made or seven_outs
     #
-    start_seven_out = craps_stats.seven_outs
-    start_points_made = craps_stats.points_made
-    while(craps_stats.seven_outs == start_seven_out &&
-          craps_stats.points_made == start_points_made)
+    start_seven_out = bet_stats.seven_outs
+    start_points_made = bet_stats.points_made
+    while(bet_stats.seven_outs == start_seven_out &&
+          bet_stats.points_made == start_points_made)
       play(quiet_option)
     end
-    return
-  end
-
-  def quietly(option)
-    save_state = quiet_table
-    @quiet_table = option
-    yield
-    @quiet_table = save_state
     return
   end
 
   def new_player(name, start_amount)
     p = Player.new(name, self, start_amount)
     @players << p
-    p
+    p # good luck
   end
 
-  def take_dice(offsets=[0,1])
-    @dice = tray.extract(offsets)
-  end
-
-  def dice_value_range
-    take_dice
-    r = dice.value_range
-    return_dice
-    r
-  end
-
-  def return_dice
-    tray.join(dice)
-    @dice = nil
+  def find_player(name)
+    players.find {|p| p.name == name}
   end
 
   def players_ready?
@@ -106,60 +107,6 @@ class Table
       end
     end
     return !players.empty?
-  end
-
-  def point
-    @table_state.point
-  end
-
-  def point_established?(value=nil)
-    @table_state.point_established? && match_roll?(value)
-  end
-
-  def point_made?(value=nil)
-    @table_state.point_made? && match_roll?(value)
-  end
-
-  def seven_out?
-    @table_state.seven_out?
-  end
-
-  def front_line_winner?(value=nil)
-    off? && dice.winner? && match_roll?(value)
-  end
-
-  def crapped_out?(value=nil)
-    off? && dice.craps? && match_roll?(value)
-  end
-
-  def yo_eleven?
-    front_line_winner?(11)
-  end
-
-  def winner_seven?
-    front_line_winner?(7)
-  end
-
-  def rolled?(value)
-    last_roll == value
-  end
-
-  def stickman_says
-    if @table_state.point_made?
-      "winner #{last_roll}. pay the line" 
-    elsif seven_out?
-      "7 out"
-    elsif front_line_winner?
-      "7 front line winner!"
-    elsif yo_eleven?
-      "yo 11!" 
-    elsif crapped_out?
-      "crap!" 
-    elsif point_established?
-      "the point is #{last_roll}"
-    else
-      ""
-    end
   end
 
   def settle_bets
@@ -211,8 +158,9 @@ class Table
     end
   end
 
-  def find_player(name)
-    players.find {|p| p.name == name}
+  def reset_stats
+    dice_tray.roll_stats.reset
+    bet_stats.reset
   end
 
   def credit(amount)
@@ -224,41 +172,11 @@ class Table
     @house -= amount
   end
 
-  def on?
-    @table_state.on?
-  end
-
-  def off?
-    @table_state.off?
-  end
-
-  def last_roll
-    dice.value
-  end
-
-  def roll
-    raise "no shooter" if dice.nil?
-    dice.roll
+  def shooter_rolls
+    set_shooter
+    shooter.roll
     announce_roll
-    roll_stats.update
-    craps_stats.update
-  end
-
-  def reset_stats
-    roll_stats.reset
-    craps_stats.reset
-  end
-
-  def max_odds(number)
-    config.max_odds(number)
-  end
-
-  def max_bet
-    config.max_bet
-  end
-
-  def min_bet
-    config.min_bet
+    dice_tray.roll_stats.update
   end
 
   def set_shooter
@@ -268,7 +186,7 @@ class Table
     # if last_shooter is nil or at end of players array
     #
     return unless shooter.nil?
-    if players.empty?
+    if !players_ready?
       @last_shooter = @shooter = nil
       raise "there are no players"
     else
@@ -279,14 +197,14 @@ class Table
         ns = 0 if (ns == players.length)
       end
       @last_shooter = @shooter = players[ns]
-      take_dice
+      shooter.dice = dice_tray.take_dice
     end
-    @shooter
+    shooter
   end
 
   def shooter_done
+    shooter.return_dice
     @shooter = nil
-    return_dice
   end
 
   def status(str)
@@ -295,7 +213,7 @@ class Table
 
   def announce_roll
     status 'roll %d: %2d %s %s' %
-              [dice.num_rolls, last_roll, dice.inspect, stickman_says]
+              [dice.num_rolls, last_roll, dice.inspect, state.stickman_calls_roll]
   end
 
   def find_craps_bet(bet_class, number)
@@ -306,15 +224,11 @@ class Table
     puts name unless name.nil?
     puts "ON (point is #{point})" if on? 
     puts "OFF" if off? 
-    puts "total rolls: #{roll_stats.total_rolls}\n"
-    craps_stats.print
+    puts "total rolls: #{dice_tray.roll_stats.total_rolls}\n"
+    bet_stats.print
   end
 
   private
-
-  def match_roll?(value)
-    value.nil? || (value == last_roll)
-  end
 
   def create_craps_bets
     @craps_bets = []
@@ -325,6 +239,14 @@ class Table
     [PassOddsBet, ComeBet, ComeOddsBet, PlaceBet, HardwaysBet].each do |bet_class|
       @craps_bets += bet_class.gen_number_bets(self)
     end
+  end
+
+  def quietly?(option)
+    save_state = quiet_table
+    @quiet_table = option
+    yield
+    @quiet_table = save_state
+    return
   end
 
 end

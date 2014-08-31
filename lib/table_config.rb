@@ -1,10 +1,12 @@
 class TableConfig
   attr_reader    :max_bet
   attr_reader    :min_bet
+  attr_reader    :house_bank
 
   def initialize(min_bet=10, max_bet=5000)
     @min_bet = min_bet
     @max_bet = max_bet
+    @house_bank = 1_000_000
   end
 
   def max_odds(number)

@@ -12,9 +12,11 @@ class RollStatsTest < Test::Unit::TestCase
     value_range_length = [*@d.value_range].length
     @last_rolls = @dice_values.map {|v| [v]*value_range_length}.flatten
     @table = mock('table')
-    @table.expects(:dice_value_range).once.returns(@d.value_range)
+    dice_tray = mock('dice_tray')
+    @table.expects(:dice_tray).once.returns(dice_tray)
+    dice_tray.expects(:dice_value_range).once.returns(@d.value_range)
     @table.expects(:last_roll).at_least_once.returns(*@last_rolls)
-    @r = RollStats.new(@table)
+    @r = RollStats.new('table dice roll', @table)
     @num_rolls.times {@r.update}
   end
 

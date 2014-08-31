@@ -6,12 +6,15 @@ class PlayerBet
   attr_reader :craps_bet
   attr_reader :bet_off
 
+  delegate :table, to: :player
+
   def initialize(player, bet_class, amount, number=nil)
     @player = player
     @amount = amount
     @number = number
     @craps_bet = find_craps_bet(bet_class, number)
     craps_bet.validate(self, amount)
+    craps_bet.add_bet(self)
     set_bet_on
   end
 
@@ -19,6 +22,18 @@ class PlayerBet
     new_amount = amount + additional_amount
     craps_bet.validate(self, new_amount)
     @amount = new_amount
+  end
+
+  def stat_occurred(bet_stat_name)
+    player.stats.occurred(bet_stat_name)
+  end
+
+  def stat_did_not_occur(bet_stat_name)
+    player.stats.did_not_occur(bet_stat_name)
+  end
+
+  def stat_incr(bet_stat_name)
+    player.stats.incr(bet_stat_name)
   end
 
   def back_on
@@ -52,7 +67,13 @@ class PlayerBet
     # or moving a Place Bet 6 to a Place Bet 8 after a Point of 6 is
     # established
     #
+    craps.bet.remove_bet(self)
     @craps_bet = find_craps_bet(new_bet_class, number)
+    craps_bet.add_bet(self)
+  end
+
+  def remove_from_table
+    craps_bet.remove_bet(self)
   end
 
   def to_s
@@ -64,10 +85,6 @@ class PlayerBet
   end
 
   private
-
-  def table
-    player.table
-  end
 
   def set_bet_on
     @bet_off = false

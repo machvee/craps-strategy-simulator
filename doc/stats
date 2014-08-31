@@ -1,0 +1,46 @@
+Stats to keep
+
+Roll Stats
+# RollStats (keep existing)
+
+Bet Stats
+(Tracked for each Bet, each Player)
+  # made
+  # won (max consec)
+  # lost (max consec)
+  # total $ bet
+  # total $ won
+  # total $ lost
+
+Pass Line Bet
+  # come out rolls
+  # flw (7,11)      WIN   (max consec)
+  # craps (2,3,12)  LOSE  (max consec)
+
+  # points established (4-10)  (max consec)
+  #   points made (4-10) WIN   (max consec)
+  #   seven out          LOSE  (max consec)
+
+ComeOdds Bet
+  # returned to player
+
+Player
+  Bet Stats
+  rail hi/lo
+  total $ bet
+  total $ won
+  total $ lost
+
+Table
+  Bet stats
+  total bets made
+  total bets won
+  total bets lost
+  consec rolls without a seven_out (max)
+
+
+table stats collection
+----------------------
+named group of definitions
+accumulate definitions
+support instantiate a new TSC

@@ -56,9 +56,46 @@ class CrapsDiceTest < Test::Unit::TestCase
 
   def test_hard
     d1 = CrapsDice.new(2, same_seeder)
-    while d1.roll != 4 do
-    end 
-    assert d1.hard?(4)
+    [4,6,8,10].each do |n|
+      while d1.roll != n do; end 
+      assert d1.hard?(n)
+    end
+  end
+
+  def test_easy
+    d1 = CrapsDice.new(2)
+
+    [4,6,8,10].each do |n|
+      while d1.roll != n || (d1[0].value == n/2 && d1[1].value == n/2) do ; end
+      assert d1.easy?(n)
+    end
+  end
+
+  def test_points
+    @dice.expects(:value).returns(4,5,6,8,9,10,2,7).at_least_once
+    assert @dice.points?
+    assert @dice.points?
+    assert @dice.points?
+    assert @dice.points?
+    assert @dice.points?
+    assert @dice.points?
+    assert !@dice.points?
+    assert !@dice.points?
+  end
+
+  def test_fields
+    @dice.expects(:value).returns(2,3,4,9,10,11,12,*[*5..8]).at_least_once
+    assert @dice.fields?
+    assert @dice.fields?
+    assert @dice.fields?
+    assert @dice.fields?
+    assert @dice.fields?
+    assert @dice.fields?
+    assert @dice.fields?
+    assert !@dice.fields?
+    assert !@dice.fields?
+    assert !@dice.fields?
+    assert !@dice.fields?
   end
 
   def same_seeder

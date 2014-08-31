@@ -5,12 +5,26 @@ class CrapsBetTest < Test::Unit::TestCase
     def name
       "Cool Bet on #{number}"
     end
+
+    def outcome(player_bet)
+      result = if table.win?
+        Outcome::WIN
+      elsif table.lose?
+        Outcome::LOSE
+      else
+        Outcome::NONE
+      end
+    end
   end
 
   def setup
     @number = 2
     @table_config = mock('table_config')
     @table = mock('table')
+    @state = mock('table_state')
+    @bet_stats = mock('bet_stats')
+    @bet_stats.expects(:add).at_least_once
+    @table.expects(:bet_stats).at_least_once.returns(@bet_stats)
     @cool_bet = CoolBet.new(@table, @number)
   end
 
@@ -24,9 +38,10 @@ class CrapsBetTest < Test::Unit::TestCase
 
   def test_bet_follow_table
     @cool_bet.expects(:table_on_status).twice.returns(CrapsBet::OnStatus::FOLLOW)
-    @table.expects(:on?).returns(false).once
+    @table.expects(:state).at_least_once.returns(@state)
+    @state.expects(:on?).returns(false).once
     assert !@cool_bet.on?, "bet should be off because table is off"
-    @table.expects(:on?).returns(true).once
+    @state.expects(:on?).returns(true).once
     assert @cool_bet.on?, "bet should be on because table is on"
   end
 
@@ -42,6 +57,72 @@ class CrapsBetTest < Test::Unit::TestCase
     not_number=@number+1
     @table.expects(:last_roll).once.returns(not_number)
     assert !@cool_bet.made_the_number?, "table last_roll is #{not_number}, shouldn't have made the number"
+  end
+
+  def test_add_player_bet
+    assert @cool_bet.player_bets.length == 0
+    @bet_stats.expects(:incr).once
+    player_bet = mock('player_bet')
+    player_bet.expects(:stat_incr).once
+    @cool_bet.add_bet(player_bet)
+    assert @cool_bet.player_bets.first.present?
+  end
+
+  def test_remove_player_bet
+    assert_equal 0, @cool_bet.player_bets.length
+    @bet_stats.expects(:incr).once
+    player_bet = mock('player_bet')
+    player_bet.expects(:stat_incr).once
+    @cool_bet.add_bet(player_bet)
+    assert @cool_bet.player_bets.first.present?
+    @cool_bet.remove_bet(player_bet)
+    assert_equal 0, @cool_bet.player_bets.length
+  end
+
+  def test_determine_outcome_with_player_bet_winning
+    assert @cool_bet.player_bets.length == 0
+    @bet_stats.expects(:incr).with('craps_bet_test/cool_bet_2s_made').once
+    player_bet = mock('player_bet')
+    player_bet.expects(:stat_incr).with('craps_bet_test/cool_bet_2s_made').once
+    @cool_bet.add_bet(player_bet)
+    assert @cool_bet.player_bets.first.present?
+    
+    @table.expects(:win?).returns(true)
+    @bet_stats.expects(:occurred).with('craps_bet_test/cool_bet_2s_won').once
+    player_bet.expects(:stat_occurred).with('craps_bet_test/cool_bet_2s_won').once
+    @cool_bet.determine_outcome(player_bet)
+  end
+
+  def test_determine_outcome_with_player_bet_losing
+    assert @cool_bet.player_bets.length == 0
+    @bet_stats.expects(:incr).with('craps_bet_test/cool_bet_2s_made').once
+    player_bet = mock('player_bet')
+    player_bet.expects(:stat_incr).with('craps_bet_test/cool_bet_2s_made').once
+    @cool_bet.add_bet(player_bet)
+    assert @cool_bet.player_bets.first.present?
+    
+    @table.expects(:lose?).returns(true)
+    @table.expects(:win?).returns(false)
+    @bet_stats.expects(:did_not_occur).with('craps_bet_test/cool_bet_2s_won').once
+    player_bet.expects(:stat_did_not_occur).with('craps_bet_test/cool_bet_2s_won').once
+    @cool_bet.determine_outcome(player_bet)
+  end
+
+  def test_determine_outcome_with_player_bet_nothing_happened
+    assert @cool_bet.player_bets.length == 0
+    @bet_stats.expects(:incr).with('craps_bet_test/cool_bet_2s_made').once
+    player_bet = mock('player_bet')
+    player_bet.expects(:stat_incr).with('craps_bet_test/cool_bet_2s_made').once
+    @cool_bet.add_bet(player_bet)
+    assert @cool_bet.player_bets.first.present?
+    
+    @table.expects(:lose?).returns(false)
+    @table.expects(:win?).returns(false)
+    @bet_stats.expects(:did_not_occur).never
+    @bet_stats.expects(:occurred).never
+    player_bet.expects(:stat_did_not_occur).never
+    player_bet.expects(:stat_occurred).never
+    @cool_bet.determine_outcome(player_bet)
   end
 
   def test_validate_player_already_has_that_bet
