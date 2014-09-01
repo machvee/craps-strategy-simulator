@@ -11,22 +11,22 @@ class HardwaysBet < CrapsBet
   def outcome(player_bet)
     result = if player_bet.off?
       Outcome::NONE
-    elsif made_the_number? && dice.hard?(number)
-      Outcome::WIN
-    elsif dice.seven? || (made_the_number? && dice.easy?(number))
+    elsif dice.seven?
       Outcome::LOSE
+    elsif made_the_number? 
+      if dice.hard?(number)
+        Outcome::WIN
+      else
+        Outcome::LOSE
+      end
     else
       Outcome::NONE
     end
     result
   end
 
-  def bet_stats
-    # OccurrenceStat.new('hard_%d' % number, Proc.new {dice.rolled?(number)}) {dice.hard?(number)}
-  end
-
   def self.gen_number_bets(table)
-    Table::HARDS.map {|number| HardwaysBet.new(table, number)}
+    CrapsDice::HARDS.map {|number| HardwaysBet.new(table, number)}
   end
 
 end

@@ -7,7 +7,6 @@ class Player
   attr_reader   :start_rail # amount started with
   attr_reader   :rail    # amount of money in rail
   attr_reader   :wagers  # amount of money bet
-  attr_accessor :dice # when shooter
 
   def initialize(name, table, amount)
     @bets = []
@@ -47,17 +46,6 @@ class Player
 
   def po
     pass_odds_bet
-  end
-
-  def roll
-    raise "not the shooter" if dice.nil?
-    dice.roll
-  end
-
-  def return_dice
-    raise "not the shooter" if dice.nil?
-    table.dice_tray.return(dice)
-    @dice = nil
   end
 
   def pass_odds_bet(amount=nil)

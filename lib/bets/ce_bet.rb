@@ -16,9 +16,4 @@ class CeBet < CrapsBet
     result
   end
 
-  def bet_stats
-    OccurrenceState.new('ce_bet_win', Proc.new {dice.points? || dice.seven?}) {
-      dice.craps? || dice.eleven?
-    } 
-  end
 end

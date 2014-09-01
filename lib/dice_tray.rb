@@ -11,12 +11,10 @@ class DiceTray
   attr_reader :tray
   attr_reader :metadice
   attr_reader :num_dice
-  attr_reader :roll_stats
 
   def initialize(table, die_seeder, num_dice_in_tray=DEFAULT_NUM_TRAY_DIE)
     @tray = CrapsDice.new(@num_dice = num_dice_in_tray, die_seeder)
     @metadice = CrapsDice.new(NUM_SHOOTER_DIE)
-    @roll_stats = RollStats.new("dice rolls", table)
   end
 
   def take_dice(offsets=nil)

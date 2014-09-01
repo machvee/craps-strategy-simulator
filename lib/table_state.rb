@@ -17,7 +17,7 @@ class TableState
       table_off
     elsif seven_out?
       table_off
-      table.shooter_done
+      table.shooter.done
     end
   end
 

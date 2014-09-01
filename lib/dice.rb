@@ -28,7 +28,8 @@ class Dice
 
   include Enumerable
 
-  def initialize(set_size, die_seeder=DefaultDieSeeder.new)
+  def initialize(set_size, seeder=nil)
+    die_seeder = seeder||DefaultDieSeeder.new
     @num_rolls = 0
     @set = []
     set_size.times {set << Die.new(die_seeder.rand)}

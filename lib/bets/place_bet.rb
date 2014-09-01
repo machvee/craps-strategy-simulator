@@ -21,10 +21,6 @@ class PlaceBet < CrapsBet
     result
   end
 
-  def bet_stats
-    []
-  end
-
   def self.gen_number_bets(table)
     Table::POINTS.map {|number| PlaceBet.new(table, number)}
   end

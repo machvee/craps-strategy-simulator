@@ -1,13 +1,12 @@
 class Table
   attr_reader    :name
-  attr_reader    :craps_bets
+  attr_reader    :table_bets
   attr_reader    :bet_stats
   attr_reader    :state
   attr_reader    :config
   attr_reader    :dice_tray
   attr_reader    :players
-  attr_reader    :shooter      # one of the above players or nil
-  attr_reader    :last_shooter # one of the above players or nil
+  attr_reader    :shooter # one of the above players or nil
   attr_reader    :house   # dollar amount of chips the house has
   attr_accessor  :quiet_table # not verbose about all actions
 
@@ -34,10 +33,10 @@ class Table
     @dice_tray = DiceTray.new(self, options[:die_seeder])
 
     @bet_stats = TableStatsCollection.new("bet result", self)
-    create_craps_bets
+    create_table_bets
 
+    @shooter = Shooter.new(table)
     @players = []
-    @last_shooter = @shooter = nil
   end
 
   def last_roll
@@ -112,7 +111,7 @@ class Table
   def settle_bets
     all_bets do |player_bet|
       player = player_bet.player
-      craps_bet = player_bet.craps_bet
+      table_bet = player_bet.table_bet
 
       outcome = player_bet.determine_outcome
 
@@ -130,12 +129,12 @@ class Table
           # 1. table credits player rails with winnings amount
           # 2. bet stays in place
           #
-          pay_this, for_every = config.payoff_odds(craps_bet, player_bet.number)
+          pay_this, for_every = config.payoff_odds(table_bet, player_bet.number)
           winnings = (player_bet.amount/for_every) * pay_this
           debit(winnings)
           player.to_rail(winnings)
           status "#{player.name} wins $#{winnings} on #{player_bet}"
-          player.take_down(player_bet) unless craps_bet.bet_remains_after_win?
+          player.take_down(player_bet) unless table_bet.bet_remains_after_win?
         when CrapsBet::Outcome::LOSE
           #
           # table takes bet amount from player's wagers to house
@@ -173,38 +172,9 @@ class Table
   end
 
   def shooter_rolls
-    set_shooter
+    shooter.set
     shooter.roll
     announce_roll
-    dice_tray.roll_stats.update
-  end
-
-  def set_shooter
-    #
-    # if shooter.nil?, need to set the @shooter using
-    # the last_shooter plus one player position, or back to 0
-    # if last_shooter is nil or at end of players array
-    #
-    return unless shooter.nil?
-    if !players_ready?
-      @last_shooter = @shooter = nil
-      raise "there are no players"
-    else
-      if last_shooter.nil?
-        ns = 0
-      else
-        ns = players.index(last_shooter) + 1
-        ns = 0 if (ns == players.length)
-      end
-      @last_shooter = @shooter = players[ns]
-      shooter.dice = dice_tray.take_dice
-    end
-    shooter
-  end
-
-  def shooter_done
-    shooter.return_dice
-    @shooter = nil
   end
 
   def status(str)
@@ -216,8 +186,8 @@ class Table
               [dice.num_rolls, last_roll, dice.inspect, state.stickman_calls_roll]
   end
 
-  def find_craps_bet(bet_class, number)
-    craps_bets.find {|bet| bet.class == bet_class && bet.number == number}
+  def find_table_bet(bet_class, number)
+    table_bets.find {|bet| bet.class == bet_class && bet.number == number}
   end
 
   def inspect
@@ -230,14 +200,14 @@ class Table
 
   private
 
-  def create_craps_bets
-    @craps_bets = []
-    @craps_bets << PassLineBet.new(self)
-    @craps_bets << ComeOutBet.new(self)
-    @craps_bets << CeBet.new(self)
-    @craps_bets << FieldBet.new(self)
+  def create_table_bets
+    @table_bets = []
+    @table_bets << PassLineBet.new(self)
+    @table_bets << ComeOutBet.new(self)
+    @table_bets << CeBet.new(self)
+    @table_bets << FieldBet.new(self)
     [PassOddsBet, ComeBet, ComeOddsBet, PlaceBet, HardwaysBet].each do |bet_class|
-      @craps_bets += bet_class.gen_number_bets(self)
+      @table_bets += bet_class.gen_number_bets(self)
     end
   end
 
