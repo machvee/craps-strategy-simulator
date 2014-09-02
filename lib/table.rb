@@ -2,7 +2,7 @@ class Table
   attr_reader    :name
   attr_reader    :table_bets
   attr_reader    :bet_stats
-  attr_reader    :state
+  attr_reader    :table_state
   attr_reader    :config
   attr_reader    :dice_tray
   attr_reader    :players
@@ -10,7 +10,7 @@ class Table
   attr_reader    :house   # dollar amount of chips the house has
   attr_accessor  :quiet_table # not verbose about all actions
 
-  delegate :on?, :off?, to: :state
+  delegate :on?, :off?, to: :table_state
   delegate :dice, to: :shooter
   delegate :min_bet, :max_bet, to: :config
 
@@ -24,8 +24,8 @@ class Table
     @name = name
     @config = options[:config]
 
-    @state = TableState.new(self)
-    state.table_off
+    @table_state = TableState.new(self)
+    table_state.table_off
 
     @house = config.house_bank
     @quiet_table = options[:quiet_table]
@@ -35,8 +35,8 @@ class Table
     @bet_stats = TableStatsCollection.new("bet result", self)
     create_table_bets
 
-    @shooter = Shooter.new(table)
     @players = []
+    @shooter = Shooter.new(self)
   end
 
   def last_roll
@@ -53,13 +53,13 @@ class Table
     #
     quietly?(quiet_option) do
       # 1. shooter rolls dice
-      # 2. set table state if on
+      # 2. set table_state if on
       # 3. table pay players on winning bets, takes losing bets
       # 4. if 7-out, shooter will return_dice
       #
       shooter_rolls
       settle_bets
-      state.update
+      table_state.update
     end
     return
   end
@@ -116,7 +116,7 @@ class Table
       outcome = player_bet.determine_outcome
 
       case outcome
-        when CrapsBet::Outcome::RETURN
+        when TableBet::Outcome::RETURN
           #
           # 1. player moves bet amount from wagers to rail
           # 2. player removes bet
@@ -124,7 +124,7 @@ class Table
           player.wagers_to_rail(player_bet.amount)
           player.remove_bet(player_bet)
           status "#{player.name} returned #{player_bet.amount} for #{player_bet}"
-        when CrapsBet::Outcome::WIN
+        when TableBet::Outcome::WIN
           #
           # 1. table credits player rails with winnings amount
           # 2. bet stays in place
@@ -135,7 +135,7 @@ class Table
           player.to_rail(winnings)
           status "#{player.name} wins $#{winnings} on #{player_bet}"
           player.take_down(player_bet) unless table_bet.bet_remains_after_win?
-        when CrapsBet::Outcome::LOSE
+        when TableBet::Outcome::LOSE
           #
           # table takes bet amount from player's wagers to house
           # player removes bet
@@ -143,10 +143,14 @@ class Table
           credit(player_bet.amount)
           player.loses(player_bet)
           status "#{player.name} loses $#{player_bet.amount} on #{player_bet}"
-        when CrapsBet::Outcome::NONE
+        when TableBet::Outcome::NONE
           # bet stays in place
       end
     end
+  end
+
+  def at_least_one_bet_made?
+    players.any? {|p| p.bets.length > 0}
   end
 
   def all_bets
@@ -158,7 +162,7 @@ class Table
   end
 
   def reset_stats
-    dice_tray.roll_stats.reset
+    shooter.reset_stats
     bet_stats.reset
   end
 
@@ -173,6 +177,7 @@ class Table
 
   def shooter_rolls
     shooter.set
+    raise "place your bets" unless at_least_one_bet_made?
     shooter.roll
     announce_roll
   end
@@ -182,8 +187,12 @@ class Table
   end
 
   def announce_roll
-    status 'roll %d: %2d %s %s' %
-              [dice.num_rolls, last_roll, dice.inspect, state.stickman_calls_roll]
+    status '%d: %s rolls: %2d %s %s' %
+      [dice.num_rolls,
+       shooter.player.name,
+       last_roll,
+       dice.inspect,
+       table_state.stickman_calls_roll]
   end
 
   def find_table_bet(bet_class, number)
@@ -194,7 +203,7 @@ class Table
     puts name unless name.nil?
     puts "ON (point is #{point})" if on? 
     puts "OFF" if off? 
-    puts "total rolls: #{dice_tray.roll_stats.total_rolls}\n"
+    puts "total rolls: #{shooter.roll_stats.total_rolls}\n"
     bet_stats.print
   end
 

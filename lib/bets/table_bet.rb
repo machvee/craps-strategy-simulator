@@ -1,9 +1,9 @@
-class CrapsBet
+class TableBet
   attr_reader :number
   attr_reader :table
   attr_reader :player_bets
 
-  delegate :dice,:state,:bet_stats,  to: :table
+  delegate :dice, :table_state, :bet_stats,  to: :table
 
   module Outcome
     WIN=1    # player gets payoff
@@ -22,8 +22,8 @@ class CrapsBet
     @table = table
     @number = number
     @player_bets = []
-    bet_stats.add OccurrenceStat.new(win_stat_name)
     bet_stats.add OccurrenceStat.new(made_stat_name)
+    bet_stats.add OccurrenceStat.new(win_stat_name)
   end
 
   def add_bet(player_bet)
@@ -36,7 +36,7 @@ class CrapsBet
   end
 
   def name
-    raise "give the CrapsBet a name"
+    raise "give the TableBet a name"
   end
 
   def determine_outcome(player_bet)
@@ -74,7 +74,7 @@ class CrapsBet
       when OnStatus::ON
         true
       when OnStatus::FOLLOW
-        state.on?
+        table_state.on?
     end
   end
 
@@ -140,18 +140,17 @@ class CrapsBet
   end
 
   def made_stat_name
-    @_msn ||= stat_name('s_made')
+    @_msn ||= stat_name('')
   end
 
   def win_stat_name
-    @_wsn ||= stat_name('s_won')
+    @_wsn ||= stat_name('_won')
   end
 
   def stat_name(suffix)
-    bet_class_name = self.class.name.underscore
+    bet_class_name = self.class.name.underscore.gsub(/_bet/,'')
     number_part_if_any = number.nil? ? '' : "_#{number}"
     s_name = bet_class_name + number_part_if_any + suffix
     s_name
   end
-
 end

@@ -1,4 +1,4 @@
-class ComeOddsBet < CrapsBet
+class ComeOddsBet < TableBet
 
   def initialize(table, number=nil)
     super
@@ -21,7 +21,7 @@ class ComeOddsBet < CrapsBet
     # 
     # come bet odds are off when the table is off
     #
-    state.off? ? OnStatus::OFF : OnStatus::ON
+    table_state.off? ? OnStatus::OFF : OnStatus::ON
   end
 
   def validate(player_bet, bet_amount)
@@ -37,14 +37,14 @@ class ComeOddsBet < CrapsBet
     # otherwise, if the player has it on, it wins when the number
     # is rolled and loses when a seven is rolled
     #
-    result = if state.off? && (dice.seven? || made_the_number?)
+    result = if table_state.off? && (dice.seven? || made_the_number?)
       update_return_stats
       Outcome::RETURN
     elsif player_bet.off?
       Outcome::NONE
     elsif made_the_number?
       Outcome::WIN
-    elsif state.seven_out?
+    elsif table_state.seven_out?
       Outcome::LOSE
     else
       Outcome::NONE
@@ -53,7 +53,7 @@ class ComeOddsBet < CrapsBet
   end
 
   def return_stat_name
-    @_rsn ||= stat_name('_returned')
+    @_rsn ||= stat_name('_ret')
   end
  
   def update_return_stats(player_bet)
@@ -62,6 +62,6 @@ class ComeOddsBet < CrapsBet
   end
 
   def self.gen_number_bets(table)
-    Table::POINTS.map {|number| ComeOddsBet.new(table, number)}
+    CrapsDice::POINTS.map {|number| ComeOddsBet.new(table, number)}
   end
 end

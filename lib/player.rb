@@ -3,10 +3,13 @@ require 'player_stats'
 class Player
   attr_reader   :name
   attr_reader   :bets
+  attr_reader   :stats
   attr_reader   :table
   attr_reader   :start_rail # amount started with
   attr_reader   :rail    # amount of money in rail
   attr_reader   :wagers  # amount of money bet
+
+  delegate :table_state, to: :table
 
   def initialize(name, table, amount)
     @bets = []
@@ -51,8 +54,8 @@ class Player
   def pass_odds_bet(amount=nil)
     pass_line_bet = find_bet(PassLineBet)
     raise "you don't have a pass line bet" if pass_line_bet.nil?
-    amt = amount || (pass_line_bet.amount * table.max_odds(table.point))
-    make_bet(PassOddsBet, amt, table.point)
+    amt = amount || (pass_line_bet.amount * table.max_odds(table_state.point))
+    make_bet(PassOddsBet, amt, table_state.point)
   end
 
   def come_bet(amount=table.max_bet)
@@ -76,11 +79,11 @@ class Player
   end
 
   def has_bet?(bet_class, number=nil)
-    bets.any? {|b| b.craps_bet.class == bet_class && b.number == number}
+    bets.any? {|b| b.table_bet.class == bet_class && b.number == number}
   end
 
   def find_bet(bet_class, number=nil)
-    bets.find {|b| b.craps_bet.class == bet_class && b.number == number}
+    bets.find {|b| b.table_bet.class == bet_class && b.number == number}
   end
 
   def rail_to_wagers(amount)

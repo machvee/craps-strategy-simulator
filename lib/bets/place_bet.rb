@@ -1,4 +1,4 @@
-class PlaceBet < CrapsBet
+class PlaceBet < TableBet
 
   def name
     "Place Bet #{number}"
@@ -13,7 +13,7 @@ class PlaceBet < CrapsBet
       Outcome::NONE
     elsif made_the_number?
       Outcome::WIN
-    elsif state.seven_out?
+    elsif table_state.seven_out?
       Outcome::LOSE
     else
       Outcome::NONE
@@ -22,6 +22,6 @@ class PlaceBet < CrapsBet
   end
 
   def self.gen_number_bets(table)
-    Table::POINTS.map {|number| PlaceBet.new(table, number)}
+    CrapsDice::POINTS.map {|number| PlaceBet.new(table, number)}
   end
 end

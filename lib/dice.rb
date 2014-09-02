@@ -46,7 +46,7 @@ class Dice
 
   def extract(options)
     # if options is an Array, remove die at those positions
-    new_dice = Dice.new(0)
+    new_dice = self.class.new(0)
     case options
       when Array
         sorted_indicies = options.sort

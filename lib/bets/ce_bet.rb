@@ -1,4 +1,4 @@
-class CeBet < CrapsBet
+class CeBet < TableBet
   def name
     "C&E Bet"
   end

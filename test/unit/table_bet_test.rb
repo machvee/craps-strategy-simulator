@@ -1,7 +1,7 @@
 require 'test_helper'
 
-class CrapsBetTest < Test::Unit::TestCase
-  class CoolBet < CrapsBet
+class TableBetTest < Test::Unit::TestCase
+  class CoolBet < TableBet
     def name
       "Cool Bet on #{number}"
     end
@@ -26,6 +26,8 @@ class CrapsBetTest < Test::Unit::TestCase
     @bet_stats.expects(:add).at_least_once
     @table.expects(:bet_stats).at_least_once.returns(@bet_stats)
     @cool_bet = CoolBet.new(@table, @number)
+    @made_stat_name = 'table_test/cool_2'
+    @won_stat_name = 'table_test/cool_2_won'
   end
 
   def test_cool_bet
@@ -37,8 +39,8 @@ class CrapsBetTest < Test::Unit::TestCase
   end
 
   def test_bet_follow_table
-    @cool_bet.expects(:table_on_status).twice.returns(CrapsBet::OnStatus::FOLLOW)
-    @table.expects(:state).at_least_once.returns(@state)
+    @cool_bet.expects(:table_on_status).twice.returns(TableBet::OnStatus::FOLLOW)
+    @table.expects(:table_state).at_least_once.returns(@state)
     @state.expects(:on?).returns(false).once
     assert !@cool_bet.on?, "bet should be off because table is off"
     @state.expects(:on?).returns(true).once
@@ -81,38 +83,38 @@ class CrapsBetTest < Test::Unit::TestCase
 
   def test_determine_outcome_with_player_bet_winning
     assert @cool_bet.player_bets.length == 0
-    @bet_stats.expects(:incr).with('craps_bet_test/cool_bet_2s_made').once
+    @bet_stats.expects(:incr).with(@made_stat_name).once
     player_bet = mock('player_bet')
-    player_bet.expects(:stat_incr).with('craps_bet_test/cool_bet_2s_made').once
+    player_bet.expects(:stat_incr).with(@made_stat_name).once
     @cool_bet.add_bet(player_bet)
     assert @cool_bet.player_bets.first.present?
     
     @table.expects(:win?).returns(true)
-    @bet_stats.expects(:occurred).with('craps_bet_test/cool_bet_2s_won').once
-    player_bet.expects(:stat_occurred).with('craps_bet_test/cool_bet_2s_won').once
+    @bet_stats.expects(:occurred).with(@won_stat_name).once
+    player_bet.expects(:stat_occurred).with(@won_stat_name).once
     @cool_bet.determine_outcome(player_bet)
   end
 
   def test_determine_outcome_with_player_bet_losing
     assert @cool_bet.player_bets.length == 0
-    @bet_stats.expects(:incr).with('craps_bet_test/cool_bet_2s_made').once
+    @bet_stats.expects(:incr).with(@made_stat_name).once
     player_bet = mock('player_bet')
-    player_bet.expects(:stat_incr).with('craps_bet_test/cool_bet_2s_made').once
+    player_bet.expects(:stat_incr).with(@made_stat_name).once
     @cool_bet.add_bet(player_bet)
     assert @cool_bet.player_bets.first.present?
     
     @table.expects(:lose?).returns(true)
     @table.expects(:win?).returns(false)
-    @bet_stats.expects(:did_not_occur).with('craps_bet_test/cool_bet_2s_won').once
-    player_bet.expects(:stat_did_not_occur).with('craps_bet_test/cool_bet_2s_won').once
+    @bet_stats.expects(:did_not_occur).with(@won_stat_name).once
+    player_bet.expects(:stat_did_not_occur).with(@won_stat_name).once
     @cool_bet.determine_outcome(player_bet)
   end
 
   def test_determine_outcome_with_player_bet_nothing_happened
     assert @cool_bet.player_bets.length == 0
-    @bet_stats.expects(:incr).with('craps_bet_test/cool_bet_2s_made').once
+    @bet_stats.expects(:incr).with(@made_stat_name).once
     player_bet = mock('player_bet')
-    player_bet.expects(:stat_incr).with('craps_bet_test/cool_bet_2s_made').once
+    player_bet.expects(:stat_incr).with(@made_stat_name).once
     @cool_bet.add_bet(player_bet)
     assert @cool_bet.player_bets.first.present?
     
@@ -128,7 +130,7 @@ class CrapsBetTest < Test::Unit::TestCase
   def test_validate_player_already_has_that_bet
     player_bet = mock('player_bet')
     player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(true).once
+    player.expects(:has_bet?).with(TableBetTest::CoolBet, @number).returns(true).once
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10
@@ -140,7 +142,7 @@ class CrapsBetTest < Test::Unit::TestCase
   def test_validate_player_must_bet_min_bet
     player_bet = mock('player_bet')
     player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(false).once
+    player.expects(:has_bet?).with(TableBetTest::CoolBet, @number).returns(false).once
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10
@@ -154,7 +156,7 @@ class CrapsBetTest < Test::Unit::TestCase
   def test_validate_player_must_bet_under_max_bet
     player_bet = mock('player_bet')
     player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(false).once
+    player.expects(:has_bet?).with(TableBetTest::CoolBet, @number).returns(false).once
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10
@@ -169,7 +171,7 @@ class CrapsBetTest < Test::Unit::TestCase
   def test_betting_multiple_not_a_multiple_of_for_every_payout
     player_bet = mock('player_bet')
     player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(false).once
+    player.expects(:has_bet?).with(TableBetTest::CoolBet, @number).returns(false).once
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10
@@ -187,7 +189,7 @@ class CrapsBetTest < Test::Unit::TestCase
   def test_all_validations_pass
     player_bet = mock('player_bet')
     player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(false).once
+    player.expects(:has_bet?).with(TableBetTest::CoolBet, @number).returns(false).once
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10

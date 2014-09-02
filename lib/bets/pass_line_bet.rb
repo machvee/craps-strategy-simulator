@@ -1,4 +1,4 @@
-class PassLineBet < CrapsBet
+class PassLineBet < TableBet
 
   FRONT_LINE_WINNER_STAT_NAME = 'front_line_winner'
   POINT_MADE_STAT_NAME = 'point_made'
@@ -19,20 +19,20 @@ class PassLineBet < CrapsBet
 
   def validate(player_bet, amount)
     super
-    raise "point must be off" if state.on?
+    raise "point must be off" if table_state.on?
   end
 
   def outcome(player_bet)
-    result = if state.front_line_winner? 
+    result = if table_state.front_line_winner? 
       update_front_line_winner_stats(player_bet)
       Outcome::WIN
-    elsif state.crapped_out?
+    elsif table_state.crapped_out?
       update_crapped_out_stats(player_bet)
       Outcome::LOSE
-    elsif state.point_made?
+    elsif table_state.point_made?
       update_point_made_stats(player_bet)
       Outcome::WIN
-    elsif state.seven_out?
+    elsif table_state.seven_out?
       update_seven_out_stats(player_bet)
       Outcome::LOSE
     else

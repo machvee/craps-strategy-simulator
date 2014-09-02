@@ -15,7 +15,7 @@ class PassLineBetTest < Test::Unit::TestCase
 
   def test_validate_all_succeed
     table_state = mock('table_state', on?: false)
-    @table.expects(:state).returns(table_state).at_least_once
+    @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
     make_base_validations_pass(player_bet)
     assert_nothing_raised do
@@ -24,8 +24,8 @@ class PassLineBetTest < Test::Unit::TestCase
   end
 
   def test_validate_fail_table_off
-    @table.expects(:state).returns(table_state).at_least_once
     table_state = mock('table_state', on?: true)
+    @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
     make_base_validations_pass(player_bet)
     assert_raises RuntimeError do
@@ -35,53 +35,53 @@ class PassLineBetTest < Test::Unit::TestCase
 
   def test_outcome_win_seven
     table_state = mock('table_state', front_line_winner?: true)
-    @table.expects(:state).returns(table_state).at_least_once
+    @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
-    stat_occurred(player_bet, 'pass_line_bets_won')
+    stat_occurred(player_bet, 'pass_line_won')
     stat_occurred(player_bet, PassLineBet::FRONT_LINE_WINNER_STAT_NAME)
 
-    assert_equal CrapsBet::Outcome::WIN, @bet.determine_outcome(player_bet)
+    assert_equal TableBet::Outcome::WIN, @bet.determine_outcome(player_bet)
   end
 
   def test_outcome_lose_crapped_out
     table_state = mock('table_state', front_line_winner?: false, crapped_out?: true)
-    @table.expects(:state).returns(table_state).at_least_once
+    @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
-    stat_occurred(player_bet, 'pass_line_bets_won', false)
+    stat_occurred(player_bet, 'pass_line_won', false)
     stat_occurred(player_bet, PassLineBet::FRONT_LINE_WINNER_STAT_NAME, false)
 
-    assert_equal CrapsBet::Outcome::LOSE, @bet.determine_outcome(player_bet)
+    assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome(player_bet)
   end
 
   def test_outcome_win_point_made
     table_state = mock('table_state',
       front_line_winner?: false, crapped_out?: false, point_made?: true)
-    @table.expects(:state).returns(table_state).at_least_once
+    @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
-    stat_occurred(player_bet, 'pass_line_bets_won')
+    stat_occurred(player_bet, 'pass_line_won')
     stat_occurred(player_bet, PassLineBet::POINT_MADE_STAT_NAME)
 
-    assert_equal CrapsBet::Outcome::WIN, @bet.determine_outcome(player_bet)
+    assert_equal TableBet::Outcome::WIN, @bet.determine_outcome(player_bet)
   end
 
   def test_outcome_lose_seven_out
     table_state = mock('table_state',
       front_line_winner?: false, crapped_out?: false, point_made?: false, seven_out?: true)
-    @table.expects(:state).returns(table_state).at_least_once
+    @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
-    stat_occurred(player_bet, 'pass_line_bets_won', false)
+    stat_occurred(player_bet, 'pass_line_won', false)
     stat_occurred(player_bet, PassLineBet::POINT_MADE_STAT_NAME, false)
 
-    assert_equal CrapsBet::Outcome::LOSE, @bet.determine_outcome(player_bet)
+    assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome(player_bet)
   end
 
   def test_outcome_no_outcome
     table_state = mock('table_state',
       front_line_winner?: false, crapped_out?: false, point_made?: false, seven_out?: false)
-    @table.expects(:state).returns(table_state).at_least_once
+    @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
 
-    assert_equal CrapsBet::Outcome::NONE, @bet.determine_outcome(player_bet)
+    assert_equal TableBet::Outcome::NONE, @bet.determine_outcome(player_bet)
   end
 
   def mock_bet_stats

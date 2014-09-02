@@ -22,7 +22,7 @@ class DiceTray
     # if no offsets are provided (e.g. [0,3]), then dice are taken
     # from random offset
     #
-    raise "dice are out" unless tray.length == num_dice_in_tray
+    raise "dice are out" unless tray.count == @num_dice
     raise "take any #{NUM_SHOOTER_DIE} dice" if \
       offsets.length != NUM_SHOOTER_DIE unless offsets.nil?
     tray.extract(offsets||random_tray_offsets)

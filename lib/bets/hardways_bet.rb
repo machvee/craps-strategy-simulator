@@ -1,4 +1,4 @@
-class HardwaysBet < CrapsBet
+class HardwaysBet < TableBet
 
   def name
     "Hardways Bet #{number}"

@@ -1,4 +1,4 @@
-class PassOddsBet < CrapsBet
+class PassOddsBet < TableBet
 
   def name
     "Pass Line Odds Bet #{number}"
@@ -18,7 +18,7 @@ class PassOddsBet < CrapsBet
 
   def validate(player_bet, amount)
     super
-    raise "point must be established" unless state.on?
+    raise "point must be established" unless table_state.on?
     raise "you must have a Pass Line Bet" unless player_bet.player.has_bet?(PassLineBet)
   end
 
@@ -36,6 +36,6 @@ class PassOddsBet < CrapsBet
   end
 
   def self.gen_number_bets(table)
-    Table::POINTS.map {|number| PassOddsBet.new(table, number)}
+    CrapsDice::POINTS.map {|number| PassOddsBet.new(table, number)}
   end
 end

@@ -1,4 +1,4 @@
-class ComeBet < CrapsBet
+class ComeBet < TableBet
   def name
     "Come Bet on #{number}"
   end
@@ -23,6 +23,6 @@ class ComeBet < CrapsBet
   end
 
   def self.gen_number_bets(table)
-    Table::POINTS.map {|number| ComeBet.new(table, number)}
+    CrapsDice::POINTS.map {|number| ComeBet.new(table, number)}
   end
 end

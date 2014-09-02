@@ -1,4 +1,5 @@
 class Shooter
+  attr_reader   :table
   attr_reader   :player
   attr_reader   :last_shooter
   attr_accessor :dice
@@ -8,6 +9,7 @@ class Shooter
 
   def initialize(table)
     @table = table
+    no_shooter
     @roll_stats = RollStats.new("dice", table)
   end
 
@@ -18,7 +20,7 @@ class Shooter
     # if last_shooter is nil or at end of players array
     #
     return unless player.nil?
-    if !players_ready?
+    if !table.players_ready?
       @last_shooter = @player = nil
       raise "there are no players"
     else
@@ -49,7 +51,15 @@ class Shooter
   def return_dice
     raise "no shooter" if dice.nil?
     dice_tray.return(dice)
-    @dice = nil
+    no_shooter
+  end
+
+  def reset_stats
+    roll_stats.reset
+  end
+
+  def no_shooter
+    @player = nil
   end
 
 end

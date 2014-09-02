@@ -13,7 +13,7 @@ class OccurrenceStat
   OCCURRED=true
   DID_NOT_OCCUR=!OCCURRED
 
-  REPORT_FORMATTER= "%14s   %7s / %7s      %7s / %7s"
+  REPORT_FORMATTER= "%20s   %7s / %7s      %7s / %7s"
 
   def initialize(name, not_occurred_condition = Proc.new {true}, &occurred_condition)
     @name = name

@@ -1,4 +1,4 @@
-class FieldBet < CrapsBet
+class FieldBet < TableBet
 
   SPECIAL_STAT_NUMBERS=[2,12]
   STAT_NAME_HASH = Hash.new {|h,k| h[k] = 'field_%d_win' % k}
@@ -6,7 +6,7 @@ class FieldBet < CrapsBet
   def initialize(table, number=nil)
     super
     bet_stats.add SPECIAL_STAT_NUMBERS.map { |v|
-      OccurrenceState.new(STAT_NAME_HASH[v], Proc.new {dice.fields?}) {dice.rolled?(v)}
+      OccurrenceStat.new(STAT_NAME_HASH[v], Proc.new {dice.fields?}) {dice.rolled?(v)}
     }
   end
 

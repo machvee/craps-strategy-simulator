@@ -5,7 +5,7 @@ class TableState
 
   delegate :dice, to: :table
 
-  def initializer(table)
+  def initialize(table)
     @table = table
     table_off
   end
@@ -45,7 +45,7 @@ class TableState
   end
 
   def off?
-    on_off
+    !on?
   end
 
   def point_established?(value=nil)
