@@ -26,8 +26,7 @@ class TableBetTest < Test::Unit::TestCase
     @bet_stats.expects(:add).at_least_once
     @table.expects(:bet_stats).at_least_once.returns(@bet_stats)
     @cool_bet = CoolBet.new(@table, @number)
-    @made_stat_name = 'table_test/cool_2'
-    @won_stat_name = 'table_test/cool_2_won'
+    @won_stat_name = 'table_test/cool_2'
   end
 
   def test_cool_bet
@@ -63,18 +62,14 @@ class TableBetTest < Test::Unit::TestCase
 
   def test_add_player_bet
     assert @cool_bet.player_bets.length == 0
-    @bet_stats.expects(:incr).once
     player_bet = mock('player_bet')
-    player_bet.expects(:stat_incr).once
     @cool_bet.add_bet(player_bet)
     assert @cool_bet.player_bets.first.present?
   end
 
   def test_remove_player_bet
     assert_equal 0, @cool_bet.player_bets.length
-    @bet_stats.expects(:incr).once
     player_bet = mock('player_bet')
-    player_bet.expects(:stat_incr).once
     @cool_bet.add_bet(player_bet)
     assert @cool_bet.player_bets.first.present?
     @cool_bet.remove_bet(player_bet)
@@ -83,9 +78,7 @@ class TableBetTest < Test::Unit::TestCase
 
   def test_determine_outcome_with_player_bet_winning
     assert @cool_bet.player_bets.length == 0
-    @bet_stats.expects(:incr).with(@made_stat_name).once
     player_bet = mock('player_bet')
-    player_bet.expects(:stat_incr).with(@made_stat_name).once
     @cool_bet.add_bet(player_bet)
     assert @cool_bet.player_bets.first.present?
     
@@ -97,9 +90,7 @@ class TableBetTest < Test::Unit::TestCase
 
   def test_determine_outcome_with_player_bet_losing
     assert @cool_bet.player_bets.length == 0
-    @bet_stats.expects(:incr).with(@made_stat_name).once
     player_bet = mock('player_bet')
-    player_bet.expects(:stat_incr).with(@made_stat_name).once
     @cool_bet.add_bet(player_bet)
     assert @cool_bet.player_bets.first.present?
     
@@ -112,9 +103,7 @@ class TableBetTest < Test::Unit::TestCase
 
   def test_determine_outcome_with_player_bet_nothing_happened
     assert @cool_bet.player_bets.length == 0
-    @bet_stats.expects(:incr).with(@made_stat_name).once
     player_bet = mock('player_bet')
-    player_bet.expects(:stat_incr).with(@made_stat_name).once
     @cool_bet.add_bet(player_bet)
     assert @cool_bet.player_bets.first.present?
     

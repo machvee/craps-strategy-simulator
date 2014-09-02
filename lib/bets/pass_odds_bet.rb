@@ -25,9 +25,9 @@ class PassOddsBet < TableBet
   def outcome(player_bet)
     result = if player_bet.off?
       Outcome::NONE
-    elsif table.point_made?
+    elsif table_state.point_made?
       Outcome::WIN
-    elsif table.seven_out?
+    elsif table_state.seven_out?
       Outcome::LOSE
     else
       Outcome::NONE

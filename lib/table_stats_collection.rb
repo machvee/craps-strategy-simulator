@@ -22,9 +22,9 @@ class TableStatsCollection
     return
   end
 
-  def print
+  def print(occurrence_header_options={})
     puts table_print_header
-    puts OccurrenceStat.print_header
+    puts OccurrenceStat.print_header(occurrence_header_options)
     stats.each do |stat|
       puts stat
     end

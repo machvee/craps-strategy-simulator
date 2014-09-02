@@ -4,6 +4,7 @@ class OccurrenceStat
   # times a condition evalutes to true and to false
   #
   attr_reader  :name
+  attr_reader  :master_count # number of times either occurred or did_not_occur
   attr_reader  :max_consecs
   attr_reader  :total_counts
   attr_reader  :running_totals
@@ -13,7 +14,7 @@ class OccurrenceStat
   OCCURRED=true
   DID_NOT_OCCUR=!OCCURRED
 
-  REPORT_FORMATTER= "%20s   %7s / %7s      %7s / %7s"
+  REPORT_FORMATTER= "%20s    %10s      %10s / %10s      %10s / %10s"
 
   def initialize(name, not_occurred_condition = Proc.new {true}, &occurred_condition)
     @name = name
@@ -48,6 +49,7 @@ class OccurrenceStat
   end
 
   def bump(occurrence)
+    @master_count += 1
     total_counts[occurrence] += 1
     running_totals[occurrence] += 1
     running_totals[!occurrence] = 0
@@ -81,6 +83,7 @@ class OccurrenceStat
   end
 
   def reset
+    @master_count = 0
     @max_consecs = counter
     @total_counts = counter
     @running_totals = counter
@@ -88,15 +91,39 @@ class OccurrenceStat
   end
 
   def to_s
-    REPORT_FORMATTER % [name,total,max,total(DID_NOT_OCCUR), max(DID_NOT_OCCUR)]
+    REPORT_FORMATTER % [
+      name,
+      master_count,
+      total_occurred,
+      max_consec_occurred,
+      total_did_not_occur, 
+      max_consec_did_not_occur
+    ]
   end
 
   def inspect
     to_s
   end
 
-  def self.print_header
-    REPORT_FORMATTER % ["name", "occurred", "consec", "not", "consec"]
+  DEFAULT_COLUMN_LABELS = {
+    name: 'name',
+    master_count: 'total',
+    occurred: 'occurred',
+    consec_occurred: 'consec',
+    did_not_occur: 'not',
+    consec_did_not_occur: 'consec'
+  }
+
+  def self.print_header(options={})
+    column_labels = DEFAULT_COLUMN_LABELS.merge(options)
+    REPORT_FORMATTER % [
+      column_labels[:name],
+      column_labels[:master_count],
+      column_labels[:occurred],
+      column_labels[:consec_occurred],
+      column_labels[:did_not_occur],
+      column_labels[:consec_did_not_occur]
+    ]
   end
 
   private

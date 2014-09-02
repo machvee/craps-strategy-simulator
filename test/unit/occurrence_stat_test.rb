@@ -66,7 +66,7 @@ class OccurrenceStatTest < Test::Unit::TestCase
      s = OccurrenceStat.new(@name) {@val == 'red'}
      assert_match %r{#@name.*0 */ *0 *0 */ *0}, s.to_s
      vals.each {|v| @val = v; s.update}
-     assert_match %r{#@name *#{red_count} */ *3 *#{not_red_count} */ *5}, s.to_s
+     assert_match %r{#@name *#{red_count + not_red_count} *#{red_count} */ *3 *#{not_red_count} */ *5}, s.to_s
   end
 
   def test_inspect_calls_to_s
@@ -80,6 +80,7 @@ class OccurrenceStatTest < Test::Unit::TestCase
   end
 
   def assert_counts?(s, otot, dnotot, omax, dnomax)
+    assert_equal otot+dnotot, s.master_count
     assert_equal otot, s.total
     assert_equal otot, s.total(OccurrenceStat::OCCURRED)
     assert_equal dnotot, s.total(OccurrenceStat::DID_NOT_OCCUR)

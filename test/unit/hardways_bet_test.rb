@@ -7,7 +7,7 @@ class HardwaysBetTest < Test::Unit::TestCase
     @bet_stats = mock_bet_stats
     @table.expects(:bet_stats).at_least_once.returns(@bet_stats)
     @bet = HardwaysBet.new(@table, @number)
-    @won_stat_name = 'hardways_%d_won' % @number
+    @won_stat_name = 'hardways_%d' % @number
   end
 
   def test_base_attrs

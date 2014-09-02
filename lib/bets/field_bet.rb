@@ -1,7 +1,7 @@
 class FieldBet < TableBet
 
   SPECIAL_STAT_NUMBERS=[2,12]
-  STAT_NAME_HASH = Hash.new {|h,k| h[k] = 'field_%d_win' % k}
+  STAT_NAME_HASH = Hash.new {|h,k| h[k] = 'field_%d' % k}
 
   def initialize(table, number=nil)
     super

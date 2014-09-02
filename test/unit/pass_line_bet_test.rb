@@ -37,7 +37,7 @@ class PassLineBetTest < Test::Unit::TestCase
     table_state = mock('table_state', front_line_winner?: true)
     @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
-    stat_occurred(player_bet, 'pass_line_won')
+    stat_occurred(player_bet, 'pass_line')
     stat_occurred(player_bet, PassLineBet::FRONT_LINE_WINNER_STAT_NAME)
 
     assert_equal TableBet::Outcome::WIN, @bet.determine_outcome(player_bet)
@@ -47,7 +47,7 @@ class PassLineBetTest < Test::Unit::TestCase
     table_state = mock('table_state', front_line_winner?: false, crapped_out?: true)
     @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
-    stat_occurred(player_bet, 'pass_line_won', false)
+    stat_occurred(player_bet, 'pass_line', false)
     stat_occurred(player_bet, PassLineBet::FRONT_LINE_WINNER_STAT_NAME, false)
 
     assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome(player_bet)
@@ -58,7 +58,7 @@ class PassLineBetTest < Test::Unit::TestCase
       front_line_winner?: false, crapped_out?: false, point_made?: true)
     @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
-    stat_occurred(player_bet, 'pass_line_won')
+    stat_occurred(player_bet, 'pass_line')
     stat_occurred(player_bet, PassLineBet::POINT_MADE_STAT_NAME)
 
     assert_equal TableBet::Outcome::WIN, @bet.determine_outcome(player_bet)
@@ -69,7 +69,7 @@ class PassLineBetTest < Test::Unit::TestCase
       front_line_winner?: false, crapped_out?: false, point_made?: false, seven_out?: true)
     @table.expects(:table_state).returns(table_state).at_least_once
     player_bet = mock('player_bet')
-    stat_occurred(player_bet, 'pass_line_won', false)
+    stat_occurred(player_bet, 'pass_line', false)
     stat_occurred(player_bet, PassLineBet::POINT_MADE_STAT_NAME, false)
 
     assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome(player_bet)
@@ -86,7 +86,7 @@ class PassLineBetTest < Test::Unit::TestCase
 
   def mock_bet_stats
     bet_stats = mock('bet_stats')
-    bet_stats.expects(:add).times(4)
+    bet_stats.expects(:add).times(3)
     bet_stats
   end
 

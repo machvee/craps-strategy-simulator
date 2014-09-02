@@ -22,13 +22,11 @@ class TableBet
     @table = table
     @number = number
     @player_bets = []
-    bet_stats.add OccurrenceStat.new(made_stat_name)
     bet_stats.add OccurrenceStat.new(win_stat_name)
   end
 
   def add_bet(player_bet)
     player_bets << player_bet
-    made_stat_update(player_bet)
   end
 
   def remove_bet(player_bet)
@@ -134,20 +132,11 @@ class TableBet
     player_bet.stat_did_not_occur(win_stat_name)
   end
 
-  def made_stat_update(player_bet)
-    bet_stats.incr(made_stat_name)
-    player_bet.stat_incr(made_stat_name)
-  end
-
-  def made_stat_name
-    @_msn ||= stat_name('')
-  end
-
   def win_stat_name
-    @_wsn ||= stat_name('_won')
+    @_wsn ||= stat_name
   end
 
-  def stat_name(suffix)
+  def stat_name(suffix='')
     bet_class_name = self.class.name.underscore.gsub(/_bet/,'')
     number_part_if_any = number.nil? ? '' : "_#{number}"
     s_name = bet_class_name + number_part_if_any + suffix

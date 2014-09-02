@@ -20,6 +20,15 @@ class Table
     quiet_table: false
   }
 
+  BET_STATS_HEADERS = {
+    master_count: 'total',
+    occurred: 'won',
+    consec_occurred: 'consec won',
+    did_not_occur: 'lost',
+    consec_did_not_occur: 'consec lost'
+  }
+
+
   def initialize(name="craps table", options = DEFAULT_OPTIONS)
     @name = name
     @config = options[:config]
@@ -201,10 +210,10 @@ class Table
 
   def inspect
     puts name unless name.nil?
-    puts "ON (point is #{point})" if on? 
+    puts "ON (point is #{table_state.point})" if on? 
     puts "OFF" if off? 
     puts "total rolls: #{shooter.roll_stats.total_rolls}\n"
-    bet_stats.print
+    bet_stats.print(BET_STATS_HEADERS)
   end
 
   private
