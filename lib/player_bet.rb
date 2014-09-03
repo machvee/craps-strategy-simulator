@@ -1,10 +1,11 @@
 class PlayerBet
-  attr_reader :name
-  attr_reader :number
-  attr_reader :amount
-  attr_reader :player
-  attr_reader :table_bet
-  attr_reader :bet_off
+  attr_reader   :name
+  attr_reader   :number
+  attr_reader   :amount
+  attr_reader   :player
+  attr_reader   :table_bet
+  attr_reader   :bet_off
+  attr_accessor :remove
 
   delegate :table, to: :player
 
@@ -13,6 +14,7 @@ class PlayerBet
     @amount = amount
     @number = number
     @table_bet = find_table_bet(bet_class, number)
+    @remove = false # used to clear losing bets at end of settling bets
     table_bet.validate(self, amount)
     table_bet.add_bet(self)
     set_bet_on

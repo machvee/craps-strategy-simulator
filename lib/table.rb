@@ -119,43 +119,23 @@ class Table
 
   def settle_bets
     all_bets do |player_bet|
-      player = player_bet.player
-      table_bet = player_bet.table_bet
 
-      outcome = player_bet.determine_outcome
+      case player_bet.determine_outcome
 
-      case outcome
         when TableBet::Outcome::RETURN
-          #
-          # 1. player moves bet amount from wagers to rail
-          # 2. player removes bet
-          #
-          player.wagers_to_rail(player_bet.amount)
-          player.remove_bet(player_bet)
-          status "#{player.name} returned #{player_bet.amount} for #{player_bet}"
+          return_was_off(player_bet)
+
         when TableBet::Outcome::WIN
-          #
-          # 1. table credits player rails with winnings amount
-          # 2. bet stays in place
-          #
-          pay_this, for_every = config.payoff_odds(table_bet, player_bet.number)
-          winnings = (player_bet.amount/for_every) * pay_this
-          debit(winnings)
-          player.to_rail(winnings)
-          status "#{player.name} wins $#{winnings} on #{player_bet}"
-          player.take_down(player_bet) unless table_bet.bet_remains_after_win?
+          pay_winning(player_bet)
+
         when TableBet::Outcome::LOSE
-          #
-          # table takes bet amount from player's wagers to house
-          # player removes bet
-          #
-          credit(player_bet.amount)
-          player.loses(player_bet)
-          status "#{player.name} loses $#{player_bet.amount} on #{player_bet}"
+          take_losing(player_bet)
+
         when TableBet::Outcome::NONE
           # bet stays in place
       end
     end
+    remove_marked_bets
   end
 
   def at_least_one_bet_made?
@@ -175,12 +155,12 @@ class Table
     bet_stats.reset
   end
 
-  def credit(amount)
+  def house_credit(amount)
     # the sound of a player losing a bet
     @house += amount
   end
 
-  def debit(amount)
+  def house_debit(amount)
     @house -= amount
   end
 
@@ -217,6 +197,51 @@ class Table
   end
 
   private
+
+  def remove_marked_bets
+    players.each do |player|
+      player.remove_marked_bets
+    end
+  end
+
+  def return_was_off(player_bet)
+    player = player_bet.player
+    player.take_down(player_bet)
+    status "#{player.name} returned #{player_bet.amount} for #{player_bet}"
+  end
+
+  def pay_winning(player_bet)
+    #
+    # table credits player rail with winning amount
+    #
+    player = player_bet.player
+    table_bet = player_bet.table_bet
+    pay_this, for_every = config.payoff_odds(table_bet, player_bet.number)
+    winnings = (player_bet.amount/for_every) * pay_this
+
+    house_debit(winnings)
+    player.to_rail(winnings)
+
+    status "#{player.name} wins $#{winnings} on #{player_bet}"
+    player.take_down(player_bet) unless table_bet.bet_remains_after_win?
+  end
+
+  def take_losing(player_bet)
+    #
+    # table takes bet amount from player's wagers to house
+    # player removes bet
+    #
+    player = player_bet.player
+
+    #
+    # take from players wagers on the table and move to the house bank
+    #
+    player.from_wagers(player_bet.amount)
+    house_credit(player_bet.amount)
+
+    status "#{player.name} loses $#{player_bet.amount} on #{player_bet}"
+    player.remove_bet(player_bet)
+  end
 
   def create_table_bets
     @table_bets = []

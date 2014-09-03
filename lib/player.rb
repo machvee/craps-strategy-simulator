@@ -112,14 +112,17 @@ class Player
     remove_bet(bet)
   end
 
-  def loses(bet)
-    from_wagers(bet.amount)
-    remove_bet(bet)
+  def remove_bet(bet)
+    bet.remove_from_table # removes from table_bet square
+    bet.remove = true     # delays removal from player's array of bets to not break iterators
   end
 
-  def remove_bet(bet)
-    bet.remove_from_table
-    bets.delete(bet)
+  def remove_marked_bets
+    #
+    # because we can't delete bets from the bet array while iterating over them,
+    # we delete bets marked as remove here
+    #
+    bets.delete_if {|b| b.remove}
   end
 
   def out?
