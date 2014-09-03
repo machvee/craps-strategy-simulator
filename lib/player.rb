@@ -39,16 +39,16 @@ class Player
     rail_to_wagers(amount)
   end
 
-  def pass_line_bet(amount=table.max_bet)
-    make_bet(PassLineBet, amount)
-  end
-
   def pl
     make_bet(PassLineBet, table.min_bet)
   end
 
   def po
     pass_odds_bet
+  end
+
+  def pass_line_bet(amount=table.max_bet)
+    make_bet(PassLineBet, amount)
   end
 
   def pass_odds_bet(amount=nil)
@@ -63,19 +63,25 @@ class Player
   end
 
   def come_odds_bet(number, amount=table.max_bet)
-    make_bet(ComeOutBet, number, amount)
+    make_bet(ComeOutBet, amount, number)
   end
 
   def place_bet(number, amount=table.max_bet)
-    make_bet(PlaceBet, number, amount)
+    make_bet(PlaceBet, amount, number)
   end
 
   def hardways_bet(number, amount=table.max_bet)
-    make_bet(HardwaysBet, number, amount)
+    make_bet(HardwaysBet, amount, number)
   end
 
   def ce_bet(amount=table.max_bet)
     make_bet(CeBet, amount)
+  end
+
+  def take_down(bet_class, number=nil)
+    bet = find_bet(bet_class, number)
+    raise("you don't have a #{bet_class.name}%s" % (number.present? ? " on #{number}" : "")) if bet.nil?
+    take_down(bet)
   end
 
   def has_bet?(bet_class, number=nil)
