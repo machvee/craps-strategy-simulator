@@ -21,7 +21,7 @@ class DiceTray
     raise "dice are out" unless tray.count == @num_dice
     raise "take any #{NUM_SHOOTER_DIE} dice" if \
       offsets.length != NUM_SHOOTER_DIE unless offsets.nil?
-    offsets.blank? ? tray.extract_random(NUM_SHOOTER_DIE) : tray.extract(offsets)
+    offsets.nil? ? tray.extract(NUM_SHOOTER_DIE) : tray.extract(offsets)
   end
 
   def return_dice(dice)

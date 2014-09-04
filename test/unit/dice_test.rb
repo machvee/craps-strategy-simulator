@@ -36,11 +36,12 @@ class DiceTest < Test::Unit::TestCase
     @new_dice[1].value == v5
   end
 
-  def test_extract_one_amount
-    v0 = @dice[0].value
-    @new_dice = @dice.extract(1)
-    @new_dice[0].value == v0
-    assert_equal 5, @dice.count
+  def test_extract_two_die_at_random
+    @new_dice = @dice.extract(2)
+    assert_equal 4, @dice.count
+    assert_equal 2, @new_dice.count
+    @new_dice.roll
+    assert @new_dice.value > 0
   end
 
   def test_join_dice

@@ -1,15 +1,7 @@
 class PropositionBet < TableBet
-  PROPOSITION_BETS = [
-      AceDeuce,
-      Aces,
-      AnyCraps,
-      AnySeven,
-      Eleven,
-      Twelve
-  ]
 
   def name
-    self.class.name.titleize + " Bet"
+    self.class.name.titleize
   end
 
   def min_bet
@@ -27,10 +19,6 @@ class PropositionBet < TableBet
       Outcome::LOSE
     end
     result
-  end
-
-  def self.gen_bets(table)
-    PROPOSITION_BETS.map { |bet_class| bet_class.new(table) } 
   end
 
 end

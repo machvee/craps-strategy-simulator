@@ -41,13 +41,17 @@ class Player
     rail_to_wagers(amount)
   end
 
-  [PassLineBet, ComeBet, FieldBet, CeBet, *PropositionBet::PROPOSITION_BETS].each do |no_number_bet|
+  #
+  # gen named methods for the player to make table bets
+  # (skip PassOddsBet, we have a special convenience method for it)
+  #
+  Table::NO_NUMBER_BETS.each do |no_number_bet|
     define_method(no_number_bet.name.underscore) do |amount=nil|
       make_bet(no_number_bet, amount)
     end
   end
 
-  [ComeOddsBet, ComeOutBet, PlaceBet, HardwaysBet].each do |number_bet|
+  Table::NUMBER_BETS.reject {|b| b == PassOddsBet}.each do |number_bet|
     define_method(number_bet.name.underscore) do |number, amount=nil|
       make_bet(number_bet, amount, number)
     end

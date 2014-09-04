@@ -4,7 +4,7 @@ class DefaultSeeder
 
   VERY_BIG_NUMBER=211308946028030853166801005918724002264
 
-  attr_reader :seeder
+  attr_reader :prng
 
   def initialize(opt_seed=nil)
     # pass in an optional seed argument to guarantee
@@ -13,11 +13,11 @@ class DefaultSeeder
     # strategy to strategy).  Pass no seed argument to ensure
     # that the Dice will have a 'psuedo-random' roll sequence 
     #
-    @seeder = Random.new(opt_seed||Random.new_seed)
+    @prng = Random.new(opt_seed||Random.new_seed)
   end
 
   def rand
-    seeder.rand(VERY_BIG_NUMBER)
+    prng.rand(VERY_BIG_NUMBER)
   end
 end
 
@@ -45,30 +45,23 @@ class Dice
     set.length * Die::SIDES
   end
 
-  def extract_random(number_of_dice)
-    offsets = [*0..(count-1)].shuffle(random: Random.new(@seeder.rand))[0,number_of_dice]
-    extract(offsets)
-  end
-
-  def extract(options)
-    # if options is an Array, remove die at those positions
-    new_dice = self.class.new(0)
-    case options
-      when Array
-        sorted_indicies = options.sort
-        sorted_indicies.each_with_index do |i,ind|
-          new_dice.add(self.remove(i-ind))
-        end
-      when Fixnum
-        # options should be a Fixnum.  remove that many die
-        raise "cannot remove #{options} die because only #{count} remain" if options > self.count
-        options.times do
-          new_dice.add(self.remove)
-        end
-      else
-        raise "invalid argument to extract"
+  def extract(arg)
+    offsets = if arg.is_a? Fixnum
+      raise "cannot remove #{arg} die because only #{count} remain" if arg > self.count
+      random_offsets(arg)
+    elsif arg.is_a? Array
+      raise "only #{count} die remain in dice" if arg.length > count
+      arg
+    else
+      raise "invalid argument to extract"
     end
-    new_dice
+
+    self.class.new(0).tap do |new_dice|
+      sorted_indicies = offsets.sort
+      sorted_indicies.each_with_index do |i,ind|
+        new_dice.add(self.remove(i-ind))
+      end
+    end
   end
 
   def join(other_dice)
@@ -153,5 +146,10 @@ class Dice
       i += n
     end
   end
+
+  def random_offsets(number_of_dice)
+    [*0..(count-1)].shuffle(random: Random.new(@seeder.rand))[0,number_of_dice]
+  end
+
 
 end

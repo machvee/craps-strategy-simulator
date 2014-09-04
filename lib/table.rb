@@ -14,6 +14,27 @@ class Table
   delegate :dice, to: :shooter
   delegate :min_bet, :max_bet, to: :config
 
+  NO_NUMBER_BETS = [
+    AceDeuceBet,
+    AcesBet,
+    AnyCrapsBet,
+    AnySevenBet,
+    CeBet,
+    ComeOutBet,
+    ElevenBet,
+    FieldBet,
+    PassLineBet,
+    TwelveBet
+  ]
+
+  NUMBER_BETS = [
+    ComeBet,
+    ComeOddsBet,
+    HardwaysBet,
+    PassOddsBet,
+    PlaceBet
+  ]
+
   DEFAULT_OPTIONS = {
     config:      TableConfig.new,
     die_seeder:  nil,
@@ -246,13 +267,13 @@ class Table
 
   def create_table_bets
     @table_bets = []
-    TableBet::STRAIGHT_BETS.each do |bet_class|
+    NO_NUMBER_BETS.each do |bet_class|
       @table_bets << bet_class.new(self)
     end
-    TableBet::NUMBER_BETS.each do |bet_class|
+
+    NUMBER_BETS.each do |bet_class|
       @table_bets += bet_class.gen_number_bets(self)
     end
-    @table_bets += PropositionBet.gen_bets(self)
   end
 
   def quietly?(option)

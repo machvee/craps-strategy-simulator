@@ -5,21 +5,6 @@ class TableBet
 
   delegate :dice, :config, :table_state, :bet_stats,  to: :table
 
-  NUMBER_BETS = [
-    ComeBet,
-    ComeOddsBet,
-    HardwaysBet,
-    PassOddsBet,
-    PlaceBet
-  ]
-
-  STRAIGHT_BETS = [
-    PassLineBet,
-    ComeOutBet,
-    CeBet,
-    FieldBet
-  ]
-
   module Outcome
     WIN=1    # player gets payoff
     LOSE=2   # house gets money
@@ -68,7 +53,8 @@ class TableBet
   end
 
   def bet_remains_after_win?
-    true # convenience to keep bets going, but can be overridden with false (e.g. ComeBet, ComeOdds,etc)
+    true # convenience to keep bets going, but can be overridden with false
+         # (e.g. ComeBet, ComeOdds,etc)
   end
 
   def player_can_set_off?
@@ -78,7 +64,8 @@ class TableBet
 
   def table_on_status
     # default, bet is always on from the table rules
-    # perspective, but can be overridden as FOLLOW to follow table.on/off? (e.g. PlaceBet, Hardways)
+    # perspective, but can be overridden as FOLLOW to follow table.on/off?
+    # (e.g. PlaceBet, Hardways)
     OnStatus::ON
   end
 
