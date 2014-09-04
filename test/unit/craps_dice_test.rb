@@ -103,7 +103,7 @@ class CrapsDiceTest < Test::Unit::TestCase
   end
 
   def seeder
-    DefaultDieSeeder.new(11299264293323345443354711128)
+    DefaultSeeder.new(11299264293323345443354711128)
   end
 
 end

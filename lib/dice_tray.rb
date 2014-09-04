@@ -18,14 +18,10 @@ class DiceTray
   end
 
   def take_dice(offsets=nil)
-    #
-    # if no offsets are provided (e.g. [0,3]), then dice are taken
-    # from random offset
-    #
     raise "dice are out" unless tray.count == @num_dice
     raise "take any #{NUM_SHOOTER_DIE} dice" if \
       offsets.length != NUM_SHOOTER_DIE unless offsets.nil?
-    tray.extract(offsets||random_tray_offsets)
+    offsets.blank? ? tray.extract_random(NUM_SHOOTER_DIE) : tray.extract(offsets)
   end
 
   def return_dice(dice)
@@ -34,12 +30,6 @@ class DiceTray
 
   def dice_value_range
     @dvr ||= metadice.value_range
-  end
-
-  private
-
-  def random_tray_offsets
-    [*0..(num_dice-1)].shuffle[0,NUM_SHOOTER_DIE]
   end
 
 end

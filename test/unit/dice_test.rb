@@ -68,8 +68,8 @@ class DiceTest < Test::Unit::TestCase
   end
 
   def test_same
-    d1 = Dice.new(1, DefaultDieSeeder.new(9999))
-    d2 = Dice.new(1, DefaultDieSeeder.new(9999))
+    d1 = Dice.new(1, DefaultSeeder.new(9999))
+    d2 = Dice.new(1, DefaultSeeder.new(9999))
     d1.roll
     d2.roll
     d2.join(d1)
@@ -82,14 +82,14 @@ class DiceTest < Test::Unit::TestCase
   end
 
   def test_gather
-    d1 = Dice.new(2, DefaultDieSeeder.new(838338))
-    d2 = Dice.new(2, DefaultDieSeeder.new(838338))
+    d1 = Dice.new(2, DefaultSeeder.new(838338))
+    d2 = Dice.new(2, DefaultSeeder.new(838338))
     a = []
     100.times {a << d1.roll}
     assert_equal a, d2.gather(100), "didn't gather same dice"
   end
 
   def seeder
-    DefaultDieSeeder.new(74199164493423645483384711128)
+    DefaultSeeder.new(74199164493423645483384711128)
   end
 end

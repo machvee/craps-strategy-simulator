@@ -3,7 +3,7 @@ require 'test_helper'
 class RollStatsTest < Test::Unit::TestCase
   def setup
     @num_rolls = 397
-    @d = Dice.new(2, DefaultDieSeeder.new(29293939))   # same roll sequence every time
+    @d = Dice.new(2, DefaultSeeder.new(29293939))   # same roll sequence every time
     @dice_values = @d.gather(@num_rolls) # array of @num_rolls rolls of dice
     #
     # Roll stats will call table.last_roll [*2..12].length times
