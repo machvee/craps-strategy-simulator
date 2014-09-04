@@ -28,7 +28,7 @@ class DiceTray
     tray.extract(offsets||random_tray_offsets)
   end
 
-  def return(dice)
+  def return_dice(dice)
     tray.join(dice)
   end
 

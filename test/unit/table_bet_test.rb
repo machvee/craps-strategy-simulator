@@ -135,7 +135,7 @@ class TableBetTest < Test::Unit::TestCase
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10
-    @table.expects(:min_bet).returns(bet_amount + 1).at_least_once
+    @cool_bet.expects(:min_bet).returns(bet_amount + 1).at_least_once
 
     assert_raise RuntimeError do
       @cool_bet.validate(player_bet, bet_amount)
@@ -149,8 +149,8 @@ class TableBetTest < Test::Unit::TestCase
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10
-    @table.expects(:min_bet).returns(bet_amount).at_least_once
-    @table.expects(:max_bet).returns(bet_amount-1).at_least_once
+    @cool_bet.expects(:min_bet).returns(bet_amount).at_least_once
+    @cool_bet.expects(:max_bet).returns(bet_amount-1).at_least_once
 
     assert_raise RuntimeError do
       @cool_bet.validate(player_bet, bet_amount)
@@ -164,8 +164,8 @@ class TableBetTest < Test::Unit::TestCase
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10
-    @table.expects(:min_bet).returns(bet_amount).at_least_once
-    @table.expects(:max_bet).returns(bet_amount+1).at_least_once
+    @cool_bet.expects(:min_bet).returns(bet_amount).at_least_once
+    @cool_bet.expects(:max_bet).returns(bet_amount+1).at_least_once
 
     @table_config.expects(:payoff_odds).at_least_once.with(@cool_bet, @number).returns([5,3])
     @table.expects(:config).at_least_once.returns(@table_config)
@@ -182,8 +182,8 @@ class TableBetTest < Test::Unit::TestCase
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10
-    @table.expects(:min_bet).returns(bet_amount).at_least_once
-    @table.expects(:max_bet).returns(bet_amount+1).at_least_once
+    @cool_bet.expects(:min_bet).returns(bet_amount).at_least_once
+    @cool_bet.expects(:max_bet).returns(bet_amount+1).at_least_once
 
     @table_config.expects(:payoff_odds).at_least_once.with(@cool_bet, @number).returns([7,2])
     @table.expects(:config).at_least_once.returns(@table_config)

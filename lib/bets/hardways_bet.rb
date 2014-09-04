@@ -4,6 +4,10 @@ class HardwaysBet < TableBet
     "Hardways Bet #{number}"
   end
 
+  def min_bet
+    1
+  end
+
   def table_on_status
     OnStatus::FOLLOW # follows the table on/off status
   end

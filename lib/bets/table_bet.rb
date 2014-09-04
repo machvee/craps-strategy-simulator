@@ -3,7 +3,7 @@ class TableBet
   attr_reader :table
   attr_reader :player_bets
 
-  delegate :dice, :table_state, :bet_stats,  to: :table
+  delegate :dice, :config, :table_state, :bet_stats,  to: :table
 
   module Outcome
     WIN=1    # player gets payoff
@@ -81,7 +81,15 @@ class TableBet
     # e.g. [3,2]
     # pay 3 units, for every 2 unit bet
     #
-    table.config.payoff_odds(self, number)
+    config.payoff_odds(self, number)
+  end
+
+  def min_bet
+    config.min_bet
+  end
+
+  def max_bet
+    config.max_bet
   end
 
   def made_the_number?
@@ -112,10 +120,10 @@ class TableBet
     #   player must have number bet if making odds bet on PASS and COME
     #
     raise "you already have a #{name}" if player_bet.player.has_bet?(self.class, number)
-    raise "you must bet at least $#{table.min_bet}" unless \
-      bet_amount >= table.min_bet
-    raise "bet amount would exceed maximium of $#{table.max_bet} for #{name}" if \
-      bet_amount > table.max_bet
+    raise "you must bet at least $#{min_bet}" unless \
+      bet_amount >= min_bet
+    raise "bet amount would exceed maximium of $#{max_bet} for #{name}" if \
+      bet_amount > max_bet
     for_every = payout.last
     raise "bet amount should be a multiple of #{for_every}" if 
       for_every > 1 && bet_amount % for_every != 0

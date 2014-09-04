@@ -78,6 +78,10 @@ class PlayerBet
     table_bet.remove_bet(self)
   end
 
+  def matches?(table_bet_class, arg_number=nil)
+    table_bet.class == table_bet_class && number == arg_number
+  end
+
   def to_s
     "$#{amount} #{table_bet}"
   end

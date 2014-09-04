@@ -103,8 +103,8 @@ class PassLineBetTest < Test::Unit::TestCase
     player_bet.expects(:player).at_least_once.returns(player)
 
     bet_amount = 10
-    @table.expects(:min_bet).returns(bet_amount).at_least_once
-    @table.expects(:max_bet).returns(bet_amount+1).at_least_once
+    @bet.expects(:min_bet).returns(bet_amount).at_least_once
+    @bet.expects(:max_bet).returns(bet_amount+1).at_least_once
 
     @table_config = mock('table_config')
     @table_config.expects(:payoff_odds).at_least_once.with(@bet, @number).returns([1,1])

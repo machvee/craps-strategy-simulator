@@ -3,8 +3,8 @@ class CeBet < TableBet
     "C&E Bet"
   end
 
-  def player_can_set_off?
-    false
+  def min_bet
+    1
   end
 
   def outcome(player_bet)

@@ -10,7 +10,7 @@ class ComeOddsBet < TableBet
   end
 
   def max_bet
-    table.max_bet * table.max_odds(number)
+    super.max_bet * max_odds(number)
   end
 
   def bet_remains_after_win?

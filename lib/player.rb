@@ -9,7 +9,7 @@ class Player
   attr_reader   :rail    # amount of money in rail
   attr_reader   :wagers  # amount of money bet
 
-  delegate :table_state, to: :table
+  delegate :table_state, :config, to: :table
 
   def initialize(name, table, amount)
     @bets = []
@@ -31,50 +31,46 @@ class Player
 
   def make_bet(bet_class, amount, number=nil)
     #
-    # e.g   bet(PlaceBet, 12, 6)
+    # e.g   make_bet(PlaceBet, 12, 6)
     #    $12.00 Place bet on 6
     #
     raise "buy chips.  only $#{rail} remain" unless can_bet?(amount)
+    if amount.nil? 
+      table_bet = table.find_table_bet(bet_class, number) || raise("no such bet #{bet_class} #{number}")
+      amount = table_bet.max_bet
+    end
     bets << PlayerBet.new(self, bet_class, amount, number)
     rail_to_wagers(amount)
   end
 
-  def pl
-    make_bet(PassLineBet, table.min_bet)
-  end
-
-  def po
-    pass_odds_bet
-  end
-
-  def pass_line_bet(amount=table.max_bet)
+  def pass_line_bet(amount=nil)
     make_bet(PassLineBet, amount)
   end
 
   def pass_odds_bet(amount=nil)
     pass_line_bet = find_bet(PassLineBet)
     raise "you don't have a pass line bet" if pass_line_bet.nil?
-    amt = amount || (pass_line_bet.amount * table.max_odds(table_state.point))
+    amt = amount || (pass_line_bet.amount * config.max_odds(table_state.point))
     make_bet(PassOddsBet, amt, table_state.point)
   end
 
-  def come_bet(amount=table.max_bet)
+  def come_bet(amount=nil)
     make_bet(ComeOutBet, amount)
   end
 
-  def come_odds_bet(number, amount=table.max_bet)
+  def come_odds_bet(number, amount=nil)
     make_bet(ComeOutBet, amount, number)
   end
 
-  def place_bet(number, amount=table.max_bet)
+  def place_bet(number, amount=nil)
     make_bet(PlaceBet, amount, number)
   end
 
-  def hardways_bet(number, amount=table.max_bet)
+  def hardways_bet(number, amount=nil)
     make_bet(HardwaysBet, amount, number)
   end
 
-  def ce_bet(amount=table.max_bet)
+  def ce_bet(amount=nil)
     make_bet(CeBet, amount)
   end
 
@@ -85,11 +81,11 @@ class Player
   end
 
   def has_bet?(bet_class, number=nil)
-    bets.any? {|b| b.table_bet.class == bet_class && b.number == number}
+    bets.any? {|b| b.matches?(bet_class, number)}
   end
 
   def find_bet(bet_class, number=nil)
-    bets.find {|b| b.table_bet.class == bet_class && b.number == number}
+    bets.find {|b| b.matches?(bet_class, number)}
   end
 
   def rail_to_wagers(amount)

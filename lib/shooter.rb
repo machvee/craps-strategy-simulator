@@ -50,7 +50,7 @@ class Shooter
 
   def return_dice
     raise "no shooter" if dice.nil?
-    dice_tray.return(dice)
+    dice_tray.return_dice(dice)
     no_shooter
   end
 

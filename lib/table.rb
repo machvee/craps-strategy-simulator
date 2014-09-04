@@ -252,6 +252,7 @@ class Table
     [PassOddsBet, ComeBet, ComeOddsBet, PlaceBet, HardwaysBet].each do |bet_class|
       @table_bets += bet_class.gen_number_bets(self)
     end
+    @table_bets += PropositionBet.gen_bets(self)
   end
 
   def quietly?(option)
