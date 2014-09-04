@@ -5,7 +5,7 @@ class PassOddsBet < TableBet
   end
 
   def max_bet
-    super.max_bet * table.max_odds(number)
+    super * config.max_odds(number)
   end
 
   def bet_remains_after_win?

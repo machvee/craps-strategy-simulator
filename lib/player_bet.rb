@@ -9,14 +9,16 @@ class PlayerBet
 
   delegate :table, to: :player
 
-  def initialize(player, bet_class, amount, number=nil)
+  def initialize(player, table_bet, amount)
     @player = player
     @amount = amount
-    @number = number
-    @table_bet = find_table_bet(bet_class, number)
+    @table_bet = table_bet
+    @number = table_bet.number
     @remove = false # used to clear losing bets at end of settling bets
+
     table_bet.validate(self, amount)
     table_bet.add_bet(self)
+
     set_bet_on
   end
 
@@ -96,7 +98,4 @@ class PlayerBet
     @bet_off = false
   end
 
-  def find_table_bet(bet_class, number)
-    table.find_table_bet(bet_class, number) || raise("that's not a valid bet")
-  end
 end

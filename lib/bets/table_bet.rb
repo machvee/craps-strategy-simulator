@@ -5,6 +5,21 @@ class TableBet
 
   delegate :dice, :config, :table_state, :bet_stats,  to: :table
 
+  NUMBER_BETS = [
+    ComeBet,
+    ComeOddsBet,
+    HardwaysBet,
+    PassOddsBet,
+    PlaceBet
+  ]
+
+  STRAIGHT_BETS = [
+    PassLineBet,
+    ComeOutBet,
+    CeBet,
+    FieldBet
+  ]
+
   module Outcome
     WIN=1    # player gets payoff
     LOSE=2   # house gets money

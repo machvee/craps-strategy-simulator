@@ -185,7 +185,8 @@ class Table
   end
 
   def find_table_bet(bet_class, number)
-    table_bets.find {|bet| bet.class == bet_class && bet.number == number}
+    table_bets.find {|bet| bet.class == bet_class && bet.number == number} ||
+      raise("#{bet_class}%s isn't a valid bet" % (number.nil? ? '' : " #{number}"))
   end
 
   def inspect
@@ -245,11 +246,10 @@ class Table
 
   def create_table_bets
     @table_bets = []
-    @table_bets << PassLineBet.new(self)
-    @table_bets << ComeOutBet.new(self)
-    @table_bets << CeBet.new(self)
-    @table_bets << FieldBet.new(self)
-    [PassOddsBet, ComeBet, ComeOddsBet, PlaceBet, HardwaysBet].each do |bet_class|
+    TableBet::STRAIGHT_BETS.each do |bet_class|
+      @table_bets << bet_class.new(self)
+    end
+    TableBet::NUMBER_BETS.each do |bet_class|
       @table_bets += bet_class.gen_number_bets(self)
     end
     @table_bets += PropositionBet.gen_bets(self)

@@ -19,6 +19,8 @@ class PlayerTest < Test::Unit::TestCase
   def test_make_valid_bet
     new_player
     PlayerBet.expects(:new).once.returns(mock('player_bet'))
+    pass_line_bet = mock('pass_line_bet')
+    @table.expects(:find_table_bet).once.returns(pass_line_bet)
     start_r = @player.rail
     @player.make_bet(PassLineBet, 10, 2)
     assert_equal 10, @player.wagers
