@@ -75,6 +75,10 @@ class TableState
   def rolled?(value)
     last_roll == value
   end
+  
+  def point?(value)
+    point == value
+  end
 
   def match_roll?(value)
     value.nil? || rolled?(value)
