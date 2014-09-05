@@ -8,10 +8,11 @@ class Player
   attr_reader   :start_rail # amount started with
   attr_reader   :rail    # amount of money in rail
   attr_reader   :wagers  # amount of money bet
+  attr_accessor :strategy
 
   delegate :table_state, :config, to: :table
 
-  def initialize(name, table, amount)
+  def initialize(name, table, amount, strategy_class=PromptStrategy)
     @bets = []
     @name = name
     @table = table
@@ -19,6 +20,7 @@ class Player
     @rail = amount
     @start_rail = rail
     @stats = PlayerStats.new(self, rail)
+    @strategy = strategy_class.new(self)
   end
 
   def self.join_table(table, name, start_amount)
@@ -139,6 +141,7 @@ class Player
     #        make come odds bet and place bet on any uncovered 6 or 8
     #        on place winners, have a bet progression strategy
     #
+    strategy.make_bets
   end
 
   def to_s

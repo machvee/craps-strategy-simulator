@@ -87,6 +87,8 @@ class Table
       # 3. table pay players on winning bets, takes losing bets
       # 4. if 7-out, shooter will return_dice
       #
+      raise "no players" unless players_ready?
+      players_make_your_bets
       shooter_rolls
       settle_bets
       table_state.update
@@ -94,13 +96,19 @@ class Table
     return
   end
 
+  def players_make_your_bets
+    players.each do |p|
+      p.play_strategy
+    end
+  end
+
   def play_points(number_of_points, quiet_option=quiet_table)
     #
     # roll as many times from as many shooters as it takes
     # to make and end number_of_points points
     #
-    start_points = bet_stats.points
-    while (bet_stats.points - start_points < number_of_points)
+    start_points = bet_stats.point_made
+    while (bet_stats.point_made - start_points < number_of_points)
       play(quiet_option)
     end
     #
