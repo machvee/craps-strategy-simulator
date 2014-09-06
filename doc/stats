@@ -1,19 +1,19 @@
 Stats to keep
 
 Roll Stats
-# RollStats (keep existing)
+# Shoot dice Roll Stats (keep existing)
 
 Bet Stats
 (Tracked for each Bet, each Player)
-  # made
-  # won (max consec)
-  # lost (max consec)
+  # total made
+  # won (max consec when at least one bet made)
+  # lost (max consec when at least one bet made)
   # total $ bet
   # total $ won
   # total $ lost
 
 Pass Line Bet
-  # come out rolls
+  # total coming out rolls
   # flw (7,11)      WIN   (max consec)
   # craps (2,3,12)  LOSE  (max consec)
 

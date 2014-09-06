@@ -89,6 +89,7 @@ class Table
       #
       raise "no players" unless players_ready?
       players_make_your_bets
+      raise "place your bets" unless at_least_one_bet_made?
       shooter_rolls
       settle_bets
       table_state.update
@@ -147,21 +148,31 @@ class Table
   end
 
   def settle_bets
-    all_bets do |player_bet|
+    table_bets.each do |table_bet|
 
-      case player_bet.determine_outcome
+      outcome = table_bet.determine_outcome
 
-        when TableBet::Outcome::RETURN
-          return_was_off(player_bet)
+      table_bet.player_bets.each do |player_bet|
+        #
+        # if a player can mark a bet off and has it off, its just skipped as if its not there
+        #
+        next if player_bet.off?
 
-        when TableBet::Outcome::WIN
-          pay_winning(player_bet)
+        case outcome
+          when TableBet::Outcome::RETURN
+            return_was_off(player_bet)
 
-        when TableBet::Outcome::LOSE
-          take_losing(player_bet)
+          when TableBet::Outcome::WIN
+            player_bet.stat_occurred
+            pay_winning(player_bet)
 
-        when TableBet::Outcome::NONE
-          # bet stays in place
+          when TableBet::Outcome::LOSE
+            player_bet.stat_did_not_occur
+            take_losing(player_bet)
+
+          when TableBet::Outcome::NONE
+            # bet stays in place
+        end
       end
     end
     remove_marked_bets
@@ -195,7 +206,6 @@ class Table
 
   def shooter_rolls
     shooter.set
-    raise "place your bets" unless at_least_one_bet_made?
     shooter.roll
     announce_roll
   end
@@ -222,7 +232,6 @@ class Table
     puts name unless name.nil?
     puts "ON (point is #{table_state.point})" if on? 
     puts "OFF" if off? 
-    puts "total rolls: #{shooter.roll_stats.total_rolls}\n"
     bet_stats.print(BET_STATS_HEADERS)
   end
 
@@ -235,25 +244,17 @@ class Table
   end
 
   def return_was_off(player_bet)
-    player = player_bet.player
-    player.take_down(player_bet)
     status "#{player.name} returned #{player_bet.amount} for #{player_bet}"
+    player_bet.return_bet
   end
 
   def pay_winning(player_bet)
     #
     # table credits player rail with winning amount
     #
-    player = player_bet.player
-    table_bet = player_bet.table_bet
-    pay_this, for_every = config.payoff_odds(table_bet, player_bet.number)
-    winnings = (player_bet.amount/for_every) * pay_this
-
-    house_debit(winnings)
-    player.to_rail(winnings)
-
+    winnings = player_bet.pay_winning_bet
     status "#{player.name} wins $#{winnings} on #{player_bet}"
-    player.take_down(player_bet) unless table_bet.bet_remains_after_win?
+    house_debit(winnings)
   end
 
   def take_losing(player_bet)
@@ -261,16 +262,10 @@ class Table
     # table takes bet amount from player's wagers to house
     # player removes bet
     #
-    player = player_bet.player
-
-    #
-    # take from players wagers on the table and move to the house bank
-    #
-    player.from_wagers(player_bet.amount)
-    house_credit(player_bet.amount)
-
-    status "#{player.name} loses $#{player_bet.amount} on #{player_bet}"
-    player.remove_bet(player_bet)
+    amount = player_bet.amount
+    status "#{player.name} loses $#{amount} on #{player_bet}"
+    player_bet.losing_bet
+    house_credit(amount)
   end
 
   def create_table_bets

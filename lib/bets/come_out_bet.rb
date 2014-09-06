@@ -12,7 +12,7 @@ class ComeOutBet < TableBet
     false
   end
 
-  def outcome(player_bet)
+  def outcome
     #
     # come out bet can be made when a point is established
     # if seven_yo? rolled, WIN

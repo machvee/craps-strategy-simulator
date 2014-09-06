@@ -29,11 +29,11 @@ class PlayerBet
   end
 
   def stat_occurred(bet_stat_name)
-    player.stats.occurred(bet_stat_name)
+    player.stats.occurred(bet_stat_name||table_bet.win_stat_name)
   end
 
   def stat_did_not_occur(bet_stat_name)
-    player.stats.did_not_occur(bet_stat_name)
+    player.stats.did_not_occur(bet_stat_name||table_bet.win_stat_name)
   end
 
   def stat_incr(bet_stat_name)
@@ -61,8 +61,21 @@ class PlayerBet
     !on?
   end
 
-  def determine_outcome
-    table_bet.determine_outcome(self)
+  def pay_winning_bet
+    pay_this, for_every = table.config.payoff_odds(table_bet, number)
+    winnings = (amount/for_every) * pay_this
+    player.to_rail(winnings)
+    player.take_down(self) unless table_bet.bet_remains_after_win?
+    winnings
+  end
+
+  def losing_bet
+    player.from_wagers(amount)
+    player.remove_bet(self)
+  end
+
+  def return_bet
+    player.take_down
   end
 
   def morph_bet(new_bet_class, number=nil)

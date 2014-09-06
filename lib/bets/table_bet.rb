@@ -37,17 +37,17 @@ class TableBet
     raise "give the TableBet a name"
   end
 
-  def determine_outcome(player_bet)
-    case result = outcome(player_bet)
+  def determine_outcome
+    case result = outcome
       when Outcome::WIN
-        win_stat_update(player_bet)
+        win_stat_update
       when Outcome::LOSE
-        lose_stat_update(player_bet)
+        lose_stat_update
     end
     result
   end
 
-  def outcome(player_bet)
+  def outcome
     # subclass override and uses table state and dice value to
     # determine if the bet won or lost
   end
@@ -132,19 +132,19 @@ class TableBet
     return
   end
 
-  def win_stat_update(player_bet)
+  def win_stat_update
     bet_stats.occurred(win_stat_name)
-    player_bet.stat_occurred(win_stat_name)
   end
 
-  def lose_stat_update(player_bet)
+  def lose_stat_update
     bet_stats.did_not_occur(win_stat_name)
-    player_bet.stat_did_not_occur(win_stat_name)
   end
 
   def win_stat_name
     @_wsn ||= stat_name
   end
+
+  private
 
   def stat_name(suffix='')
     bet_class_name = self.class.name.underscore.gsub(/_bet/,'')

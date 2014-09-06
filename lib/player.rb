@@ -66,12 +66,6 @@ class Player
     make_bet(PassOddsBet, amt, table_state.point)
   end
 
-  def take_down(bet_class, number=nil)
-    bet = find_bet(bet_class, number)
-    raise("you don't have a #{bet_class.name}%s" % (number.present? ? " on #{number}" : "")) if bet.nil?
-    take_down(bet)
-  end
-
   def has_bet?(bet_class, number=nil)
     bets.any? {|b| b.matches?(bet_class, number)}
   end
@@ -86,18 +80,18 @@ class Player
   end
 
   def wagers_to_rail(amount)
-    #   2. player wagers back to rail (house return (or player take_down) bet)
+    #   player wagers back to rail (house return (or player take_down) bet)
     from_wagers(amount)
     to_rail(amount)
   end
 
   def from_wagers(amount)
-    #   3. player wagers to house (lost bet)
+    #   player wagers to house (lost bet)
     @wagers -= amount
   end
 
   def to_rail(amount)
-    #   4. house to player rail (won bet)
+    #   house to player rail (won bet)
     @rail += amount
   end
 
@@ -107,15 +101,17 @@ class Player
   end
 
   def remove_bet(bet)
-    bet.remove_from_table # removes from table_bet square
     bet.remove = true     # delays removal from player's array of bets to not break iterators
   end
 
   def remove_marked_bets
     #
-    # because we can't delete bets from the bet array while iterating over them,
+    # because we can't delete bets from the bet arrays while iterating over them,
     # we delete bets marked as remove here
     #
+    bets.each do |b|
+      b.remove_from_table if b.remove # removes from table_bet square
+    end
     bets.delete_if {|b| b.remove}
   end
 

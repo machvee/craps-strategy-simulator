@@ -12,10 +12,8 @@ class HardwaysBet < TableBet
     OnStatus::FOLLOW # follows the table on/off status
   end
 
-  def outcome(player_bet)
-    result = if player_bet.off?
-      Outcome::NONE
-    elsif dice.seven?
+  def outcome
+    result = if dice.seven?
       Outcome::LOSE
     elsif made_the_number? 
       if dice.hard?(number)

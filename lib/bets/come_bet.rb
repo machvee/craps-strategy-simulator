@@ -11,7 +11,7 @@ class ComeBet < TableBet
     false
   end
 
-  def outcome(player_bet)
+  def outcome
     result = if made_the_number?
       Outcome::WIN
     elsif dice.seven?

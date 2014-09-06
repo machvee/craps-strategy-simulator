@@ -22,10 +22,8 @@ class PassOddsBet < TableBet
     raise "you must have a Pass Line Bet" unless player_bet.player.has_bet?(PassLineBet)
   end
 
-  def outcome(player_bet)
-    result = if player_bet.off?
-      Outcome::NONE
-    elsif table_state.point_made?
+  def outcome
+    result = if table_state.point_made?
       Outcome::WIN
     elsif table_state.seven_out?
       Outcome::LOSE

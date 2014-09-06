@@ -13,10 +13,8 @@ class PlaceBet < TableBet
     OnStatus::FOLLOW # follows the table on/off status
   end
 
-  def outcome(player_bet)
-    result = if player_bet.off?
-      Outcome::NONE
-    elsif made_the_number?
+  def outcome
+    result = if made_the_number?
       Outcome::WIN
     elsif table_state.seven_out?
       Outcome::LOSE

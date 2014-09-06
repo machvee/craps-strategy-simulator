@@ -14,11 +14,9 @@ class FieldBet < TableBet
     "Field Bet"
   end
 
-  def outcome(player_bet)
-    result = if player_bet.off? 
-      Outcome::NONE
-    elsif dice.fields?
-      update_field_val_win_stats(player_bet)
+  def outcome
+    result = if dice.fields?
+      # update_field_val_win_stats(player_bet)
       Outcome::WIN
     end
       Outcome::LOSE

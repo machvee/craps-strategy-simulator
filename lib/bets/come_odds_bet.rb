@@ -30,7 +30,7 @@ class ComeOddsBet < TableBet
       player_bet.player.has_bet?(ComeBet, number)
   end
 
-  def outcome(player_bet)
+  def outcome
     #
     # odds bets are returned when the table is off so
     # if the number is made or seven out, the bet is returned
@@ -40,8 +40,6 @@ class ComeOddsBet < TableBet
     result = if table_state.off? && (dice.seven? || made_the_number?)
       update_return_stats
       Outcome::RETURN
-    elsif player_bet.off?
-      Outcome::NONE
     elsif made_the_number?
       Outcome::WIN
     elsif table_state.seven_out?
