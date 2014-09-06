@@ -23,6 +23,7 @@ class PassOddsBet < TableBet
   end
 
   def outcome
+    additional_stats = {}
     result = if table_state.point_made?
       Outcome::WIN
     elsif table_state.seven_out?
@@ -30,7 +31,7 @@ class PassOddsBet < TableBet
     else
       Outcome::NONE
     end
-    result
+    [result, additional_stats]
   end
 
   def self.gen_number_bets(table)

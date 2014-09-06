@@ -18,6 +18,7 @@ class ComeOutBet < TableBet
     # if seven_yo? rolled, WIN
     # if craps? rolled, LOSE
     # if any POINTS rolled, morph the player_bet's craps_bet into a ComeBet(table, last_roll)
+    additional_stats = {}
     result = if dice.seven_yo?
       Outcome::WIN
     elsif dice.craps?
@@ -27,6 +28,6 @@ class ComeOutBet < TableBet
     else
       Outcome::NONE
     end
-    result
+    [result, additional_stats]
   end
 end

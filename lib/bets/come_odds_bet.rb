@@ -37,25 +37,26 @@ class ComeOddsBet < TableBet
     # otherwise, if the player has it on, it wins when the number
     # is rolled and loses when a seven is rolled
     #
-    result = if table_state.off? && (dice.seven? || made_the_number?)
+    additional_stats = {}
+    result = if table_state.off? && (dice.seven? || rolled_the_number?)
+      additional_stats = return_stat
       Outcome::RETURN
-    elsif made_the_number?
+    elsif rolled_the_number?
       Outcome::WIN
     elsif table_state.seven_out?
       Outcome::LOSE
     else
       Outcome::NONE
     end
-    result
+    [result, additional_stats]
   end
 
   def return_stat_name
     @_rsn ||= stat_name('_ret')
   end
  
-  def update_return_stats(player_bet)
-    bet_stats.incr(return_stat_name)
-    player_bet.stat_incr(return_stat_name)
+  def return_stat
+    {return_stat_name => OccurrenceStat::OCCURRED}
   end
 
   def self.gen_number_bets(table)

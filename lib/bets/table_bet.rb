@@ -39,18 +39,20 @@ class TableBet
   end
 
   def determine_outcome
-    case result = outcome
+    result, stats = outcome
+    case result
       when Outcome::WIN
-        win_stat_update
+        stats.merge!(win_stat)
       when Outcome::LOSE
-        lose_stat_update
+        stats.merge!(lose_stat)
     end
-    result
+    [result, stats]
   end
 
   def outcome
     # subclass override and uses table state and dice value to
     # determine if the bet won or lost
+    # return [Outcome::XXXX, {custom_stat_name => OccurrenceStat::OCCCURRED|OccurrenceStat::DID_NOT_OCCUR, ...}]
   end
 
   def bet_remains_after_win?
@@ -95,8 +97,8 @@ class TableBet
     config.max_bet
   end
 
-  def made_the_number?
-    table.last_roll == number
+  def rolled_the_number?
+    dice.rolled?(number)
   end
 
   def to_s
@@ -133,12 +135,14 @@ class TableBet
     return
   end
 
-  def win_stat_update
-    bet_stats.occurred(win_stat_name)
+  def win_stat
+    {win_stat_name => OccurrenceStat::OCCURRED}
+    # bet_stats.occurred(win_stat_name)
   end
 
-  def lose_stat_update
-    bet_stats.did_not_occur(win_stat_name)
+  def lose_stat
+    {win_stat_name => OccurrenceStat::DID_NOT_OCCUR}
+    # bet_stats.did_not_occur(win_stat_name)
   end
 
   def win_stat_name

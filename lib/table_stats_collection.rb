@@ -49,6 +49,18 @@ class TableStatsCollection
     end
     tsc
   end
+  
+  def update_from_hash(stats_hash)
+    # stats_hash is {stat_name => OCCURRED/DID_NOT_OCCUR, ...}
+    stats_hash.each_pair do |stat_name, val|
+      case val
+        when OccurrenceStat::OCCURRED
+          occurred(stat_name)
+        when OccurrenceStat::DID_NOT_OCCUR
+          did_not_occur(stat_name)
+      end
+    end
+  end
 
   def occurred(stat_name)
     @lkup[stat_name].occurred
@@ -85,8 +97,8 @@ class TableStatsCollection
     # be careful not to make stats names that conflict with defined methods above
     #
     self.class.instance_eval do
-      define_method(stat.name) do
-        stat.total
+      define_method(stat.name) do |option=OccurrenceStat::OCCURRED|
+        stat.total(option)
       end
     end
   end

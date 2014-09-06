@@ -14,14 +14,15 @@ class PlaceBet < TableBet
   end
 
   def outcome
-    result = if made_the_number?
+    additional_stats = {}
+    result = if rolled_the_number?
       Outcome::WIN
     elsif table_state.seven_out?
       Outcome::LOSE
     else
       Outcome::NONE
     end
-    result
+    [result, additional_stats]
   end
 
   def self.gen_number_bets(table)

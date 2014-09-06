@@ -15,41 +15,33 @@ class HardwaysBetTest < Test::Unit::TestCase
     assert_equal TableBet::OnStatus::FOLLOW, @bet.table_on_status
   end
 
-  def test_outcome_none_player_bet_off
-    player_bet = mock('player_bet', off?: true)
-    assert_equal TableBet::Outcome::NONE, @bet.determine_outcome(player_bet)
+  def test_outcome_none_
+    assert_equal TableBet::Outcome::NONE, @bet.determine_outcome
   end
 
-  def test_outcome_lose_seven_player_bet_on
-    player_bet = mock('player_bet', off?: false)
+  def test_outcome_lose_seven
     @bet_stats.expects(:did_not_occur).with(@won_stat_name).once
-    player_bet.expects(:stat_did_not_occur).with(@won_stat_name).once
 
     dice = mock('dice', seven?: true)
-    @table.expects(:dice).returns(dice).at_least_once
-    assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome(player_bet)
+    assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome
   end
 
-  def test_outcome_win_hard_player_bet_on
-    player_bet = mock('player_bet', off?: false)
+  def test_outcome_win_hard
     @bet_stats.expects(:occurred).with(@won_stat_name).once
-    player_bet.expects(:stat_occurred).with(@won_stat_name).once
 
     dice = mock('dice', hard?: true, seven?: false)
     @table.expects(:last_roll).returns(@number).at_least_once
     @table.expects(:dice).returns(dice).at_least_once
-    assert_equal TableBet::Outcome::WIN, @bet.determine_outcome(player_bet)
+    assert_equal TableBet::Outcome::WIN, @bet.determine_outcome
   end
 
-  def test_outcome_lose_easy_player_bet_on
-    player_bet = mock('player_bet', off?: false)
+  def test_outcome_lose_easy
     @bet_stats.expects(:did_not_occur).with(@won_stat_name).once
-    player_bet.expects(:stat_did_not_occur).with(@won_stat_name).once
 
     dice = mock('dice', hard?: false, seven?: false)
     @table.expects(:last_roll).returns(@number).at_least_once
     @table.expects(:dice).returns(dice).at_least_once
-    assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome(player_bet)
+    assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome
   end
 
   def test_gen_number_bets

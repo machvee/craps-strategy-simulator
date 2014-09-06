@@ -117,12 +117,11 @@ class Table
       play(quiet_option)
     end
     #
-    # play until points_made or seven_outs
+    # play until point_made or seven_outs
     #
-    start_seven_out = bet_stats.seven_outs
-    start_points_made = bet_stats.points_made
-    while(bet_stats.seven_outs == start_seven_out &&
-          bet_stats.points_made == start_points_made)
+    start_seven_out = seven_outs
+    start_point_made = bet_stats.point_made
+    while(seven_outs == start_seven_out && bet_stats.point_made == start_point_made)
       play(quiet_option)
     end
     return
@@ -154,7 +153,9 @@ class Table
   def settle_bets
     table_bets.each do |table_bet|
 
-      outcome = table_bet.determine_outcome
+      outcome, stats_hash = table_bet.determine_outcome
+
+      bet_stats.update_from_hash(stats_hash)
 
       table_bet.player_bets.each do |player_bet|
         #
@@ -167,11 +168,9 @@ class Table
             return_was_off(player_bet)
 
           when TableBet::Outcome::WIN
-            player_bet.stat_occurred
             pay_winning(player_bet)
 
           when TableBet::Outcome::LOSE
-            player_bet.stat_did_not_occur
             take_losing(player_bet)
 
           when TableBet::Outcome::COME
@@ -180,6 +179,9 @@ class Table
           when TableBet::Outcome::NONE
             # bet stays in place
         end
+
+        player_bet.update_player_bet_stats_from_hash(stats_hash)
+
       end
     end
     remove_marked_bets
@@ -285,6 +287,10 @@ class Table
     NUMBER_BETS.each do |bet_class|
       @table_bets += bet_class.gen_number_bets(self)
     end
+  end
+
+  def seven_outs
+    bet_stats.point_made(OccurrenceStat::DID_NOT_OCCUR)
   end
 
   def quietly?(option)

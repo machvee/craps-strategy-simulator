@@ -23,42 +23,39 @@ class PassLineBet < TableBet
   end
 
   def outcome
+    additional_stats = {}
     result = if table_state.front_line_winner? 
-      # update_front_line_winner_stats(player_bet)
+      additional_stats = front_line_winner_stat
       Outcome::WIN
     elsif table_state.crapped_out?
-      # update_crapped_out_stats(player_bet)
+      additional_stats = crapped_out_stat
       Outcome::LOSE
     elsif table_state.point_made?
-      # update_point_made_stats(player_bet)
+      additional_stats = point_made_stat
       Outcome::WIN
     elsif table_state.seven_out?
-      # update_seven_out_stats(player_bet)
+      additional_stats = seven_out_stat
       Outcome::LOSE
     else
       Outcome::NONE
     end
-    result
+    [result, additional_stats]
   end
 
-  def update_front_line_winner_stats(player_bet)
-    bet_stats.occurred(FRONT_LINE_WINNER_STAT_NAME)
-    player_bet.stat_occurred(FRONT_LINE_WINNER_STAT_NAME)
+  def front_line_winner_stat
+    {FRONT_LINE_WINNER_STAT_NAME => OccurrenceStat::OCCURRED}
   end
 
-  def update_crapped_out_stats(player_bet)
-    bet_stats.did_not_occur(FRONT_LINE_WINNER_STAT_NAME)
-    player_bet.stat_did_not_occur(FRONT_LINE_WINNER_STAT_NAME)
+  def crapped_out_stat
+    {FRONT_LINE_WINNER_STAT_NAME => OccurrenceStat::DID_NOT_OCCUR}
   end
 
-  def update_point_made_stats(player_bet)
-    bet_stats.occurred(POINT_MADE_STAT_NAME)
-    player_bet.stat_occurred(POINT_MADE_STAT_NAME)
+  def point_made_stat
+    {POINT_MADE_STAT_NAME => OccurrenceStat::OCCURRED}
   end
 
-  def update_seven_out_stats(player_bet)
-    bet_stats.did_not_occur(POINT_MADE_STAT_NAME)
-    player_bet.stat_did_not_occur(POINT_MADE_STAT_NAME)
+  def seven_out_stat
+    {POINT_MADE_STAT_NAME => OccurrenceStat::DID_NOT_OCCUR}
   end
 
 end

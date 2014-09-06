@@ -8,12 +8,13 @@ class CeBet < TableBet
   end
 
   def outcome
+    additional_stats = {}
     result = if dice.craps? || dice.eleven?
       Outcome::WIN
     else
       Outcome::LOSE
     end
-    result
+    [result, additional_stats]
   end
 
 end

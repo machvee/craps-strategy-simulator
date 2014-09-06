@@ -52,12 +52,12 @@ class TableBetTest < Test::Unit::TestCase
     assert_equal [20,1], @cool_bet.payout
   end
 
-  def test_made_the_number
+  def test_rolled_the_number
     @table.expects(:last_roll).once.returns(@number)
-    assert @cool_bet.made_the_number?, "table last_roll is #@number, should've made the number"
+    assert @cool_bet.rolled_the_number?, "table last_roll is #@number, should've made the number"
     not_number=@number+1
     @table.expects(:last_roll).once.returns(not_number)
-    assert !@cool_bet.made_the_number?, "table last_roll is #{not_number}, shouldn't have made the number"
+    assert !@cool_bet.rolled_the_number?, "table last_roll is #{not_number}, shouldn't have made the number"
   end
 
   def test_add_player_bet

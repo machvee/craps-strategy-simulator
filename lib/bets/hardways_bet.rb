@@ -13,9 +13,10 @@ class HardwaysBet < TableBet
   end
 
   def outcome
+    additional_stats = {}
     result = if dice.seven?
       Outcome::LOSE
-    elsif made_the_number? 
+    elsif rolled_the_number? 
       if dice.hard?(number)
         Outcome::WIN
       else
@@ -24,7 +25,7 @@ class HardwaysBet < TableBet
     else
       Outcome::NONE
     end
-    result
+    [result, additional_stats]
   end
 
   def self.gen_number_bets(table)

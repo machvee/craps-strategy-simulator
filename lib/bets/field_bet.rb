@@ -15,24 +15,22 @@ class FieldBet < TableBet
   end
 
   def outcome
+    additional_stats = {}
     result = if dice.fields?
-      # update_field_val_win_stats(player_bet)
+      additional_stats = field_val_win_stat
       Outcome::WIN
     end
       Outcome::LOSE
-    result
+    [result, additional_stats]
   end
 
   private
 
-  def update_field_val_win_stats(player_bet)
+  def field_val_win_stat
     SPECIAL_STAT_NUMBERS.each {|v| 
-      if dice.rolled?(v)
-        bet_stats.occurred(STAT_NAME_HASH[v]) 
-        player_bet.stat_occurred(STAT_NAME_HASH[v])
-        break
-      end
+      return {STAT_NAME_HASH[v] => OccurrenceStat::OCCURRED} if dice.rolled?(v)
     }
+    {}
   end
 
 end

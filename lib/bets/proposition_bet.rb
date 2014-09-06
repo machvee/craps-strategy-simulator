@@ -13,12 +13,13 @@ class PropositionBet < TableBet
   end
 
   def outcome
+    additional_stats = {}
     result = if dice_matched_proposition?
       Outcome::WIN
     else
       Outcome::LOSE
     end
-    result
+    [result, additional_stats]
   end
 
 end

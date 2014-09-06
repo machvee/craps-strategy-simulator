@@ -4,7 +4,6 @@ class AnyCrapsBetTest < Test::Unit::TestCase
   def setup
     @table = mock('table')
     @bet_stats = mock_bet_stats
-    @player_bet = mock('player_bet')
     @table.expects(:bet_stats).at_least_once.returns(@bet_stats)
     @bet = AnyCrapsBet.new(@table)
     @won_stat_name = 'any_craps'
@@ -17,22 +16,20 @@ class AnyCrapsBetTest < Test::Unit::TestCase
 
   def test_outcome_win_prop_met
     @bet_stats.expects(:occurred).with(@won_stat_name).once
-    @player_bet.expects(:stat_occurred).with(@won_stat_name).once
 
     dice = mock('dice')
     dice.expects(:craps?).returns(true)
     @table.expects(:dice).returns(dice).at_least_once
-    assert_equal TableBet::Outcome::WIN, @bet.determine_outcome(@player_bet)
+    assert_equal TableBet::Outcome::WIN, @bet.determine_outcome
   end
 
   def test_outcome_lose_prop_not_met
     @bet_stats.expects(:did_not_occur).with(@won_stat_name).once
-    @player_bet.expects(:stat_did_not_occur).with(@won_stat_name).once
 
     dice = mock('dice')
     dice.expects(:craps?).returns(false)
     @table.expects(:dice).returns(dice).at_least_once
-    assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome(@player_bet)
+    assert_equal TableBet::Outcome::LOSE, @bet.determine_outcome
   end
 
   def mock_bet_stats

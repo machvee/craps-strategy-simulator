@@ -28,18 +28,6 @@ class PlayerBet
     @amount = new_amount
   end
 
-  def stat_occurred(bet_stat_name=nil)
-    player.stats.occurred(bet_stat_name||table_bet.win_stat_name)
-  end
-
-  def stat_did_not_occur(bet_stat_name=nil)
-    player.stats.did_not_occur(bet_stat_name||table_bet.win_stat_name)
-  end
-
-  def stat_incr(bet_stat_name)
-    player.stats.incr(bet_stat_name)
-  end
-
   def back_on
     set_bet_on
   end
@@ -55,6 +43,10 @@ class PlayerBet
     # TODO: hardways follow the table.on, but can be set on/off at any time by the player
     #
     !bet_off && table_bet.on?
+  end
+
+  def update_player_bet_stats_from_hash(stats_hash)
+    player.stats.bet_stats.update_from_hash(stats_hash)
   end
 
   def off?
