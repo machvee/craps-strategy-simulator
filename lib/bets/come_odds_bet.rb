@@ -38,7 +38,6 @@ class ComeOddsBet < TableBet
     # is rolled and loses when a seven is rolled
     #
     result = if table_state.off? && (dice.seven? || made_the_number?)
-      update_return_stats
       Outcome::RETURN
     elsif made_the_number?
       Outcome::WIN

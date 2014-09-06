@@ -23,8 +23,7 @@ class ComeOutBet < TableBet
     elsif dice.craps?
       Outcome::LOSE
     elsif dice.points?
-      player_bet.morph_bet(ComeBet, table.last_roll)
-      Outcome::NONE
+      Outcome::COME
     else
       Outcome::NONE
     end

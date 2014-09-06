@@ -28,11 +28,11 @@ class PlayerBet
     @amount = new_amount
   end
 
-  def stat_occurred(bet_stat_name)
+  def stat_occurred(bet_stat_name=nil)
     player.stats.occurred(bet_stat_name||table_bet.win_stat_name)
   end
 
-  def stat_did_not_occur(bet_stat_name)
+  def stat_did_not_occur(bet_stat_name=nil)
     player.stats.did_not_occur(bet_stat_name||table_bet.win_stat_name)
   end
 

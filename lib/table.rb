@@ -10,8 +10,8 @@ class Table
   attr_reader    :house   # dollar amount of chips the house has
   attr_accessor  :quiet_table # not verbose about all actions
 
-  delegate :on?, :off?, to: :table_state
-  delegate :dice, to: :shooter
+  delegate :on?, :off?,        to: :table_state
+  delegate :dice,              to: :shooter
   delegate :min_bet, :max_bet, to: :config
 
   NO_NUMBER_BETS = [
@@ -70,7 +70,11 @@ class Table
   end
 
   def last_roll
-    dice.value
+    shooter.dice.value
+  end
+
+  def total_rolls
+    shooter.total_rolls
   end
 
   def max_odds(number)
@@ -170,6 +174,9 @@ class Table
             player_bet.stat_did_not_occur
             take_losing(player_bet)
 
+          when TableBet::Outcome::COME
+            player_bet.morph_bet(ComeBet, last_roll)
+
           when TableBet::Outcome::NONE
             # bet stays in place
         end
@@ -216,10 +223,10 @@ class Table
 
   def announce_roll
     status '%d: %s rolls: %2d %s %s' %
-      [dice.num_rolls,
+      [shooter.dice.num_rolls,
        shooter.player.name,
        last_roll,
-       dice.inspect,
+       shooter.dice.inspect,
        table_state.stickman_calls_roll]
   end
 
@@ -232,6 +239,7 @@ class Table
     puts name unless name.nil?
     puts "ON (point is #{table_state.point})" if on? 
     puts "OFF" if off? 
+    puts "rolls: #{total_rolls}"
     bet_stats.print(BET_STATS_HEADERS)
   end
 
@@ -244,7 +252,7 @@ class Table
   end
 
   def return_was_off(player_bet)
-    status "#{player.name} returned #{player_bet.amount} for #{player_bet}"
+    status "#{player_bet.player.name} returned #{player_bet.amount} for #{player_bet}"
     player_bet.return_bet
   end
 
@@ -253,7 +261,7 @@ class Table
     # table credits player rail with winning amount
     #
     winnings = player_bet.pay_winning_bet
-    status "#{player.name} wins $#{winnings} on #{player_bet}"
+    status "#{player_bet.player.name} wins $#{winnings} on #{player_bet}"
     house_debit(winnings)
   end
 
@@ -263,7 +271,7 @@ class Table
     # player removes bet
     #
     amount = player_bet.amount
-    status "#{player.name} loses $#{amount} on #{player_bet}"
+    status "#{player_bet.player.name} loses $#{amount} on #{player_bet}"
     player_bet.losing_bet
     house_credit(amount)
   end

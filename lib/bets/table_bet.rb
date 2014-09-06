@@ -9,7 +9,8 @@ class TableBet
     WIN=1    # player gets payoff
     LOSE=2   # house gets money
     RETURN=3 # return the bet to the player its was off by table rules
-    NONE=4   # nothing happens
+    COME=4   # come out bet is moved to the point numbered come bet 
+    NONE=5   # nothing happens
   end
 
   module OnStatus

@@ -12,7 +12,7 @@ class Player
 
   delegate :table_state, :config, to: :table
 
-  def initialize(name, table, amount, strategy_class=PromptStrategy)
+  def initialize(name, table, amount, strategy_class=BasicStrategy)
     @bets = []
     @name = name
     @table = table

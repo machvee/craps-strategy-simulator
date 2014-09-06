@@ -62,4 +62,8 @@ class Shooter
     @player = nil
   end
 
+  def total_rolls
+    roll_stats.stats.first.master_count
+  end
+
 end

@@ -12,7 +12,7 @@ class PropositionBet < TableBet
     # define in subclass
   end
 
-  def outcome(player_bet)
+  def outcome
     result = if dice_matched_proposition?
       Outcome::WIN
     else

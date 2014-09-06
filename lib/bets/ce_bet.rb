@@ -7,7 +7,7 @@ class CeBet < TableBet
     1
   end
 
-  def outcome(player_bet)
+  def outcome
     result = if dice.craps? || dice.eleven?
       Outcome::WIN
     else
