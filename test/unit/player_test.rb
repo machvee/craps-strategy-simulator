@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class PlayerTest < Test::Unit::TestCase
+class PlayerTest < ActiveSupport::TestCase
   def setup
     @table = mock('table')
     @amount = 1000

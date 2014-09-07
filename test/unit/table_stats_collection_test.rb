@@ -1,7 +1,7 @@
 require 'test_helper'
 
 
-class TableStatsCollectionTest < Test::Unit::TestCase
+class TableStatsCollectionTest < ActiveSupport::TestCase
   class TestStatsCollection < TableStatsCollection
   end
 

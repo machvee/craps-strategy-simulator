@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RollStatsTest < Test::Unit::TestCase
+class RollStatsTest < ActiveSupport::TestCase
   def setup
     @num_rolls = 397
     @d = Dice.new(2, DefaultSeeder.new(29293939))   # same roll sequence every time

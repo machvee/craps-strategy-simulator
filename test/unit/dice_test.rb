@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class DiceTest < Test::Unit::TestCase
+class DiceTest < ActiveSupport::TestCase
   def setup
     @dice = Dice.new(6, seeder)
   end

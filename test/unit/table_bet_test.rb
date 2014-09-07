@@ -1,12 +1,13 @@
 require 'test_helper'
 
-class TableBetTest < Test::Unit::TestCase
+class TableBetTest < ActiveSupport::TestCase
   class CoolBet < TableBet
     def name
       "Cool Bet on #{number}"
     end
 
-    def outcome(player_bet)
+    def outcome
+      additional_stats = {}
       result = if table.win?
         Outcome::WIN
       elsif table.lose?
@@ -14,6 +15,7 @@ class TableBetTest < Test::Unit::TestCase
       else
         Outcome::NONE
       end
+      [result, additional_stats]
     end
   end
 
@@ -27,6 +29,7 @@ class TableBetTest < Test::Unit::TestCase
     @table.expects(:bet_stats).at_least_once.returns(@bet_stats)
     @cool_bet = CoolBet.new(@table, @number)
     @won_stat_name = 'table_test/cool_2'
+    @dice = mock('dice')
   end
 
   def test_cool_bet
@@ -53,11 +56,11 @@ class TableBetTest < Test::Unit::TestCase
   end
 
   def test_rolled_the_number
-    @table.expects(:last_roll).once.returns(@number)
-    assert @cool_bet.rolled_the_number?, "table last_roll is #@number, should've made the number"
-    not_number=@number+1
-    @table.expects(:last_roll).once.returns(not_number)
-    assert !@cool_bet.rolled_the_number?, "table last_roll is #{not_number}, shouldn't have made the number"
+    @dice = mock_dice
+    @dice.expects(:rolled?).with(@number).returns(true)
+    assert @cool_bet.rolled_the_number?, "dice.value is #@number, should've made the number"
+    @dice.expects(:rolled?).with(@number).returns(false)
+    assert !@cool_bet.rolled_the_number?, "dice.value is not #@number, shouldn't have made the number"
   end
 
   def test_add_player_bet
@@ -83,9 +86,7 @@ class TableBetTest < Test::Unit::TestCase
     assert @cool_bet.player_bets.first.present?
     
     @table.expects(:win?).returns(true)
-    @bet_stats.expects(:occurred).with(@won_stat_name).once
-    player_bet.expects(:stat_occurred).with(@won_stat_name).once
-    @cool_bet.determine_outcome(player_bet)
+    assert_outcome_won(@cool_bet)
   end
 
   def test_determine_outcome_with_player_bet_losing
@@ -96,9 +97,7 @@ class TableBetTest < Test::Unit::TestCase
     
     @table.expects(:lose?).returns(true)
     @table.expects(:win?).returns(false)
-    @bet_stats.expects(:did_not_occur).with(@won_stat_name).once
-    player_bet.expects(:stat_did_not_occur).with(@won_stat_name).once
-    @cool_bet.determine_outcome(player_bet)
+    assert_outcome_lost(@cool_bet)
   end
 
   def test_determine_outcome_with_player_bet_nothing_happened
@@ -109,11 +108,7 @@ class TableBetTest < Test::Unit::TestCase
     
     @table.expects(:lose?).returns(false)
     @table.expects(:win?).returns(false)
-    @bet_stats.expects(:did_not_occur).never
-    @bet_stats.expects(:occurred).never
-    player_bet.expects(:stat_did_not_occur).never
-    player_bet.expects(:stat_occurred).never
-    @cool_bet.determine_outcome(player_bet)
+    assert_outcome_none(@cool_bet)
   end
 
   def test_validate_player_already_has_that_bet

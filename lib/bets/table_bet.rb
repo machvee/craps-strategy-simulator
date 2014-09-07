@@ -137,12 +137,10 @@ class TableBet
 
   def win_stat
     {win_stat_name => OccurrenceStat::OCCURRED}
-    # bet_stats.occurred(win_stat_name)
   end
 
   def lose_stat
     {win_stat_name => OccurrenceStat::DID_NOT_OCCUR}
-    # bet_stats.did_not_occur(win_stat_name)
   end
 
   def win_stat_name

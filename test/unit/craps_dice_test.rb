@@ -11,7 +11,7 @@ class SameDieSeeder
   end
 end
 
-class CrapsDiceTest < Test::Unit::TestCase
+class CrapsDiceTest < ActiveSupport::TestCase
   def setup
     @dice = CrapsDice.new(2, seeder)
   end

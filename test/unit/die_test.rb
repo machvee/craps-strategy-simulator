@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class DieTest < Test::Unit::TestCase
+class DieTest < ActiveSupport::TestCase
   def setup
     @seed = 7464493364548338471112
     @die = Die.new(@seed)
