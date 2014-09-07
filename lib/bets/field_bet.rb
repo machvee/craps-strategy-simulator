@@ -6,7 +6,7 @@ class FieldBet < TableBet
   def initialize(table, number=nil)
     super
     bet_stats.add SPECIAL_STAT_NUMBERS.map { |v|
-      OccurrenceStat.new(STAT_NAME_HASH[v], Proc.new {dice.fields?}) {dice.rolled?(v)}
+      OccurrenceStat.new(STAT_NAME_HASH[v])
     }
   end
 
@@ -17,20 +17,25 @@ class FieldBet < TableBet
   def outcome
     additional_stats = {}
     result = if dice.fields?
-      additional_stats = field_val_win_stat
+      additional_stats = special_win_stat
       Outcome::WIN
-    end
+    else
       Outcome::LOSE
+    end
     [result, additional_stats]
   end
 
   private
 
-  def field_val_win_stat
-    SPECIAL_STAT_NUMBERS.each {|v| 
-      return {STAT_NAME_HASH[v] => OccurrenceStat::OCCURRED} if dice.rolled?(v)
-    }
-    {}
+  def special_win_stat
+    additional_stats = {}
+    SPECIAL_STAT_NUMBERS.each do |v| 
+      if dice.rolled?(v)
+        additional_stats = {STAT_NAME_HASH[v] => OccurrenceStat::OCCURRED}
+        break
+      end
+    end
+    additional_stats
   end
 
 end
