@@ -94,8 +94,8 @@ class OccurrenceStat
   end
 
   def last(n=1)
-    h = @last_history[-n,[n, @last_history.length].min]
-    n == 1 ? h[0] : h.reverse
+    l = @last_history.last(n)
+    n > 1 ? l : l.first
   end
 
   def last_counts(n=HISTORY_LENGTH)

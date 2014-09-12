@@ -53,8 +53,8 @@ class Shooter
   end
 
   def last_rolls(n=1)
-    num = [n, @roll_history.length].min
-    @roll_history[-num, num]
+    l = @roll_history.last(n)
+    n > 1 ? l : l.first
   end
 
   def return_dice

@@ -25,5 +25,52 @@ class ShooterTest < ActiveSupport::TestCase
     assert_equal @players.first, player
     @shooter.done
   end
+
+  def test_roll_needs_shooter
+    assert_raises(RuntimeError) do 
+      @shooter.roll
+    end
+  end
+
+  def test_early_done_raises
+    assert_raises(RuntimeError) do 
+      @shooter.done
+    end
+  end
+
+  def test_shooter_roll_and_history_across_players
+    roll_some(11,7)
+    chk_hist = 43
+    assert_equal @last_rolls[-chk_hist, chk_hist], @shooter.last_rolls(chk_hist)
+  end
+
+  def test_reset_stats
+    roll_some(12,8)
+    assert_equal 5, @shooter.last_rolls(5).length
+
+    @shooter.reset_stats
+    assert_equal 0, @shooter.total_rolls
+    assert @shooter.last_rolls(10).empty?
+  end
+
+  def test_stats_access
+    roll_some(5,5)
+    assert @shooter.roll_stats.rolled_2 >= 0
+    assert @shooter.roll_stats.rolled_3 >= 0
+    assert @shooter.roll_stats.rolled_7 >= 0
+    assert @shooter.roll_stats.rolled_8 >= 0
+  end
+
+  private
+
+  def roll_some(num_rolls_per_shooter, num_shooters)
+    @last_rolls = []
+    num_shooters.times do
+      @shooter.set
+      num_rolls_per_shooter.times {@last_rolls << @shooter.roll}
+      @shooter.done
+    end
+    assert_equal num_rolls_per_shooter * num_shooters, @shooter.total_rolls
+  end
 end
 

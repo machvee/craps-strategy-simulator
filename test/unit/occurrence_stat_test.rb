@@ -41,10 +41,10 @@ class OccurrenceStatTest < ActiveSupport::TestCase
 
      assert_equal false, s.last
      last_3 = s.last(3)
-     assert_equal [false, false, true], last_3 # lost, lost, won
+     assert_equal [true, false, false], last_3 # won, lost, lost
 
      last_6 = s.last(6)
-     assert_equal [false, false, true, false, true, true], last_6 # reverse order of above won lost calls
+     assert_equal [true, true, false, true, false, false], last_6 # reverse order of above won lost calls
   end
 
   def test_can_reset_and_count_correctly_with_not_occurred_condition
