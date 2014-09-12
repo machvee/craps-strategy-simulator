@@ -22,14 +22,14 @@ class FieldBetTest < ActiveSupport::TestCase
   def test_outcome_win_field_made_special_2_stat
     @dice = mock_dice(fields?: true)
     @dice.expects(:rolled?).once.with(2).returns(true)
-    assert_outcome_won(@bet, {FieldBet::STAT_NAME_HASH[2] => OccurrenceStat::OCCURRED})
+    assert_outcome_won(@bet, {FieldBet::STAT_NAME_HASH[2] => OccurrenceStat::WON})
   end
 
   def test_outcome_win_field_made_special_12_stat
     @dice = mock_dice(fields?: true)
     @dice.expects(:rolled?).once.with(2).returns(false)
     @dice.expects(:rolled?).once.with(12).returns(true)
-    assert_outcome_won(@bet, {FieldBet::STAT_NAME_HASH[12] => OccurrenceStat::OCCURRED})
+    assert_outcome_won(@bet, {FieldBet::STAT_NAME_HASH[12] => OccurrenceStat::WON})
   end
 
   def test_outcome_lose_no_field

@@ -27,17 +27,24 @@ class OccurrenceStatTest < ActiveSupport::TestCase
 
   def test_can_manually_occur_not_occur
      s = OccurrenceStat.new('wins')
-     s.occurred
-     s.occurred
-     s.occurred
-     s.did_not_occur
-     s.occurred
-     s.did_not_occur
-     s.did_not_occur
-     assert_equal 4, s.total_occurred
-     assert_equal 3, s.total_did_not_occur
-     assert_equal 3, s.max_consec_occurred
-     assert_equal 2, s.max_consec_did_not_occur
+     s.won
+     s.won
+     s.won
+     s.lost
+     s.won
+     s.lost
+     s.lost
+     assert_equal 4, s.total_won
+     assert_equal 3, s.total_lost
+     assert_equal 3, s.longest_winning_streak
+     assert_equal 2, s.longest_losing_streak
+
+     assert_equal false, s.last
+     last_3 = s.last(3)
+     assert_equal [false, false, true], last_3 # lost, lost, won
+
+     last_6 = s.last(6)
+     assert_equal [false, false, true, false, true, true], last_6 # reverse order of above won lost calls
   end
 
   def test_can_reset_and_count_correctly_with_not_occurred_condition
@@ -80,12 +87,12 @@ class OccurrenceStatTest < ActiveSupport::TestCase
   end
 
   def assert_counts?(s, otot, dnotot, omax, dnomax)
-    assert_equal otot+dnotot, s.master_count
-    assert_equal otot, s.total
-    assert_equal otot, s.total(OccurrenceStat::OCCURRED)
-    assert_equal dnotot, s.total(OccurrenceStat::DID_NOT_OCCUR)
-    assert_equal omax, s.max
-    assert_equal omax, s.max(OccurrenceStat::OCCURRED)
-    assert_equal dnomax, s.max(OccurrenceStat::DID_NOT_OCCUR)
+    assert_equal otot+dnotot, s.count
+    assert_equal otot, s.total_won
+    assert_equal otot, s.total(OccurrenceStat::WON)
+    assert_equal dnotot, s.total(OccurrenceStat::LOST)
+    assert_equal omax, s.longest_winning_streak
+    assert_equal omax, s.longest_streak[OccurrenceStat::WON]
+    assert_equal dnomax, s.longest_streak[OccurrenceStat::LOST]
   end
 end

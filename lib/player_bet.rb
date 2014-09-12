@@ -45,10 +45,6 @@ class PlayerBet
     !bet_off && table_bet.on?
   end
 
-  def update_player_bet_stats_from_hash(stats_hash)
-    player.stats.bet_stats.update_from_hash(stats_hash)
-  end
-
   def off?
     !on?
   end

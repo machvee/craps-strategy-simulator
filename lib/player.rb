@@ -128,6 +128,10 @@ class Player
     #
   end
 
+  def update_bet_stats_from_hash(stats_hash)
+    stats.bet_stats.update_from_hash(stats_hash)
+  end
+
   def play_strategy
     #
     # here's where the configurable player strategy comes in

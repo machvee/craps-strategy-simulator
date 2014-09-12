@@ -43,19 +43,19 @@ class PassLineBet < TableBet
   end
 
   def front_line_winner_stat
-    {FRONT_LINE_WINNER_STAT_NAME => OccurrenceStat::OCCURRED}
+    {FRONT_LINE_WINNER_STAT_NAME => OccurrenceStat::WON}
   end
 
   def crapped_out_stat
-    {FRONT_LINE_WINNER_STAT_NAME => OccurrenceStat::DID_NOT_OCCUR}
+    {FRONT_LINE_WINNER_STAT_NAME => OccurrenceStat::LOST}
   end
 
   def point_made_stat
-    {POINT_MADE_STAT_NAME => OccurrenceStat::OCCURRED}
+    {POINT_MADE_STAT_NAME => OccurrenceStat::WON}
   end
 
   def seven_out_stat
-    {POINT_MADE_STAT_NAME => OccurrenceStat::DID_NOT_OCCUR}
+    {POINT_MADE_STAT_NAME => OccurrenceStat::LOST}
   end
 
 end

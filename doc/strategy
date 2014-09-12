@@ -1,0 +1,19 @@
+Inputs player strategy can reference (and how they can help shape a strategy)
+
+1. whats the table state?  off on (point)
+     "if table is off I want to make a pass line bet, but not a come bet"
+2. what player bets are on the table
+     "I don't have a place 6/8 bet"  "I already have a pass odds bet"
+3. how much is bet on each
+     "how much do I have on place 5, I want to stop pressing it so high"
+4. outcome of last roll
+     "won hard 8, place 8, lost Field bet"
+5. consecutive win/lost streak of each table bet +2 = 2 wins, -3 = 3 losses
+     "wow, the place 5 bet just hit 3 times, and I'm not on it"
+6. consecutive win/lost streak of each player bet +2 = 2 wins, -3 = 3 losses
+     "my hard 8 just lost 3 in a row, I think I'll stay off of it"
+     "I just won my 4th point in a row.  Table is HOT!  Start Pressing!"
+7. current rail win/losses (% up/down)
+     "I'm down 50%.  I think I'll quit"
+8. number of rolls
+     "I will do 500 rolls and stop to see where I'm at"

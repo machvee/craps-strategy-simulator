@@ -42,11 +42,11 @@ class Table
   }
 
   BET_STATS_HEADERS = {
-    master_count: 'total',
-    occurred: 'won',
-    consec_occurred: 'consec won',
-    did_not_occur: 'lost',
-    consec_did_not_occur: 'consec lost'
+    count:         'total',
+    won:           'won',
+    win_streak:    'win streak',
+    lost:          'lost',
+    losing_streak: 'lost streak'
   }
 
 
@@ -180,7 +180,7 @@ class Table
             # bet stays in place
         end
 
-        player_bet.update_player_bet_stats_from_hash(stats_hash)
+        player_bet.player.update_bet_stats_from_hash(stats_hash)
 
       end
     end
@@ -290,7 +290,7 @@ class Table
   end
 
   def seven_outs
-    bet_stats.point_made(OccurrenceStat::DID_NOT_OCCUR)
+    bet_stats.point_made(OccurrenceStat::LOST)
   end
 
   def quietly?(option)

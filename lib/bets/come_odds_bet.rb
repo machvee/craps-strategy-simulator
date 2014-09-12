@@ -56,7 +56,7 @@ class ComeOddsBet < TableBet
   end
  
   def return_stat
-    {return_stat_name => OccurrenceStat::OCCURRED}
+    {return_stat_name => OccurrenceStat::WON}
   end
 
   def self.gen_number_bets(table)

@@ -16,4 +16,7 @@ class BasicStrategy < BaseStrategy
       player.place_bet(n) if table_state.on? unless player.has_bet?(PlaceBet, n) || table_state.point?(n)
     end
   end
+
+  def pass_line_strategy
+  end
 end

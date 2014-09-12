@@ -52,7 +52,7 @@ class TableBet
   def outcome
     # subclass override and uses table state and dice value to
     # determine if the bet won or lost
-    # return [Outcome::XXXX, {custom_stat_name => OccurrenceStat::OCCCURRED|OccurrenceStat::DID_NOT_OCCUR, ...}]
+    # return [Outcome::XXXX, {custom_stat_name => OccurrenceStat::WON|OccurrenceStat::LOST, ...}]
   end
 
   def bet_remains_after_win?
@@ -136,11 +136,11 @@ class TableBet
   end
 
   def win_stat
-    {win_stat_name => OccurrenceStat::OCCURRED}
+    {win_stat_name => OccurrenceStat::WON}
   end
 
   def lose_stat
-    {win_stat_name => OccurrenceStat::DID_NOT_OCCUR}
+    {win_stat_name => OccurrenceStat::LOST}
   end
 
   def win_stat_name

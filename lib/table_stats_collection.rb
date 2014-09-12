@@ -43,31 +43,31 @@ class TableStatsCollection
     each do |stat|
       new_stat = OccurrenceStat.new(
         stat.name,
-        stat.not_occurred_condition,
-        &stat.occurred_condition)
+        stat.lost_condition,
+        &stat.won_condition)
       tsc.add(new_stat)
     end
     tsc
   end
   
   def update_from_hash(stats_hash)
-    # stats_hash is {stat_name => OCCURRED/DID_NOT_OCCUR, ...}
+    # stats_hash is {stat_name => WON/LOST, ...}
     stats_hash.each_pair do |stat_name, val|
       case val
-        when OccurrenceStat::OCCURRED
-          occurred(stat_name)
-        when OccurrenceStat::DID_NOT_OCCUR
-          did_not_occur(stat_name)
+        when OccurrenceStat::WON
+          won(stat_name)
+        when OccurrenceStat::LOST
+          lost(stat_name)
       end
     end
   end
 
-  def occurred(stat_name)
-    @lkup[stat_name].occurred
+  def won(stat_name)
+    @lkup[stat_name].won
   end
 
-  def did_not_occur(stat_name)
-    @lkup[stat_name].did_not_occur
+  def lost(stat_name)
+    @lkup[stat_name].lost
   end
 
   def incr(stat_name)
@@ -82,7 +82,7 @@ class TableStatsCollection
     Array(stat).each do |stat|
       @stats << stat
       @lkup[stat.name] = stat
-      make_occurred_convenience_methods(stat)
+      make_won_convenience_methods(stat)
     end
   end
 
@@ -92,12 +92,12 @@ class TableStatsCollection
 
   private
 
-  def make_occurred_convenience_methods(stat)
+  def make_won_convenience_methods(stat)
     #
     # be careful not to make stats names that conflict with defined methods above
     #
     self.class.instance_eval do
-      define_method(stat.name) do |option=OccurrenceStat::OCCURRED|
+      define_method(stat.name) do |option=OccurrenceStat::WON|
         stat.total(option)
       end
     end

@@ -45,23 +45,23 @@ class TableStatsCollectionTest < ActiveSupport::TestCase
     assert_equal @total_beta+@total_combined, @c.beta
   end
 
-  def test_occurred_by_name
+  def test_won_by_name
     c = TestStatsCollection.new('test2', @table)
     c.add(OccurrenceStat.new('alpha'))
     c.add(OccurrenceStat.new('beta'))
-    c.occurred('alpha')
-    c.occurred('alpha')
-    c.occurred('alpha')
-    c.occurred('beta')
-    c.occurred('beta')
-    c.occurred('beta')
+    c.won('alpha')
+    c.won('alpha')
+    c.won('alpha')
+    c.won('beta')
+    c.won('beta')
+    c.won('beta')
     c.incr('beta')
-    c.did_not_occur('alpha')
-    c.did_not_occur('beta')
+    c.lost('alpha')
+    c.lost('beta')
     assert_equal 3, c.alpha
     assert_equal 4, c.beta
-    assert_equal 1, c.stat_by_name('alpha').total_did_not_occur
-    assert_equal 1, c.stat_by_name('beta').total_did_not_occur
+    assert_equal 1, c.stat_by_name('alpha').total_lost
+    assert_equal 1, c.stat_by_name('beta').total_lost
   end
 
   def test_reset

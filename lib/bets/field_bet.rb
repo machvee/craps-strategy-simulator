@@ -31,7 +31,7 @@ class FieldBet < TableBet
     additional_stats = {}
     SPECIAL_STAT_NUMBERS.each do |v| 
       if dice.rolled?(v)
-        additional_stats = {STAT_NAME_HASH[v] => OccurrenceStat::OCCURRED}
+        additional_stats = {STAT_NAME_HASH[v] => OccurrenceStat::WON}
         break
       end
     end

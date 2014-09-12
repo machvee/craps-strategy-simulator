@@ -7,10 +7,13 @@ class Shooter
 
   delegate :players, :dice_tray, to: :table
 
-  def initialize(table)
+  ROLL_HISTORY_LENGTH = 100
+
+  def initialize(table, roll_history_length=ROLL_HISTORY_LENGTH)
     @table = table
     no_shooter
     @roll_stats = RollStats.new("dice", table)
+    @roll_history = RingBuffer.new(roll_history_length)
   end
 
   def set
@@ -42,10 +45,16 @@ class Shooter
   end
 
   def roll
-    raise "no roll. a player to take the dice" if dice.nil?
+    raise "no roll. need a player to take the dice" if dice.nil?
     dice.roll.tap { |value|
+      @roll_history << value
       roll_stats.update
     }
+  end
+
+  def last_rolls(n=1)
+    num = [n, @roll_history.length].min
+    @roll_history[-num, num]
   end
 
   def return_dice
@@ -56,6 +65,7 @@ class Shooter
 
   def reset_stats
     roll_stats.reset
+    @roll_history.clear
   end
 
   def no_shooter
@@ -63,7 +73,7 @@ class Shooter
   end
 
   def total_rolls
-    roll_stats.stats.first.master_count
+    roll_stats.stats.first.count
   end
 
 end
