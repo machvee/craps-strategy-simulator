@@ -1,0 +1,56 @@
+stats - two varieties: 
+  1. Events made/win/loss/streaks (e.g. RollStat)
+  2. Bets made/win/loss/streaks, with summed quantities associated with made/win/loss (TableBet parent, PlayerBet child bets)
+
+  Need State Definitions (StatDefs), and stat accumulator instances that actually hold tallies. 
+
+  StatDefs and StatAccumulators can be collected for groups of related stats.  This allows StatDefs to be shared easily, and also 
+  allows iteration over many stats for tabluar print out and aggregating totals (e.g. total amount across all bets)
+  
+  StatAccumulator Instances can have a parent/child relationship.  The parent will have a list of zero or more active children, and
+  when the parent stat is tallied, it will tally its active children.  The containing class of the stat child accumulator will be
+  passed an Outcome from the parent stat def, and it calls the child stat accumulator update method with its specific child data.
+  The child stat accumulator is updated, and the child will invoke its parent stat accumulator with the same data.
+  
+  e.g.  a parent table_bet stat for Place 6 bet, will have child stats that are tied to
+  each active player_bet on that table_bet.  When the subclass of crapsbet determines outcome and updates
+  the parent stat (and any additional specialized stats), it also asks the stat for an iterator to the registered child
+  stats for that tallying process to update.  The stat parent and child class that holds the bet needs to implement a
+  stat-updating method.
+
+
+craps_bet - abstract bet you can make on a craps table
+  name
+  payout
+  min
+  max
+  basic bet validation
+  on/off rules
+
+specific bet subclass of craps_bet
+  outcome - logic for determining win or loss based on table state and last roll.  returns true Outcome
+  additional_stats - can register and maintain additional stats, and is responsible for their tallys
+  
+table_bet - ties the specific bet subclass to a physical table
+  player_bets - current player_bets (on/off) on the table felt
+  settle - iterates through player_bets outcome method to pay players winnings, takes house winnings, move or return bets
+  stat - based on subclass name bets made/win/loss/streaks, amount bet/won/lost.  Iterates through player_bet and craps_bet subclass 
+
+player - when he joins the table, he gets a clone of all table_bet stats and shooter roll_stats.  When these stats are tallied at
+  the table level, they are also tallied for the player when relevent -- when he's the shooter and when he has a player_bet on a
+  active on a table_bet
+  
+
+
+PassLineBet < CrapsBet
+  WinStat
+  *PointMadeStat
+  *FrontLineWinner
+  OutCome decider given table_state and dice.value.  WIN/LOSE OTHER
+
+TableBet has_a PassLineBet
+  add_bet - appends PlayerBet to TableBets player_bets array, and registers that child bet instance with the parent.  A method defined
+  in PlayerBet gives the optional {:amount => player_bet.amount/winnings} to the stats that need amounts passed in.  Each child bet is tallied
+  and the parent bet is tallied each time so it reflects the aggregation of child bets.
+
+

@@ -1,6 +1,7 @@
 class TableBet
   attr_reader :number
   attr_reader :table
+  attr_reader :stat
   attr_reader :player_bets
 
   delegate :dice, :config, :table_state, :bet_stats,  to: :table
@@ -23,7 +24,7 @@ class TableBet
     @table = table
     @number = number
     @player_bets = []
-    bet_stats.add OccurrenceStat.new(win_stat_name)
+    bet_stats.add(@stat = BetStat.new(win_stat_name))
   end
 
   def add_bet(player_bet)
@@ -52,7 +53,7 @@ class TableBet
   def outcome
     # subclass override and uses table state and dice value to
     # determine if the bet won or lost
-    # return [Outcome::XXXX, {custom_stat_name => OccurrenceStat::WON|OccurrenceStat::LOST, ...}]
+    # return [Outcome::XXXX, {custom_stat_name => BetStat::WON|BetStat::LOST, ...}]
   end
 
   def bet_remains_after_win?
@@ -136,11 +137,11 @@ class TableBet
   end
 
   def win_stat
-    {win_stat_name => OccurrenceStat::WON}
+    {win_stat_name => BetStat::WON}
   end
 
   def lose_stat
-    {win_stat_name => OccurrenceStat::LOST}
+    {win_stat_name => BetStat::LOST}
   end
 
   def win_stat_name

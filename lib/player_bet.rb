@@ -52,12 +52,14 @@ class PlayerBet
   def pay_winning_bet
     pay_this, for_every = table.config.payoff_odds(table_bet, number)
     winnings = (amount/for_every) * pay_this
+    table_bet.stat.bump_amount(BetStat::WIN, winnings)
     player.to_rail(winnings)
     player.take_down(self) unless table_bet.bet_remains_after_win?
     winnings
   end
 
   def losing_bet
+    table_bet.stat.bump_amount(BetStat::LOST, amount)
     player.from_wagers(amount)
     player.remove_bet(self)
   end
