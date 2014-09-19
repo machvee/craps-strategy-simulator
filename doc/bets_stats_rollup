@@ -2,12 +2,10 @@ stats - two varieties:
   1. Events made/win/loss/streaks (e.g. RollStat)
   2. Bets made/win/loss/streaks, with summed quantities associated with made/win/loss (TableBet parent, PlayerBet child bets)
 
-  Need State Definitions (StatDefs), and stat accumulator instances that actually hold tallies. 
-
-  StatDefs and StatAccumulators can be collected for groups of related stats.  This allows StatDefs to be shared easily, and also 
+  Stats can be collected for groups of related stats.  This allows StatDefs to be shared easily, and also 
   allows iteration over many stats for tabluar print out and aggregating totals (e.g. total amount across all bets)
   
-  StatAccumulator Instances can have a parent/child relationship.  The parent will have a list of zero or more active children, and
+  Stat Instances can have a parent/child relationship.  The parent will have a list of zero or more active children, and
   when the parent stat is tallied, it will tally its active children.  The containing class of the stat child accumulator will be
   passed an Outcome from the parent stat def, and it calls the child stat accumulator update method with its specific child data.
   The child stat accumulator is updated, and the child will invoke its parent stat accumulator with the same data.

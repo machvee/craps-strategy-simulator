@@ -1,13 +1,13 @@
 require 'test_helper'
 
-class OccurrenceStatTest < ActiveSupport::TestCase
+class StatTest < ActiveSupport::TestCase
   def test_can_reset_and_count_correctly_no_not_occurred
      vals = %w{red red blue blue blue red red blue blue red red red red}
      @val = nil
      @name = 'reds'
      red_count = vals.grep(/red/).length
      blue_count = vals.grep(/blue/).length
-     s = OccurrenceStat.new(@name) {@val == 'red'}
+     s = Craps::Stat.new(@name) {@val == 'red'}
      assert_equal @name, s.name
      assert_counts?(s, 0, 0, 0, 0)
      vals.each {|v| @val = v; s.update}
@@ -17,7 +17,7 @@ class OccurrenceStatTest < ActiveSupport::TestCase
   end
 
   def test_can_manually_incr_like_a_simple_counter
-     s = OccurrenceStat.new('wins')
+     s = Craps::Stat.new('wins')
      s.incr
      s.incr
      s.incr
@@ -26,7 +26,7 @@ class OccurrenceStatTest < ActiveSupport::TestCase
   end
 
   def test_can_manually_occur_not_occur
-     s = OccurrenceStat.new('wins')
+     s = Craps::Stat.new('wins')
      s.won
      s.won
      s.won
@@ -54,7 +54,7 @@ class OccurrenceStatTest < ActiveSupport::TestCase
      @name = 'reds_vs_blue'
      red_count = vals.grep(/red/).length
      blue_count = vals.grep(/blue/).length
-     s = OccurrenceStat.new(@name, equals_blue_proc) {@val == 'red'}
+     s = Craps::Stat.new(@name, equals_blue_proc) {@val == 'red'}
      assert_equal @name, s.name
      assert_counts?(s, 0, 0, 0, 0)
      vals.each {|v| @val = v; s.update}
@@ -70,14 +70,14 @@ class OccurrenceStatTest < ActiveSupport::TestCase
      @name = 'reds'
      red_count = vals.grep(/red/).length
      not_red_count = vals.length - red_count
-     s = OccurrenceStat.new(@name) {@val == 'red'}
+     s = Craps::Stat.new(@name) {@val == 'red'}
      assert_match %r{#@name.*0 */ *0 *0 */ *0}, s.to_s
      vals.each {|v| @val = v; s.update}
      assert_match %r{#@name *#{red_count + not_red_count} *#{red_count} */ *3 *#{not_red_count} */ *5}, s.to_s
   end
 
   def test_inspect_calls_to_s
-    s = OccurrenceStat.new(@name) {@val == 'red'}
+    s = Craps::Stat.new(@name) {@val == 'red'}
     s.expects(:to_s).once
     s.inspect
   end
@@ -89,10 +89,10 @@ class OccurrenceStatTest < ActiveSupport::TestCase
   def assert_counts?(s, otot, dnotot, omax, dnomax)
     assert_equal otot+dnotot, s.count
     assert_equal otot, s.total_won
-    assert_equal otot, s.total(OccurrenceStat::WON)
-    assert_equal dnotot, s.total(OccurrenceStat::LOST)
+    assert_equal otot, s.total(Craps::Stat::WON)
+    assert_equal dnotot, s.total(Craps::Stat::LOST)
     assert_equal omax, s.longest_winning_streak
-    assert_equal omax, s.longest_streak[OccurrenceStat::WON]
-    assert_equal dnomax, s.longest_streak[OccurrenceStat::LOST]
+    assert_equal omax, s.longest_streak[Craps::Stat::WON]
+    assert_equal dnomax, s.longest_streak[Craps::Stat::LOST]
   end
 end

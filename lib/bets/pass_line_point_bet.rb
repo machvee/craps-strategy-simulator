@@ -1,21 +1,18 @@
 module Craps
-  class ComeBet < CrapsBet
+  class PassLinePointBet < CrapsBet
+
     def name
-      "Come Bet on #{number}"
+      "Pass Line Bet #{number}"
     end
 
     def player_can_set_off?
       false
     end
 
-    def bet_remains_after_win?
-      false
-    end
-
     def outcome
-      if rolled_the_number?
+      if table_state.point_made?
         Outcome::WIN
-      elsif dice.seven?
+      elsif table_state.seven_out?
         Outcome::LOSE
       else
         Outcome::NONE
@@ -23,7 +20,7 @@ module Craps
     end
 
     def self.gen_number_bets(table)
-      CrapsDice::POINTS.map {|number| ComeBet.new(table, number)}
+      CrapsDice::POINTS.map {|number| PassLinePointBet.new(table, number)}
     end
   end
 end
