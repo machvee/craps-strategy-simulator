@@ -17,10 +17,10 @@ module Whalemaker
 
     # Custom directories with classes and modules you want to be autoloadable.
     config.autoload_paths += %W(
-      #{config.root}/lib
-      #{config.root}/lib/bets
-      #{config.root}/lib/stats
-      #{config.root}/lib/strategies
+      #{config.root}/lib/craps
+      #{config.root}/lib/craps/bets
+      #{config.root}/lib/craps/stats
+      #{config.root}/lib/craps/strategies
     )
 
     # Only load the plugins named here, in the order given (default is alphabetical).

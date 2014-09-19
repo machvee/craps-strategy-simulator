@@ -1,26 +1,24 @@
-module Craps
-  class PassLinePointBet < CrapsBet
+class PassLinePointBet < CrapsBet
 
-    def name
-      "Pass Line Bet #{number}"
-    end
+  def name
+    "Pass Line Bet #{number}"
+  end
 
-    def player_can_set_off?
-      false
-    end
+  def player_can_set_off?
+    false
+  end
 
-    def outcome
-      if table_state.point_made?
-        Outcome::WIN
-      elsif table_state.seven_out?
-        Outcome::LOSE
-      else
-        Outcome::NONE
-      end
+  def outcome
+    if table_state.point_made?
+      Outcome::WIN
+    elsif table_state.seven_out?
+      Outcome::LOSE
+    else
+      Outcome::NONE
     end
+  end
 
-    def self.gen_number_bets(table)
-      CrapsDice::POINTS.map {|number| PassLinePointBet.new(table, number)}
-    end
+  def self.gen_number_bets(table)
+    CrapsDice::POINTS.map {|number| PassLinePointBet.new(table, number)}
   end
 end
