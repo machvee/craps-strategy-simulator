@@ -9,24 +9,20 @@ class Stat
     attr_reader :names
 
     def initialize(counter_names)
-      @names = counter_names.map(&:to_s)
-      @counters = {}
-      names.each do |c|
-        counters[c] = nil
-      end
+      @names = counter_names
+      @counters = Hash.new {|h,k| h[k] = 0}
       reset
     end
 
     def update(counts)
       counts.each_pair do |counter_name, value|
+        raise "no such optional counter #{counter_name}" unless counters.has_key?(counter_name)
         counters[counter_name] += value
       end
     end
 
     def reset
-      counters.keys do |counter_name|
-        optional_counters[counter_name] = 0
-      end
+      names.each { |counter_name| counters[counter_name] = 0 }
     end
 
     def values
@@ -35,6 +31,10 @@ class Stat
         vals << v
       end
       vals
+    end
+
+    def [](key)
+      counters[key]
     end
   end
 
@@ -56,7 +56,7 @@ class Stat
 
   DEFAULT_HISTORY_LENGTH = 10 # keep the last 10 results
 
-  def initialize(name, lost_condition = Proc.new {true}, options={}, &won_condition)
+  def initialize(name, lost_condition = proc {true}, options={}, &won_condition)
     @name = name
     @parent_stat = nil
     @won_condition = won_condition
@@ -143,9 +143,13 @@ class Stat
     n > 1 ? l : l.first
   end
 
-  def last_counts(n=HISTORY_LENGTH)
+  def last_counts(n=@last_history.max_size)
     wants = last(n)
-    to_hash(wants.count {|o| o==WON}, wants.count {|o| o=LOST})
+    to_hash(wants.count {|o| o==WON}, wants.count {|o| o==LOST})
+  end
+
+  def counters(key)
+    optional_counters[key]
   end
 
   def reset

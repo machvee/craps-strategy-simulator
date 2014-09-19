@@ -71,19 +71,60 @@ class StatTest < ActiveSupport::TestCase
      red_count = vals.grep(/red/).length
      not_red_count = vals.length - red_count
      s = Stat.new(@name) {@val == 'red'}
-     assert_match %r{#@name.*0 */ *0 *0 */ *0}, s.to_s
+     assert_match %r{#@name,0,0,0,0,0}, s.to_s
      vals.each {|v| @val = v; s.update}
-     assert_match %r{#@name *#{red_count + not_red_count} *#{red_count} */ *3 *#{not_red_count} */ *5}, s.to_s
+     assert_match %r{#@name,#{red_count + not_red_count},#{red_count},3,#{not_red_count},5}, s.to_s
   end
 
   def test_inspect_calls_to_s
     s = Stat.new(@name) {@val == 'red'}
-    s.expects(:to_s).once
+    s.expects(:attrs).once
     s.inspect
   end
 
+  def test_optional_counters
+    s = Stat.new('bang', proc{}, counter_names: [:cats, :dogs])
+    assert_equal({dogs: 0, cats: 0}, s.optional_counters.counters)
+    s.won(dogs: 12)
+    s.lost(cats: 33)
+    s.won(dogs: 8, cats: 7)
+    assert_equal 20, s.counters(:dogs)
+    assert_equal 40, s.counters(:cats)
+    s.reset
+    assert_equal 0, s.counters(:dogs)
+    assert_equal 0, s.counters(:cats)
+    assert_raises RuntimeError do
+      s.won(digs: 2)
+    end
+  end
+
+  def test_history
+    s = Stat.new('bang', proc {@val == 'blue'}, history_length: 5) {@val == 'red'}
+    @val = 'red'
+    s.update
+    s.update
+    s.update
+    @val = 'blue'
+    s.update
+    assert_equal 0, s.current_winning_streak
+    assert_equal 1, s.current_losing_streak
+    @val = 'red'
+    s.update
+    s.update
+    s.update
+    assert_equal 3, s.current_winning_streak
+    assert_equal 0, s.current_losing_streak
+    assert_equal Stat::WON, s.last
+    assert_equal [Stat::WON]*3, s.last(3)
+    assert_equal [Stat::WON, Stat::LOST] + [Stat::WON]*3, s.last(5)
+    @val = 'blue'
+    s.update
+    assert_equal [Stat::LOST] + [Stat::WON]*3 + [Stat::LOST], s.last(5)
+    assert_equal({Stat::WON => 3, Stat::LOST => 2}, s.last_counts)
+  end
+
   def equals_blue_proc
-    Proc.new {@val == 'blue'}
+    proc {@val == 'blue'}
   end
 
   def assert_counts?(s, otot, dnotot, omax, dnomax)
