@@ -1,8 +1,8 @@
 require 'test_helper'
 
 
-class TableStatsCollectionTest < ActiveSupport::TestCase
-  class TestStatsCollection < TableStatsCollection
+class StatsCollectionTest < ActiveSupport::TestCase
+  class TestStatsCollection < StatsCollection
   end
 
   def setup

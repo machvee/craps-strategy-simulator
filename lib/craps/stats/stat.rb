@@ -1,54 +1,14 @@
 class Stat
   #
   # keep track of the total number of times, current and max consecutive times
-  # times, and the last 100 results of a won/lost conditions.  Optional counts
-  # can be passed in to be accumulated with each win/lost condition
+  # times, and the last 100 results of a won/lost conditions.
   #
-  class OptionalCounters
-    attr_reader :counters
-    attr_reader :names
-
-    def initialize(counter_names)
-      @names = counter_names
-      @counters = Hash.new {|h,k| h[k] = 0}
-      reset
-    end
-
-    def update(counts)
-      counts.each_pair do |counter_name, value|
-        raise "no such optional counter #{counter_name}" unless counters.has_key?(counter_name)
-        counters[counter_name] += value
-      end
-    end
-
-    def reset
-      names.each { |counter_name| counters[counter_name] = 0 }
-    end
-
-    def values
-      vals = []
-      counters.each_pair do |k,v|
-        vals << v
-      end
-      vals
-    end
-
-    def [](key)
-      counters[key]
-    end
-  end
-
   attr_reader   :name
 
   attr_reader   :count  # number of times either won or lost
   attr_reader   :longest_streak # holds longest_winning_streak and longest_losing_streak
   attr_reader   :tally  # current counts of WON and LOST
   attr_reader   :streak # current streak of WON and LOST
-
-  attr_reader   :won_condition
-  attr_reader   :lost_condition
-  attr_reader   :optional_counters
-
   attr_accessor :parent_stat # all actions will roll up to this stat when set
 
   WON=true
@@ -56,44 +16,27 @@ class Stat
 
   DEFAULT_HISTORY_LENGTH = 10 # keep the last 10 results
 
-  def initialize(name, lost_condition = proc {true}, options={}, &won_condition)
+  def initialize(name, options = {})
     @name = name
     @parent_stat = nil
-    @won_condition = won_condition
-    @lost_condition = lost_condition
-    set_optional_counters(options[:counter_names]||[])
     @last_history = RingBuffer.new(options[:history_length]||DEFAULT_HISTORY_LENGTH)
     reset
   end
 
-  def set_optional_counters(counter_names)
-    @optional_counters = OptionalCounters.new(counter_names)
-  end
-
-  def update(counts={})
-    # update counts based on predefined won and lost proc calls
-    if won_condition.call
-      won(counts)
-    elsif lost_condition.call
-      lost(counts)
-    end
-    return
-  end
-
-  def incr(counts={})
+  def incr(options={})
     # for use like a simple counter
-    won(counts)
+    won(options)
   end
 
-  def won(counts={})
-    bump(WON, counts)
+  def won(options={})
+    bump(WON, options)
   end
 
-  def lost(counts={})
-    bump(LOST, counts)
+  def lost(options={})
+    bump(LOST, options)
   end
 
-  def bump(what_happened, counts={})
+  def bump(what_happened, options={})
     @count += 1
     tally[what_happened] += 1
     streak[what_happened] += 1
@@ -103,11 +46,9 @@ class Stat
       longest_streak[what_happened] = streak[what_happened] 
     end
 
-    optional_counters.update(counts)
-
     @last_history << what_happened
 
-    parent_stat.bump(what_happened, counts) if parent_stat.present?
+    parent_stat.bump(what_happened, options) if parent_stat.present?
   end
 
   def total(did=WON)
@@ -148,18 +89,13 @@ class Stat
     to_hash(wants.count {|o| o==WON}, wants.count {|o| o==LOST})
   end
 
-  def counters(key)
-    optional_counters[key]
-  end
-
   def reset
-    @count = 0
+    @count          = 0
     @longest_streak = zero_counter
     @tally          = zero_counter
     @streak         = zero_counter
+
     @last_history.clear
-    optional_counters.reset
-    return
   end
 
   def to_s
@@ -178,7 +114,7 @@ class Stat
       longest_winning_streak,
       total_lost, 
       longest_losing_streak
-    ] + optional_counters.values
+    ]
   end
 
   private

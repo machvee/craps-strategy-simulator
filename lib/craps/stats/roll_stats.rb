@@ -1,9 +1,10 @@
-require 'table_stats_collection'
-class RollStats < TableStatsCollection
-  def initialize(name, craps_table, parent_table=nil)
+require 'occurrence_table_stats_collection'
+
+class RollStats < OccurrenceTableStatsCollection
+  def initialize(name, craps_table, options = {})
     super
     add [*craps_table.dice_tray.dice_value_range].map { |v|
-      Stat.new('rolled_%d' % v) {table.last_roll == v}
+      OccurrenceStat.new('rolled_%d' % v) {craps_table.last_roll == v}
     }
   end
 end
