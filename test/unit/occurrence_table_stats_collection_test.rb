@@ -63,7 +63,7 @@ class OccurrenceTableStatsCollectionTest < ActiveSupport::TestCase
 
   def new_collection
     table = mock()
-    c = TestOccurrenceStatsCollection.new('test', table)
+    c = TestOccurrenceStatsCollection.new('test', table: table)
     c.add(OccurrenceStat.new('alpha') {table.is_alpha == 100})
     c.add(OccurrenceStat.new('beta') {table.is_beta == 200})
     [table, c]

@@ -1,12 +1,11 @@
 require 'test_helper'
 
-
 class StatsCollectionTest < ActiveSupport::TestCase
   class TestStatsCollection < StatsCollection
   end
 
   def setup
-    @c = TestStatsCollection('test stats')
+    @c = TestStatsCollection.new('test stats')
   end
 
   def assert_start_at_zero

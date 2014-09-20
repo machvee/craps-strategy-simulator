@@ -1,9 +1,9 @@
-require 'table_stats_collection'
+require 'stats_collection'
 
-class CountersTableStatsCollection < TableStatsCollection
+class CountersStatsCollection < StatsCollection
   attr_reader :counter_names
 
-  def initialize(name, table, options)
+  def initialize(name, options)
     super
     setup_counters(options[:counter_names]||[])
   end

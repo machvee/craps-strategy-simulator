@@ -16,14 +16,14 @@ class RollStatsTest < ActiveSupport::TestCase
     @table.expects(:dice_tray).once.returns(dice_tray)
     dice_tray.expects(:dice_value_range).once.returns(@d.value_range)
     @table.expects(:last_roll).at_least_once.returns(*@last_rolls)
-    @r = RollStats.new('table dice roll', @table)
+    @r = RollStats.new('table dice roll', table: @table)
     @num_rolls.times {@r.update}
   end
 
   def test_convenience_methods
     assert_equal 2..12, @d.value_range
     [*@d.value_range].each do |value|
-      assert_equal how_many(value), @r.send("rolled_#{value}".to_sym)
+      assert_equal how_many(value), @r.send("rolled_#{value}".to_sym).total
     end
   end
 
