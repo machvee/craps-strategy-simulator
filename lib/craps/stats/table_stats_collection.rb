@@ -65,16 +65,16 @@ class TableStatsCollection
     tsc
   end
   
-  def won(stat_name)
-    @lkup[stat_name].won
+  def won(stat_name, counts = {})
+    stat_by_name(stat_name).won(counts)
   end
 
-  def lost(stat_name)
-    @lkup[stat_name].lost
+  def lost(stat_name, counts = {})
+    stat_by_name(stat_name).lost(counts)
   end
 
-  def incr(stat_name)
-    @lkup[stat_name].incr
+  def incr(stat_name, counts = {})
+    stat_by_name(stat_name).incr(counts)
   end
 
   def inspect
@@ -92,7 +92,7 @@ class TableStatsCollection
   end
 
   def stat_by_name(name)
-    @lkup[name]
+    @lkup[name] || raise("no stat with name #{name}")
   end
 
   private
@@ -133,7 +133,7 @@ class TableStatsCollection
     "#{name} statistics - #{Time.now.to_s(:db)}"
   end
 
-  def setup_option_counters(counter_names)
+  def setup_optional_counters(counter_names)
     @optional_counter_names = counter_names
     return if counter_names.empty?
 
