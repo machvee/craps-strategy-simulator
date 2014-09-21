@@ -41,7 +41,7 @@ class CrapsBet
   end
 
   def bet_stat
-    Stat.new(stat_name)
+    CountersStat.new(stat_name)
   end
 
   def self.short_name

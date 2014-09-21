@@ -70,8 +70,11 @@ class Table
 
     @dice_tray = DiceTray.new(self, options[:die_seeder])
 
-    @dice_bet_stats = TableStatsCollection.new("dice outcome", self)
-    @player_bet_stats = TableStatsCollection.new("player bet results", self, [:made, :won, :lost])
+    @dice_bet_stats = StatsCollection.new("dice outcome")
+    @player_bet_stats = CountersStatsCollection.new(
+                          "player bet results",
+                          counters: [:made, :won, :lost]
+                        )
 
     create_bet_boxes
 
@@ -219,7 +222,7 @@ class Table
     puts "ON (point is #{table_state.point})" if on? 
     puts "OFF" if off? 
     puts "rolls: #{total_rolls}"
-    bet_stats.print(BET_STATS_HEADERS)
+    dice_bet_stats.print(BET_STATS_HEADERS)
   end
 
   private

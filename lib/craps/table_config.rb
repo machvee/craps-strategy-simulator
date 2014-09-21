@@ -72,17 +72,17 @@ class TableConfig
           when nil # combined
             [5,1]
         end
-      when AnyCraps
+      when AnyCrapsBet
         [8,1]
-      when AnySeven
+      when AnySevenBet
         [5,1]
-      when Eleven
+      when ElevenBet
         [16,1]
-      when AceDeuce
+      when AceDeuceBet
         [16,1]
-      when Aces
+      when AcesBet
         [31,1]
-      when Twelve
+      when TwelveBet
         [31,1]
     end
   end

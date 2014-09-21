@@ -12,7 +12,8 @@ class Shooter
   def initialize(table, roll_history_length=ROLL_HISTORY_LENGTH)
     @table = table
     no_shooter
-    @roll_stats = RollStats.new("dice", table)
+    @roll_stats = RollStats.new("dice", table: table)
+    @roll_stats.add_stats
     @roll_history = RingBuffer.new(roll_history_length)
   end
 

@@ -1,4 +1,3 @@
-require 'stats_collection'
 class OccurrenceTableStatsCollection < StatsCollection
 
   attr_reader :table

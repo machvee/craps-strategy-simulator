@@ -1,5 +1,3 @@
-require 'stats_collection'
-
 class CountersStatsCollection < StatsCollection
   attr_reader :counter_names
 

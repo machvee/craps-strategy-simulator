@@ -5,7 +5,7 @@ class BetBox
 
   attr_reader :player_bets
 
-  delegate :name, :number, to: craps_bet
+  delegate :name, :number, to: :craps_bet
 
   def initialize(table, craps_bet)
     @table = table

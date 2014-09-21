@@ -17,6 +17,7 @@ class RollStatsTest < ActiveSupport::TestCase
     dice_tray.expects(:dice_value_range).once.returns(@d.value_range)
     @table.expects(:last_roll).at_least_once.returns(*@last_rolls)
     @r = RollStats.new('table dice roll', table: @table)
+    @r.add_stats
     @num_rolls.times {@r.update}
   end
 
