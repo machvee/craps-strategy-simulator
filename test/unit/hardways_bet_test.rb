@@ -8,7 +8,7 @@ class HardwaysBetTest < ActiveSupport::TestCase
 
   def test_base_attrs
     assert_equal 'Hardways Bet 6', @bet.name
-    assert_equal TableBet::OnStatus::FOLLOW, @bet.table_on_status
+    assert_equal CrapsBet::OnStatus::FOLLOW, @bet.table_on_status
   end
 
   def test_outcome_none

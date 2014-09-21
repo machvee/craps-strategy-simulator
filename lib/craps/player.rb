@@ -54,7 +54,7 @@ class Player
     end
   end
 
-  Table::NUMBER_BETS.reject {|b| b == PassOddsBet || b == PassLinePointBet}.each do |number_bet|
+  (Table::NUMBER_BETS - Table::MORPH_NUMBER_BETS).each do |number_bet|
     define_method(number_bet.short_name) do |number, amount=nil|
       make_bet(number_bet, amount, number)
     end

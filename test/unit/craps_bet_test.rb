@@ -18,19 +18,11 @@ class CrapsBetTest < ActiveSupport::TestCase
   end
 
   def setup
-    @cool_bet = setup_cool(2, [20,1])
-    @won_stat_name = 'craps_test/cool_2'
-    @dice = mock('dice')
+    @cool_bet = setup_cool(2, [2,1])
   end
 
   def setup_cool(number, payoff_odds)
-    @number = number
-    @table_config = mock('table_config')
-    @table = mock('table')
-    @state = mock('table_state')
-    @table.expects(:config).at_least_once.returns(@table_config)
-    @table_config.expects(:payoff_odds).at_least_once.returns(payoff_odds)
-    bet = CoolBet.new(@table, @number)
+    mock_bet_setup(CoolBet, number, payoff_odds)
   end
 
   def test_cool_bet
@@ -43,6 +35,7 @@ class CrapsBetTest < ActiveSupport::TestCase
 
   def test_bet_follow_table
     @cool_bet.expects(:table_on_status).twice.returns(CrapsBet::OnStatus::FOLLOW)
+    @state = mock('table_state')
     @table.expects(:table_state).at_least_once.returns(@state)
     @state.expects(:on?).returns(false).once
     assert !@cool_bet.on?, "bet should be off because table is off"
@@ -51,8 +44,7 @@ class CrapsBetTest < ActiveSupport::TestCase
   end
 
   def test_bet_payout
-    @table.expects(:config).at_least_once.returns(@table_config)
-    assert_equal [20,1], @cool_bet.payout
+    assert_equal [2,1], @cool_bet.payout
   end
 
   def test_rolled_the_number

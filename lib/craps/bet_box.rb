@@ -35,21 +35,28 @@ class BetBox
     outcome = craps_bet.outcome
     player_bets.each do |player_bet|
       case outcome
-      when CrapsBet::WIN
+      when CrapsBet::Outcome::WIN
         dice_bet_stat.won
-        pay_winning(player_bet) if player_bet.on?
+        if player_bet.on?
+          winnings = pay_winning(player_bet)
+          yield player_bet, CrapsBet::Outcome::WIN, winnings 
+        end
 
-      when CrapsBet::LOSE
+      when CrapsBet::Outcome::LOSE
         dice_bet_stat.lost
-        take_losing(player_bet) if player_bet.on?
+        if player_bet.on?
+          take_losing(player_bet)
+          yield player_bet, CrapsBet::Outcome::LOSE, player_bet.amount
+        end
 
-      when CrapsBet::RETURN
+      when CrapsBet::Outcome::RETURN
         return_was_off(player_bet)
+        yield player_bet, CrapsBet::Outcome::RETURN, player_bet.amount 
 
-      when CrapsBet::MORPH
+      when CrapsBet::Outcome::MORPH
         morph_bet(player_bet)
 
-      when CrapsBet::NONE
+      when CrapsBet::Outcome::NONE
         # do nothing
       end
     end
@@ -79,7 +86,6 @@ class BetBox
 
   def return_was_off(player_bet)
     player_bet.return_bet
-    yield player_bet, CrapsBet::RETURN, player_bet.amount 
     mark_bet_deleted(player_bet)
   end
 
@@ -88,8 +94,8 @@ class BetBox
     # table credits player rail with winning amount
     #
     winnings = player_bet.pay_winning_bet(craps_bet.pay_this, craps_bet.for_every) 
-    yield player_bet, CrapsBet::WON, winnings 
     mark_bet_deleted(player_bet) unless craps_bet.bet_remains_after_win?
+    winnings
   end
 
   def take_losing(player_bet)
@@ -99,7 +105,6 @@ class BetBox
     #
     amount = player_bet.amount
     player_bet.losing_bet
-    yield player_bet, CrapsBet::LOSE, amount
     mark_bet_deleted(player_bet)
   end
 

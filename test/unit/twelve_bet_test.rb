@@ -7,7 +7,7 @@ class TwelveTest < ActiveSupport::TestCase
 
   def test_base_attrs
     assert_equal 'Twelve Bet', @bet.name
-    assert_equal TableBet::OnStatus::ON, @bet.table_on_status
+    assert_equal CrapsBet::OnStatus::ON, @bet.table_on_status
   end
 
   def test_outcome_win_prop_met

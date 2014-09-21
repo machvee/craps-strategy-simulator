@@ -32,26 +32,19 @@ class PassLineBetTest < ActiveSupport::TestCase
 
   def test_outcome_win_seven
     mock_state(front_line_winner?: true)
-    assert_outcome_won(@bet, PassLineBet::FRONT_LINE_WINNER_STAT_NAME => OccurrenceStat::WON)
+    assert_outcome_won(@bet)
   end
 
   def test_outcome_lose_crapped_out
     mock_state(front_line_winner?: false, crapped_out?: true)
-    assert_outcome_lost(@bet, PassLineBet::FRONT_LINE_WINNER_STAT_NAME => OccurrenceStat::LOST)
+    assert_outcome_lost(@bet)
   end
 
-  def test_outcome_win_point_made
-    mock_state(front_line_winner?: false, crapped_out?: false, point_made?: true)
-    assert_outcome_won(@bet, PassLineBet::POINT_MADE_STAT_NAME => OccurrenceStat::WON)
-  end
-
-  def test_outcome_lose_seven_out
-    mock_state(front_line_winner?: false, crapped_out?: false, point_made?: false, seven_out?: true)
-    assert_outcome_lost(@bet, PassLineBet::POINT_MADE_STAT_NAME=> OccurrenceStat::LOST)
-  end
-
-  def test_outcome_no_outcome
-    mock_state(front_line_winner?: false, crapped_out?: false, point_made?: false, seven_out?: false)
-    assert_outcome_none(@bet)
+  def test_outcome_morph_outcome
+    @dice = mock_dice
+    @dice.expects(:points?).returns(true)
+    mock_state(front_line_winner?: false, crapped_out?: false)
+    assert_outcome_morph(@bet)
+    assert_equal 'pass_line_point', @bet.morph_bet_name
   end
 end

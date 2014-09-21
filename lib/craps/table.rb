@@ -19,7 +19,8 @@ class Table
   #
   # NO_NUMBER_BETS and NUMBER_BETS are all the types of bets on the table.  We
   # will create a BetBox for each NO_NUMBER_BET, and mulitple numbered BetBox for the
-  # NUMBER_BETS
+  # NUMBER_BETS.  MORPH_NUMBER_BETS are not directly 'makeable' by a player.  They are moved
+  # (morphed) from a come out bet box to a 'point made' bet box automatically by the game
   #
   NO_NUMBER_BETS = [
     AceDeuceBet,
@@ -34,13 +35,17 @@ class Table
     TwelveBet
   ]
 
-  NUMBER_BETS = [
+  MORPH_NUMBER_BETS = [
     ComeBet,
+    PassLinePointBet
+  ]
+
+  NUMBER_BETS = [
     ComeOddsBet,
     HardwaysBet,
     PassOddsBet,
-    PassLinePointBet,
-    PlaceBet
+    PlaceBet,
+    *MORPH_NUMBER_BETS
   ]
 
   DEFAULT_OPTIONS = {

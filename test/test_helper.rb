@@ -13,12 +13,29 @@ class ActiveSupport::TestCase
   # Add more helper methods to be used by all tests here...
 
 
-  def mock_bet_setup(bet_class, number=nil)
+  def mock_bet_setup(bet_class, number=nil, pay_off=[1,1])
     @table = mock('table')
-    @bet_stats = mock('bet_stats')
-    @bet_stats.expects(:add).at_least_once
-    @table.expects(:bet_stats).at_least_once.returns(@bet_stats)
+    @number = number
+    @table_config = mock('table_config')
+    @table.expects(:config).at_least_once.returns(@table_config)
+    @table_config.expects(:payoff_odds).at_least_once.returns(pay_off)
     bet_class.new(@table, number)
+  end
+
+  def assert_outcome_won(bet)
+    assert_equal CrapsBet::Outcome::WIN, bet.outcome
+  end
+
+  def assert_outcome_lost(bet)
+    assert_equal CrapsBet::Outcome::LOSE, bet.outcome
+  end
+
+  def assert_outcome_none(bet)
+    assert_equal CrapsBet::Outcome::NONE, bet.outcome
+  end
+
+  def assert_outcome_morph(bet)
+    assert_equal CrapsBet::Outcome::MORPH, bet.outcome
   end
 
   def mock_state(mockery={})
