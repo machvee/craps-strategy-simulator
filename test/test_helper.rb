@@ -32,18 +32,6 @@ class ActiveSupport::TestCase
     dice
   end
 
-  def assert_outcome_won(bet, additional_stats={})
-    assert_equal [TableBet::Outcome::WIN, bet.win_stat.merge(additional_stats)], bet.determine_outcome
-  end
-
-  def assert_outcome_lost(bet, additional_stats={})
-    assert_equal [TableBet::Outcome::LOSE, bet.lose_stat.merge(additional_stats)], bet.determine_outcome
-  end
-
-  def assert_outcome_none(bet)
-    assert_equal [TableBet::Outcome::NONE, {}], bet.determine_outcome
-  end
-
   def make_bet_base_validations_pass(player_bet, bet_amount, number=nil)
     player = mock('player')
     player.expects(:has_bet?).with(@bet.class, number).returns(false).once
