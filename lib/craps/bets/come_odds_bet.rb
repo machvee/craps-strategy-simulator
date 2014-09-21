@@ -22,7 +22,7 @@ class ComeOddsBet < CrapsBet
   def validate(player_bet, bet_amount)
     super
     raise "you must have a Come Bet on #{number}" unless \
-      player_bet.player.has_bet?(ComeBet, number)
+      player_bet.player.has_bet?('come', number)
   end
 
   def outcome

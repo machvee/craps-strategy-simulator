@@ -73,10 +73,7 @@ class CrapsBetTest < ActiveSupport::TestCase
   end
 
   def test_validate_player_already_has_that_bet
-    player_bet = mock('player_bet')
-    player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(true).once
-    player_bet.expects(:player).at_least_once.returns(player)
+    player_bet = setup_player(true)
 
     bet_amount = 10
     assert_raise RuntimeError do
@@ -85,10 +82,7 @@ class CrapsBetTest < ActiveSupport::TestCase
   end
 
   def test_validate_player_must_bet_min_bet
-    player_bet = mock('player_bet')
-    player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(false).once
-    player_bet.expects(:player).at_least_once.returns(player)
+    player_bet = setup_player
 
     bet_amount = 10
     @cool_bet.expects(:min_bet).returns(bet_amount + 1).at_least_once
@@ -99,10 +93,7 @@ class CrapsBetTest < ActiveSupport::TestCase
   end
 
   def test_validate_player_must_bet_under_max_bet
-    player_bet = mock('player_bet')
-    player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(false).once
-    player_bet.expects(:player).at_least_once.returns(player)
+    player_bet = setup_player
 
     bet_amount = 10
     @cool_bet.expects(:min_bet).returns(bet_amount).at_least_once
@@ -114,10 +105,7 @@ class CrapsBetTest < ActiveSupport::TestCase
   end
 
   def test_betting_multiple_not_a_multiple_of_for_every_payout
-    player_bet = mock('player_bet')
-    player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(false).once
-    player_bet.expects(:player).at_least_once.returns(player)
+    player_bet = setup_player
 
     bet_amount = 10
     @cool_bet.expects(:min_bet).returns(bet_amount).at_least_once
@@ -132,10 +120,7 @@ class CrapsBetTest < ActiveSupport::TestCase
   end
 
   def test_all_validations_pass
-    player_bet = mock('player_bet')
-    player = mock('player')
-    player.expects(:has_bet?).with(CrapsBetTest::CoolBet, @number).returns(false).once
-    player_bet.expects(:player).at_least_once.returns(player)
+    player_bet = setup_player
 
     bet_amount = 10
     @cool_bet.expects(:min_bet).returns(bet_amount).at_least_once
@@ -147,4 +132,13 @@ class CrapsBetTest < ActiveSupport::TestCase
     @cool_bet.validate(player_bet, bet_amount)
 
   end
+
+  def setup_player(has_bet=false)
+    player_bet = mock('player_bet')
+    player = mock('player')
+    player.expects(:has_bet?).with(@cool_bet.short_name, @number).returns(has_bet).once
+    player_bet.expects(:player).at_least_once.returns(player)
+    player_bet
+  end
+
 end

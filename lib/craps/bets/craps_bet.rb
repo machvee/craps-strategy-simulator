@@ -40,12 +40,16 @@ class CrapsBet
     raise "give the CrapsBet a full descriptive name"
   end
 
-  def bet_stat
+  def create_bet_stat
     CountersStat.new(stat_name)
   end
 
   def self.short_name
     name.underscore.gsub(/_bet$/,'')
+  end
+
+  def short_name
+    self.class.short_name
   end
 
   def outcome
@@ -123,7 +127,7 @@ class CrapsBet
     #   all except PASS_LINE
     #   player must have number bet if making odds bet on PASS and COME
     #
-    raise "you already have a #{name}" if player_bet.player.has_bet?(self.class, number)
+    raise "you already have a #{name}" if player_bet.player.has_bet?(self.short_name, number)
     raise "you must bet at least $#{min_bet}" unless \
       bet_amount >= min_bet
     raise "bet amount would exceed maximium of $#{max_bet} for #{name}" if \
@@ -133,8 +137,6 @@ class CrapsBet
       for_every > 1 && bet_amount % for_every != 0
     return
   end
-
-  private
 
   def stat_name(suffix='')
     number_part_if_any = number.nil? ? '' : "_#{number}"

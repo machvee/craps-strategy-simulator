@@ -38,7 +38,7 @@ class Player
     #    $12.00 Place bet on 6
     #
     bet_box = table.find_bet_box(bet_short_name, number)
-    amount ||= table_bet.min_bet
+    amount ||= bet_box.craps_bet.min_bet
     raise "#{name} needs to buy chips.  only $#{rail} remains" unless can_bet?(amount)
     bets << bet_box.new_player_bet(self, amount)
     rail_to_wagers(amount)
@@ -55,24 +55,26 @@ class Player
   end
 
   (Table::NUMBER_BETS - Table::MORPH_NUMBER_BETS).each do |number_bet|
+    next if number_bet == PassOddsBet # special case below
     define_method(number_bet.short_name) do |number, amount=nil|
-      make_bet(number_bet, amount, number)
+      make_bet(number_bet.short_name, amount, number)
     end
   end
 
-  def pass_odds_bet(amount=nil)
-    pass_line_bet = find_bet(PassLineBet)
-    raise "you don't have a pass line bet" if pass_line_bet.nil?
+  def pass_odds(amount=nil)
+    raise "point must be established" unless table_state.on?
+    pass_line_bet = find_bet('pass_line')
+    raise "you must have a Pass Line Bet" if pass_line_bet.nil?
     amt = amount || (pass_line_bet.amount * config.max_odds(table_state.point))
-    make_bet(PassOddsBet, amt, table_state.point)
+    make_bet('pass_odds', amt, table_state.point)
   end
 
-  def has_bet?(bet_class, number=nil)
-    bets.any? {|b| b.matches?(bet_class, number)}
+  def has_bet?(bet_short_name, number=nil)
+    find_bet(bet_short_name, number).present?
   end
 
-  def find_bet(bet_class, number=nil)
-    bets.find {|b| b.matches?(bet_class, number)}
+  def find_bet(bet_short_name, number=nil)
+    bets.find {|b| b.matches?(bet_short_name, number)}
   end
 
   def rail_to_wagers(amount)

@@ -27,7 +27,7 @@ class TableConfig
     # [pay this number of units, for every this many units bet]
     #
     case craps_bet
-      when PassLineBet, ComeOutBet, ComeBet
+      when PassLineBet, PassLinePointBet, ComeOutBet, ComeBet
         [1,1]
       when PassOddsBet, ComeOddsBet
         case number

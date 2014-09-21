@@ -14,7 +14,7 @@ class PlayerBet
     @craps_bet = craps_bet
     @number = craps_bet.number
     @remove = false # used to clear losing bets at end of settling bets
-    @bet_stat = player.bet_stats.lkup(craps_bet.stat_name)
+    @bet_stat = player.bet_stats.stat_by_name(craps_bet.stat_name)
     craps_bet.validate(self, amount)
 
     set_bet_on
@@ -55,18 +55,22 @@ class PlayerBet
     winnings
   end
 
+  def remove_bet
+    player.remove_bet(self)
+  end
+
   def losing_bet
     player.from_wagers(amount)
     bet_stat.lost(made: amount, lost: amount)
-    player.remove_bet(self)
+    remove_bet
   end
 
   def return_bet
     player.take_down(self)
   end
 
-  def matches?(craps_bet_class, arg_number=nil)
-    craps_bet.class == craps_bet_class && number == arg_number
+  def matches?(craps_bet_short_name, arg_number=nil)
+    craps_bet.short_name == craps_bet_short_name && number == arg_number
   end
 
   def to_s

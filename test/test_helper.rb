@@ -51,7 +51,7 @@ class ActiveSupport::TestCase
 
   def make_bet_base_validations_pass(player_bet, bet_amount, number=nil)
     player = mock('player')
-    player.expects(:has_bet?).with(@bet.class, number).returns(false).once
+    player.expects(:has_bet?).with(@bet.short_name, number).returns(false).once
     player_bet.expects(:player).at_least_once.returns(player)
 
     @bet.expects(:min_bet).returns(bet_amount).at_least_once

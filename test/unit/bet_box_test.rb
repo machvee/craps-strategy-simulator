@@ -98,6 +98,7 @@ class BetBoxTest < ActiveSupport::TestCase
     @player_bet.expects(:remove=).once.with(true)
     @player_bet.expects(:craps_bet).once.returns(@craps_bet)
     @player_bet.expects(:amount).returns(@amount).at_least_once
+    @player_bet.expects(:remove_bet).once
     @last_roll = 4
     @table.expects(:last_roll).once.returns(@last_roll)
     @new_bet_box = mock('new_bet_box')
@@ -140,7 +141,7 @@ class BetBoxTest < ActiveSupport::TestCase
 
 
     bet = CoolBet.new(@table, @number)
-    bet.expects(:bet_stat).at_least_once.returns(@bet_stat)
+    bet.expects(:create_bet_stat).at_least_once.returns(@bet_stat)
 
     @player_bet_stats.expects(:add).once.with(@bet_stat)
     @dice_bet_stats.expects(:add).once.with(@bet_stat)

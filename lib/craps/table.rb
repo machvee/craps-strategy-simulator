@@ -78,7 +78,7 @@ class Table
     @dice_bet_stats = StatsCollection.new("dice outcome")
     @player_bet_stats = CountersStatsCollection.new(
                           "player bet results",
-                          counters: [:made, :won, :lost]
+                          counter_names: [:made, :won, :lost]
                         )
 
     create_bet_boxes
@@ -164,15 +164,15 @@ class Table
     bet_boxes.each do |bet_box|
       bet_box.settle_player_bets do |player_bet, outcome, amount|
         case outcome
-          when CrapsBet::WIN
+          when CrapsBet::Outcome::WIN
             status "#{player_bet.player.name} wins $#{amount} on #{player_bet}"
             house_debit(amount)
 
-          when CrapsBet::LOSE
+          when CrapsBet::Outcome::LOSE
             status "#{player_bet.player.name} loses $#{amount} on #{player_bet}"
             house_credit(amount)
 
-          when CrapsBet::RETURN
+          when CrapsBet::Outcome::RETURN
             status "#{player_bet.player.name} returned $#{amount} for #{player_bet}"
         end
       end
@@ -227,7 +227,13 @@ class Table
     puts "ON (point is #{table_state.point})" if on? 
     puts "OFF" if off? 
     puts "rolls: #{total_rolls}"
+  end
+
+  def stats
     dice_bet_stats.print(BET_STATS_HEADERS)
+    puts "============"
+    shooter.roll_stats.print
+    puts "\n"
   end
 
   private
@@ -246,7 +252,8 @@ class Table
   end
 
   def point_outcomes
-    dice_bet_stats.pass_point.count # total won and lost
+    YOU ARE HERE.  how are you going to get this count
+    dice_bet_stats.pass_line_point.count # total won and lost
   end
 
   def quietly?(option)

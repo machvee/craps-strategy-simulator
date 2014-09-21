@@ -10,8 +10,8 @@ class BetBox
   def initialize(table, craps_bet)
     @table = table
     @craps_bet = craps_bet
-    @table.dice_bet_stats.add(@dice_bet_stat = craps_bet.bet_stat)
-    @table.player_bet_stats.add(craps_bet.bet_stat)
+    @table.dice_bet_stats.add(@dice_bet_stat = craps_bet.create_bet_stat)
+    @table.player_bet_stats.add(craps_bet.create_bet_stat)
 
     @player_bets = []
   end
@@ -73,6 +73,7 @@ class BetBox
   def morph_bet(player_bet)
     dest_bet_box = table.find_bet_box(player_bet.craps_bet.morph_bet_name, table.last_roll)
     dest_bet_box.new_player_bet(player_bet.player, player_bet.amount)
+    player_bet.remove_bet
     mark_bet_deleted(player_bet)
   end
 

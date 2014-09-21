@@ -18,6 +18,12 @@ class CountersStatsCollection < StatsCollection
   end
 
   def column_headers(labels)
+  YOU ARE HERE 
+  1.9.3-p0 :004 > t.player_bet_stats
+  player bet results statistics - 2014-09-21 18:59:55
+  ArgumentError: wrong number of arguments (0 for 1)
+    from /Users/mcvic/whalemaker/lib/craps/stats/counters_stats_collection.rb:20:in `column_headers'
+
     super + counter_names.map {|n| column_labels[n.to_sym]}
   end
 
