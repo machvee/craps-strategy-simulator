@@ -21,14 +21,9 @@ class BetBox
   end
 
   def new_player_bet(player, amount)
-    PlayerBet.new(player, craps_bet, amount).tap do |pb|
+    PlayerBet.new(player, self, amount).tap do |pb|
       player_bets << pb
     end
-  end
-
-  def remove_bet(player_bet)
-    mark_bet_deleted(player_bet)
-    remove_marked_bets
   end
 
   def settle_player_bets(&block)
@@ -64,6 +59,11 @@ class BetBox
     remove_marked_bets
   end
 
+  def remove_bet(player_bet)
+    mark_bet_deleted(player_bet)
+    remove_marked_bets
+  end
+
   private 
 
   def mark_bet_deleted(player_bet)
@@ -72,17 +72,14 @@ class BetBox
 
   def morph_bet(player_bet)
     dest_bet_box = table.find_bet_box(player_bet.craps_bet.morph_bet_name, table.last_roll)
-    dest_bet_box.new_player_bet(player_bet.player, player_bet.amount)
-    player_bet.remove_bet
+    new_player_bet = dest_bet_box.new_player_bet(player_bet.player, player_bet.amount)
+    player_bet.player.bets << new_player_bet
     mark_bet_deleted(player_bet)
   end
 
   def remove_marked_bets
-    #
-    # because we can't delete bets from the bet arrays while iterating over them,
-    # we delete bets marked as remove here
-    #
-    player_bets.delete_if {|b| b.remove}
+    player_bets.select {|p| p.remove}.each {|p| p.player.remove_from_player_bets(p)}
+    player_bets.delete_if {|p| p.remove}
   end
 
   def return_was_off(player_bet)
@@ -95,7 +92,7 @@ class BetBox
     # table credits player rail with winning amount
     #
     winnings = player_bet.pay_winning_bet(craps_bet.pay_this, craps_bet.for_every) 
-    mark_bet_deleted(player_bet) unless craps_bet.bet_remains_after_win?
+    mark_bet_deleted(player_bet)
     winnings
   end
 

@@ -252,7 +252,6 @@ class Table
   end
 
   def point_outcomes
-    YOU ARE HERE.  how are you going to get this count
     dice_bet_stats.pass_line_point.count # total won and lost
   end
 

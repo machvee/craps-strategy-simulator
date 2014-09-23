@@ -63,7 +63,7 @@ class Player
 
   def pass_odds(amount=nil)
     raise "point must be established" unless table_state.on?
-    pass_line_bet = find_bet('pass_line')
+    pass_line_bet = find_bet('pass_line_point', table_state.point)
     raise "you must have a Pass Line Bet" if pass_line_bet.nil?
     amt = amount || (pass_line_bet.amount * config.max_odds(table_state.point))
     make_bet('pass_odds', amt, table_state.point)
@@ -98,12 +98,11 @@ class Player
     @rail += amount
   end
 
-  def take_down(bet)
-    wagers_to_rail(bet.amount)
-    remove_bet(bet)
+  def take_down(player_bet)
+    wagers_to_rail(player_bet.amount)
   end
 
-  def remove_bet(bet)
+  def remove_from_player_bets(bet)
     bets.delete(bet)
   end
 

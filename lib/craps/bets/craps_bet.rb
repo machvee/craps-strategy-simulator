@@ -58,11 +58,6 @@ class CrapsBet
     # return [Outcome::WIN, LOSE, etc]
   end
 
-  def bet_remains_after_win?
-    true # convenience to keep bets going, but can be overridden with false
-         # (e.g. ComeBet, ComeOdds,etc)
-  end
-
   def player_can_set_off?
     # overridden with false if bet is always on (e.g. PassLineBet, ComeOutBet, ComeBet)
     true

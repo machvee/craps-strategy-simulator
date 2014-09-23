@@ -6,12 +6,16 @@ class PlayerBet
   attr_reader   :craps_bet
   attr_reader   :bet_off
   attr_reader   :bet_stat
+
+  attr_reader   :bet_box
   attr_accessor :remove
 
-  def initialize(player, craps_bet, amount)
+  delegate :craps_bet, to: :bet_box
+
+  def initialize(player, bet_box, amount)
     @player = player
+    @bet_box = bet_box
     @amount = amount
-    @craps_bet = craps_bet
     @number = craps_bet.number
     @remove = false # used to clear losing bets at end of settling bets
     @bet_stat = player.bet_stats.stat_by_name(craps_bet.stat_name)
@@ -51,18 +55,13 @@ class PlayerBet
     winnings = (amount/for_every) * pay_this
     bet_stat.won(made: amount, won: winnings)
     player.to_rail(winnings)
-    player.take_down(self) unless craps_bet.bet_remains_after_win?
+    return_bet
     winnings
-  end
-
-  def remove_bet
-    player.remove_bet(self)
   end
 
   def losing_bet
     player.from_wagers(amount)
     bet_stat.lost(made: amount, lost: amount)
-    remove_bet
   end
 
   def return_bet

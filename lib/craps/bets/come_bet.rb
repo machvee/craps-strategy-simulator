@@ -7,10 +7,6 @@ class ComeBet < CrapsBet
     false
   end
 
-  def bet_remains_after_win?
-    false
-  end
-
   def outcome
     if rolled_the_number?
       Outcome::WIN

@@ -13,10 +13,10 @@ class PassOddsBetTest < ActiveSupport::TestCase
   end
 
   def test_validate_all_succeed
-    mock_state(on?: true)
+    mock_state(on?: true, point: 4)
     player_bet = mock('player_bet')
     make_bet_base_validations_pass(player_bet, @bet_amount, @number)
-    player_bet.player.expects(:has_bet?).with('pass_line', nil).returns(true).once
+    player_bet.player.expects(:has_bet?).with('pass_line_point', 4).returns(true).once
 
     assert_nothing_raised do
       @bet.validate(player_bet, @bet_amount)
@@ -33,10 +33,10 @@ class PassOddsBetTest < ActiveSupport::TestCase
   end
 
   def test_validate_fail_no_pass_line_bet
-    mock_state(on?: true)
+    mock_state(on?: true, point: 5)
     player_bet = mock('player_bet')
     make_bet_base_validations_pass(player_bet, @bet_amount, @number)
-    player_bet.player.expects(:has_bet?).with('pass_line', nil).returns(false).once
+    player_bet.player.expects(:has_bet?).with('pass_line_point', 5).returns(false).once
     assert_raises RuntimeError do
       @bet.validate(player_bet, 50)
     end

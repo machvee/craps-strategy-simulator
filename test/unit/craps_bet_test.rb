@@ -29,7 +29,6 @@ class CrapsBetTest < ActiveSupport::TestCase
     assert_equal "Cool Bet on #@number", @cool_bet.name
     assert_equal @number, @cool_bet.number
     assert @cool_bet.on?, "default should be always on"
-    assert @cool_bet.bet_remains_after_win?, "default expected that bet remains on table after win"
     assert @cool_bet.player_can_set_off?, "default expected that player can mark bet off"
   end
 

@@ -8,10 +8,6 @@ class ComeOddsBet < CrapsBet
     super * max_odds(number)
   end
 
-  def bet_remains_after_win?
-    false
-  end
-
   def table_on_status
     # 
     # come bet odds are off when the table is off
