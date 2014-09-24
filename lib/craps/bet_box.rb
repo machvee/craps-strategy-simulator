@@ -4,14 +4,15 @@ class BetBox
   attr_reader :dice_bet_stat   # keeps table stats on outcome of dice
 
   attr_reader :player_bets
+  attr_reader :tracking_bet
 
   delegate :name, :number, to: :craps_bet
 
   def initialize(table, craps_bet)
     @table = table
     @craps_bet = craps_bet
-    @table.dice_bet_stats.add(@dice_bet_stat = craps_bet.create_bet_stat)
-    @table.player_bet_stats.add(craps_bet.create_bet_stat)
+    @dice_bet_stat = craps_bet.add_bet_stats_to_collection(@table.dice_bet_stats)
+    craps_bet.add_bet_stats_to_collection(@table.player_bet_stats)
 
     @player_bets = []
   end
@@ -28,17 +29,18 @@ class BetBox
 
   def settle_player_bets(&block)
     outcome = craps_bet.outcome
+
+    update_dice_bet_stats(outcome) if craps_bet.on?
+
     player_bets.each do |player_bet|
       case outcome
       when CrapsBet::Outcome::WIN
-        dice_bet_stat.won
         if player_bet.on?
           winnings = pay_winning(player_bet)
           yield player_bet, CrapsBet::Outcome::WIN, winnings 
         end
 
       when CrapsBet::Outcome::LOSE
-        dice_bet_stat.lost
         if player_bet.on?
           take_losing(player_bet)
           yield player_bet, CrapsBet::Outcome::LOSE, player_bet.amount
@@ -65,6 +67,15 @@ class BetBox
   end
 
   private 
+
+  def update_dice_bet_stats(outcome)
+    case outcome
+    when CrapsBet::Outcome::WIN
+      dice_bet_stat.won
+    when CrapsBet::Outcome::LOSE
+      dice_bet_stat.lost
+    end
+  end
 
   def mark_bet_deleted(player_bet)
     player_bet.remove = true

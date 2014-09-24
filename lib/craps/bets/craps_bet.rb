@@ -40,8 +40,32 @@ class CrapsBet
     raise "give the CrapsBet a full descriptive name"
   end
 
-  def create_bet_stat
-    CountersStat.new(stat_name)
+  def rolls_up
+    # override true in subclass that you want to have
+    # stats aggregated for all numbered bets
+    false
+  end
+
+  def add_bet_stats_to_collection(collection)
+    create_bet_stat.tap do |bet_stat|
+      bet_stat.set_rollup_stat(get_rollup_stat(collection)) if rolls_up
+      collection.add(bet_stat)
+    end
+  end
+
+  def create_bet_stat(name = stat_name)
+    CountersStat.new(name)
+  end
+
+  def get_rollup_stat(collection)
+    rollup_stat = if collection.exists?(base_stat_name)
+      collection.stat_by_name(base_stat_name)
+    else
+      create_bet_stat(base_stat_name).tap do |stat|
+        collection.add(stat)
+      end
+    end
+    rollup_stat
   end
 
   def self.short_name
@@ -135,6 +159,12 @@ class CrapsBet
 
   def stat_name(suffix='')
     number_part_if_any = number.nil? ? '' : "_#{number}"
-    self.class.short_name + number_part_if_any + suffix
+    base_stat_name + number_part_if_any + suffix
+  end
+
+  private
+
+  def base_stat_name
+    self.class.short_name
   end
 end

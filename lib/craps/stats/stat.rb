@@ -9,7 +9,8 @@ class Stat
   attr_reader   :longest_streak # holds longest_winning_streak and longest_losing_streak
   attr_reader   :tally  # current counts of WON and LOST
   attr_reader   :streak # current streak of WON and LOST
-  attr_accessor :parent_stat # all actions will roll up to this stat when set
+  attr_accessor :parent_stat # the stat this stat was cloned from.  actions are mirrored on the parent
+  attr_accessor :rollup_stat # all actions will roll up to this stat when set
 
   WON=true
   LOST=!WON
@@ -19,6 +20,7 @@ class Stat
   def initialize(name, options = {})
     @name = name
     @parent_stat = nil
+    @rollup_stat = nil
     @last_history = RingBuffer.new(options[:history_length]||DEFAULT_HISTORY_LENGTH)
     reset
   end
@@ -36,6 +38,11 @@ class Stat
     bump(LOST, options)
   end
 
+  def set_rollup_stat(stat)
+    @rollup_stat = stat
+    stat.parent_stat = nil
+  end
+
   def bump(what_happened, options={})
     @count += 1
     tally[what_happened] += 1
@@ -49,6 +56,7 @@ class Stat
     @last_history << what_happened
 
     parent_stat.bump(what_happened, options) if parent_stat.present?
+    rollup_stat.bump(what_happened, options) if rollup_stat.present?
   end
 
   def total(did=WON)

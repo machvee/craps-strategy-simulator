@@ -56,6 +56,7 @@ class StatsCollection
       new_stat = child_stat_factory(stat)
       new_child_collection.add(new_stat)
     end
+    link_rollups(new_child_collection)
     new_child_collection
   end
 
@@ -85,6 +86,10 @@ class StatsCollection
     @lkup[name] || raise("no stat in collection with name '#{name}'")
   end
 
+  def exists?(name)
+    @lkup[name].present?
+  end
+
   private
 
   def child_stat_factory(parent_stat)
@@ -101,6 +106,21 @@ class StatsCollection
   def link_to_parent(stat)
     return if parent_stats.nil?
     stat.parent_stat = parent_stats.stat_by_name(stat.name)
+  end
+
+  def link_rollups(collection)
+    #
+    # walk this collection and if a stat has a rollup_stat,
+    # set up the same arrangement in passed collection
+    #
+    stats.each do |stat|
+      if stat.rollup_stat.present?
+        src_child_stat = collection.stat_by_name(stat.name)
+        rollup_stat_name = stat.rollup_stat.name
+        rollup_stat = collection.stat_by_name(rollup_stat_name)
+        src_child_stat.set_rollup_stat(rollup_stat)
+      end
+    end
   end
 
   def make_stat_convenience_methods(stat)

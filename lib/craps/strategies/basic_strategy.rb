@@ -17,7 +17,7 @@ class BasicStrategy < BaseStrategy
     end
     [6,8].each do |n|
       player.place(n) if table_state.on? &&
-        (!player.has_bet?('place', n) || table_state.point?(n))
+        (!player.has_bet?('place', n) && table_state.point?(n))
     end
   end
 

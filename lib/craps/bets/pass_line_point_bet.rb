@@ -4,6 +4,10 @@ class PassLinePointBet < CrapsBet
     "Pass Line Bet #{number}"
   end
 
+  def rolls_up
+    true
+  end
+
   def player_can_set_off?
     false
   end
