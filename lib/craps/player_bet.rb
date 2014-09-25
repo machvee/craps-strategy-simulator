@@ -11,6 +11,7 @@ class PlayerBet
   attr_accessor :remove
 
   delegate :craps_bet, to: :bet_box
+  delegate :table, to: :player
 
   def initialize(player, bet_box, amount)
     @player = player
@@ -18,10 +19,14 @@ class PlayerBet
     @amount = amount
     @number = craps_bet.number
     @remove = false # used to clear losing bets at end of settling bets
-    @bet_stat = player.bet_stats.stat_by_name(craps_bet.stat_name)
+    @bet_stat = set_bet_stat
     craps_bet.validate(self, amount)
 
     set_bet_on
+  end
+
+  def set_bet_stat
+    player.bet_stats.stat_by_name(craps_bet.stat_name)
   end
 
   def press(additional_amount)
@@ -51,21 +56,31 @@ class PlayerBet
     !on?
   end
 
-  def pay_winning_bet(pay_this, for_every)
+  def winning_bet(pay_this, for_every)
     winnings = (amount/for_every) * pay_this
     bet_stat.won(made: amount, won: winnings)
     player.to_rail(winnings)
-    return_bet
-    winnings
+    player.take_down(self)
+    table.status "#{player.name} wins $#{winnings} on #{self}"
+    table.house_debit(winnings)
   end
 
   def losing_bet
     player.from_wagers(amount)
     bet_stat.lost(made: amount, lost: amount)
+    table.status "#{player.name} loses $#{amount} on #{self}"
+    table.house_credit(amount)
   end
 
   def return_bet
     player.take_down(self)
+    table.status "#{player.name} returned $#{amount} for #{self}"
+  end
+
+  def morph_bet
+    dest_bet_box = table.find_bet_box(craps_bet.morph_bet_name, table.last_roll)
+    new_player_bet = dest_bet_box.new_player_bet(player, amount)
+    player.bets << new_player_bet
   end
 
   def matches?(craps_bet_short_name, arg_number=nil)

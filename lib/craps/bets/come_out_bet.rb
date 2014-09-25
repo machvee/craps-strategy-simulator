@@ -30,8 +30,6 @@ class ComeOutBet < CrapsBet
       Outcome::LOSE
     elsif dice.points?
       Outcome::MORPH
-    else
-      Outcome::NONE
     end
   end
 end

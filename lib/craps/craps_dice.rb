@@ -6,6 +6,7 @@ class CrapsDice < Dice
   WINNERS = [7,11]
   HARDS   = [4,6,8,10]
   POINTS  = [4,5,6,8,9,10]
+  INSIDE  = [5,6,8,9]
   FIELDS  = [2,3,4,9,10,11,12]
 
   def seven?

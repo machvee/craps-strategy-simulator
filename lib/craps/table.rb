@@ -2,11 +2,12 @@ class Table
 
   attr_reader    :name
   attr_reader    :bet_boxes
-  attr_reader    :dice_bet_stats   # based on outcome of dice
-  attr_reader    :player_bet_stats # rolled up from player bet_stats
+  attr_reader    :tracking_bet_stats   # based on outcome of tracking_bets
+  attr_reader    :player_bet_stats     # rolled up from bet_stats on player bets
   attr_reader    :table_state
   attr_reader    :config
   attr_reader    :dice_tray
+  attr_reader    :tracking_player
   attr_reader    :players
   attr_reader    :shooter # one of the above players or nil
   attr_reader    :house   # dollar amount of chips the house has
@@ -75,15 +76,16 @@ class Table
 
     @dice_tray = DiceTray.new(self, options[:die_seeder])
 
-    @dice_bet_stats = StatsCollection.new("dice outcome")
     @player_bet_stats = CountersStatsCollection.new(
                           "player bet results",
                           counter_names: [:made, :won, :lost]
                         )
+    @players = []
+    @tracking_player = TrackingPlayer.new(self)
+    @tracking_bet_stats = tracking_player.stats.bet_stats
 
     create_bet_boxes
 
-    @players = []
     @shooter = Shooter.new(self)
   end
 
@@ -120,6 +122,9 @@ class Table
   end
 
   def players_make_your_bets
+
+    tracking_player.play_strategy
+
     players.each do |p|
       p.play_strategy
     end
@@ -162,20 +167,7 @@ class Table
 
   def settle_bets
     bet_boxes.each do |bet_box|
-      bet_box.settle_player_bets do |player_bet, outcome, amount|
-        case outcome
-          when CrapsBet::Outcome::WIN
-            status "#{player_bet.player.name} wins $#{amount} on #{player_bet}"
-            house_debit(amount)
-
-          when CrapsBet::Outcome::LOSE
-            status "#{player_bet.player.name} loses $#{amount} on #{player_bet}"
-            house_credit(amount)
-
-          when CrapsBet::Outcome::RETURN
-            status "#{player_bet.player.name} returned $#{amount} for #{player_bet}"
-        end
-      end
+      bet_box.settle_player_bets
     end
   end
 
@@ -185,7 +177,7 @@ class Table
 
   def reset_stats
     shooter.reset_stats
-    dice_bet_stats.reset
+    tracking_bet_stats.reset
     player_bet_stats.reset
   end
 
@@ -230,7 +222,7 @@ class Table
   end
 
   def stats
-    dice_bet_stats.print(BET_STATS_HEADERS)
+    tracking_bet_stats.print(BET_STATS_HEADERS)
     puts "============"
     shooter.roll_stats.print
     puts "\n"
@@ -252,7 +244,7 @@ class Table
   end
 
   def point_outcomes
-    dice_bet_stats.pass_line_point.count # total won and lost
+    tracking_bet_stats.pass_line_point.count # total won and lost
   end
 
   def quietly?(option)
