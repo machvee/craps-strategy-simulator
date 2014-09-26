@@ -25,7 +25,9 @@ class Player
   end
 
   def new_bet(bet_box, amount)
-    PlayerBet.new(self, bet_box, amount)
+    new_player_bet(bet_box, amount).tap do |bet|
+      bets << bet
+    end
   end
 
   def self.join_table(table, name, start_amount)
@@ -44,8 +46,9 @@ class Player
     bet_box = table.find_bet_box(bet_short_name, number)
     amount ||= bet_box.craps_bet.min_bet
     raise "#{name} needs to buy chips.  only $#{rail} remains" unless can_bet?(amount)
-    bets << bet_box.new_player_bet(self, amount)
+    bet_box.new_player_bet(self, amount)
     rail_to_wagers(amount)
+    return
   end
 
   def ensure_bet(bet_short_name, amount=nil, number=nil)
@@ -101,12 +104,12 @@ class Player
     ensure_bet('pass_odds', amt, table_state.point)
   end
 
-  def come_odds!(number, amount=nil)
+  def come_odds!(number = table.last_roll, amount=nil)
     amt = base_come_odds(number, amount)
     make_bet('come_odds', amt, number)
   end
 
-  def come_odds(number, amount=nil)
+  def come_odds(number = table.last_roll, amount=nil)
     amt = base_come_odds(number, amount)
     ensure_bet('come_odds', amt, number)
   end
@@ -179,7 +182,7 @@ class Player
   end
 
   def to_s
-    "#{name}: rail: $#{rail} (#{up_down}), wagers: $#{wagers}, bets: #{bets}"
+    "#{name}: rail: $#{rail} (#{up_down}), wagers: $#{wagers}\nbets: #{formatted(bets)}"
   end
 
   def inspect
@@ -210,11 +213,19 @@ class Player
     amt
   end
 
+  def new_player_bet(bet_box, amount)
+    PlayerBet.new(self, bet_box, amount)
+  end
+
   def init_stats
     PlayerStats.new(self, rail)
   end
 
   def can_bet?(amount)
     rail - amount > 0
+  end
+
+  def formatted(a)
+    a.map {|e| e.inspect}.join("\n      ")
   end
 end

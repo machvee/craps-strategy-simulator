@@ -18,6 +18,8 @@ class CoverAllBetsStrategy < BaseStrategy
     come_out_bet_with_full_odds
     all_the_hardways
     across
+    all_prop_bets
+    field
   end
 
 end

@@ -47,14 +47,17 @@ class BetBox
           mark_bet_deleted(player_bet)
 
         when CrapsBet::Outcome::MORPH
-          player_bet.morph_bet
+          #
+          # delay the morphing so we don't settle the new
+          # morphed bet on this iteration thru bet_boxes
+          #
+          table.morph_bets << player_bet
           mark_bet_deleted(player_bet)
 
         when CrapsBet::Outcome::NONE
           # do nothing
       end
     end
-
     remove_marked_bets
   end
 

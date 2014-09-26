@@ -9,6 +9,7 @@ class Table
   attr_reader    :dice_tray
   attr_reader    :tracking_player
   attr_reader    :players
+  attr_reader    :morph_bets
   attr_reader    :shooter # one of the above players or nil
   attr_reader    :house   # dollar amount of chips the house has
   attr_accessor  :quiet_table # not verbose about all actions
@@ -23,17 +24,21 @@ class Table
   # NUMBER_BETS.  MORPH_NUMBER_BETS are not directly 'makeable' by a player.  They are moved
   # (morphed) from a come out bet box to a 'point made' bet box automatically by the game
   #
-  NO_NUMBER_BETS = [
+  PROPOSITION_BETS = [
     AceDeuceBet,
     AcesBet,
     AnyCrapsBet,
     AnySevenBet,
+    ElevenBet,
+    TwelveBet
+  ]
+
+  NO_NUMBER_BETS = [
+    *PROPOSITION_BETS,
     CeBet,
     ComeOutBet,
-    ElevenBet,
     FieldBet,
-    PassLineBet,
-    TwelveBet
+    PassLineBet
   ]
 
   MORPH_NUMBER_BETS = [
@@ -81,6 +86,7 @@ class Table
                           counter_names: [:made, :won, :lost]
                         )
     @players = []
+    @morph_bets = []
     @tracking_player = TrackingPlayer.new(self)
     @tracking_bet_stats = tracking_player.stats.bet_stats
 
@@ -103,7 +109,9 @@ class Table
 
   def play(quiet_option=quiet_table)
     #
-    # one roll of the dice, and the outcomes
+    # players make automatic strategy bets,
+    # one roll of the dice, and the outcomes are
+    # tallied
     #
     quietly?(quiet_option) do
       # 1. shooter rolls dice
@@ -114,11 +122,16 @@ class Table
       raise "no players" unless players_ready?
       players_make_your_bets
       raise "place your bets" unless at_least_one_bet_made?
-      shooter_rolls
-      settle_bets
-      table_state.update
+      roll_dice
     end
     return
+  end
+
+  def roll_dice
+    shooter_rolls
+    settle_bets
+    morph_any_bets
+    table_state.update
   end
 
   def players_make_your_bets
@@ -166,9 +179,7 @@ class Table
   end
 
   def settle_bets
-    bet_boxes.each do |bet_box|
-      bet_box.settle_player_bets
-    end
+    bet_boxes.each { |bet_box| bet_box.settle_player_bets }
   end
 
   def at_least_one_bet_made?
@@ -209,7 +220,7 @@ class Table
        table_state.stickman_calls_roll]
   end
 
-  def find_bet_box(bet_short_name, number)
+  def find_bet_box(bet_short_name, number=nil)
     bet_boxes.find {|bet| bet.short_name == bet_short_name && bet.number == number} ||
       raise("#{bet_short_name}%s isn't a valid bet" % (number.nil? ? '' : " #{number}"))
   end
@@ -245,6 +256,14 @@ class Table
 
   def point_outcomes
     tracking_bet_stats.pass_line_point.count # total won and lost
+  end
+
+  def morph_any_bets
+    return if morph_bets.empty?
+    morph_bets.each do |player_bet|
+      player_bet.morph_bet
+    end
+    morph_bets.clear
   end
 
   def quietly?(option)

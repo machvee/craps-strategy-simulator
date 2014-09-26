@@ -12,17 +12,12 @@ class TrackingPlayer < Player
 
   def to_rail(amount); end
 
-  def new_bet(bet_box, amount)
-    TrackingBet.new(self, bet_box, amount)
-  end
-
-
   def out?
     false
   end
 
   def to_s
-    "#{name}: bets: #{bets}"
+    "#{name}:\nbets: #{formatted(bets)}"
   end
 
   private
@@ -33,6 +28,10 @@ class TrackingPlayer < Player
 
   def init_stats
     TrackingStats.new(self)
+  end
+
+  def new_player_bet(bet_box, amount)
+    TrackingBet.new(self, bet_box, amount)
   end
 
 end

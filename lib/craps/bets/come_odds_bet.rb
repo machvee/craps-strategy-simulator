@@ -5,7 +5,7 @@ class ComeOddsBet < CrapsBet
   end
 
   def max_bet
-    super * max_odds(number)
+    super * config.max_odds(number)
   end
 
   def table_on_status

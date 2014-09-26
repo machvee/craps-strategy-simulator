@@ -79,8 +79,7 @@ class PlayerBet
 
   def morph_bet
     dest_bet_box = table.find_bet_box(craps_bet.morph_bet_name, table.last_roll)
-    new_player_bet = dest_bet_box.new_player_bet(player, amount)
-    player.bets << new_player_bet
+    dest_bet_box.new_player_bet(player, amount)
   end
 
   def matches?(craps_bet_short_name, arg_number=nil)

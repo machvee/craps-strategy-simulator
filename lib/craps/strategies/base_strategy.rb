@@ -26,9 +26,9 @@ class BaseStrategy
       CrapsDice::HARDS.include?(table_state.point)
   end
 
-  def all_the_hardways
+  def all_the_hardways(amount=nil)
     CrapsDice::HARDS.each do |n|
-      player.hardways(n)
+      player.hardways(n, amount)
     end
   end
 
@@ -63,6 +63,16 @@ class BaseStrategy
         player.come_odds(number) if player.has_bet?('come', number)
       end
     end
+  end
+
+  def all_prop_bets(amount = nil)
+    Table::PROPOSITION_BETS.each do |bet|
+      player.send(bet.short_name, amount)
+    end
+  end
+
+  def field
+    player.field
   end
 
 end
