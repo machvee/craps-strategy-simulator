@@ -26,7 +26,7 @@ class TrackingPlayer < Player
     true
   end
 
-  def init_stats
+  def init_stats(start_bank)
     TrackingStats.new(self)
   end
 

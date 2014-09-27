@@ -13,15 +13,19 @@ class Player
   delegate :table_state, :config, to: :table
   delegate :bet_stats, :roll_stats, to: :stats
 
-  def initialize(name, table, amount, strategy_class=BasicStrategy)
+  def initialize(name, table, start_amount, strategy_class=BasicStrategy)
     @bets = []
     @name = name
     @table = table
     @wagers = 0
-    @rail = amount
-    @start_rail = rail
-    @stats = init_stats
+    @rail = 0
+    @stats = init_stats(start_amount)
+    to_rail(start_amount)
     @strategy = strategy_class.new(self)
+  end
+
+  def money
+    rail + wagers
   end
 
   def new_bet(bet_box, amount)
@@ -146,6 +150,7 @@ class Player
   def to_rail(amount)
     #   house to player rail (won bet)
     @rail += amount
+    stats.keep_bank_stats
   end
 
   def take_down(player_bet)
@@ -182,17 +187,11 @@ class Player
   end
 
   def to_s
-    "#{name}: rail: $#{rail} (#{up_down}), wagers: $#{wagers}\nbets: #{formatted(bets)}"
+    "#{name}: rail: $#{rail} (#{stats.up_down}), wagers: $#{wagers}\nbets: #{formatted(bets)}"
   end
 
   def inspect
     to_s
-  end
-
-  def up_down
-    ud = (rail + wagers) - start_rail
-    sign = ud == 0 ? '' : (ud < 0 ? '-' : '+')
-    "#{sign}$#{ud.abs}"
   end
 
   private
@@ -217,8 +216,8 @@ class Player
     PlayerBet.new(self, bet_box, amount)
   end
 
-  def init_stats
-    PlayerStats.new(self, rail)
+  def init_stats(start_amount)
+    PlayerStats.new(self, start_amount)
   end
 
   def can_bet?(amount)
