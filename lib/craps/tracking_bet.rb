@@ -14,7 +14,7 @@ class TrackingBet < PlayerBet
   end
 
   def return_bet
-    player.take_down(self)
+    player.wagers_to_rail(self.amount)
   end
 
 end

@@ -75,4 +75,8 @@ class BaseStrategy
     player.field
   end
 
+  def craps_check
+    player.ce
+  end
+
 end

@@ -10,9 +10,9 @@ class StatsCollection
     name:          'name',
     count:         'count',
     won:           'won',
-    win_streak:    'win streak',
+    win_streak:    'streak',
     lost:          'lost',
-    losing_streak: 'lose streak'
+    losing_streak: 'streak'
   }
 
   def initialize(name, options = {})

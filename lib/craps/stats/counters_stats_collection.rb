@@ -6,6 +6,10 @@ class CountersStatsCollection < StatsCollection
     setup_counters(options[:counter_names]||[])
   end
 
+  def counter_sum(name)
+    stats.select {|s| s.rollup_stat.nil?}.inject(0) {|t, s| t += s.counters(name)}
+  end
+
   private
 
   def init_stat(stat)
@@ -28,4 +32,5 @@ class CountersStatsCollection < StatsCollection
     extra_formatting = counter_names.map{|n| "%10s"}.join(" / ")
     @column_headers_format = DEFAULT_OUTPUT_FORMATTER + extra_formatting
   end
+
 end

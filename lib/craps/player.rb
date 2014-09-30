@@ -155,6 +155,7 @@ class Player
 
   def take_down(player_bet)
     wagers_to_rail(player_bet.amount)
+    player_bet.bet_box.remove_bet(player_bet)
   end
 
   def remove_from_player_bets(bet)

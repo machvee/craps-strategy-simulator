@@ -4,7 +4,7 @@ class CeBet < CrapsBet
   end
 
   def min_bet
-    1
+    2
   end
 
   def outcome

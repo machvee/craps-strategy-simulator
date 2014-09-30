@@ -107,6 +107,49 @@ class Table
     config.max_odds(number)
   end
 
+  def heat_index
+    #
+    # number of pass_line_points bet won vs. lost last 10 points
+    # number of place bets won in the last 10 ??
+    #
+    # VERY HOT  (5 * 1.0) + (4 * 1.0) + (1 * 1.0) = 10.0
+    # VERY COLD (5 * 0.0) + (4 * 0.0) + (1 * 0.0) =  0.0
+    #
+    point_weight = 5.0
+    numbers_weight = 4.0
+    come_out_weight = 1.0
+
+    won_lost = tracking_bet_stats.pass_line_point.last_counts(10)
+    point = won_lost[Stat::WON]/10.0 * point_weight
+    won_lost = tracking_bet_stats.pass_line.last_counts(10)
+    come_out = won_lost[Stat::WON]/10.0 * come_out_weight
+    numbers = 0.0
+    nums = table_state.numbers
+    if nums.length > 0
+      #
+      # avg of 5+ rolls between point made/seven out will be considered HOT
+      # 
+      avg_numbers = nums.inject(0) {|n,s| s += n}/(nums.length*1.0)
+      numbers = avg_numbers/5.0 * numbers_weight
+    end
+
+    point + come_out + numbers
+  end
+
+  def hot_or_cold
+    h = heat_index
+    case h 
+    when 0.0..2.0
+      "COLD"
+    when 2.0..4.0
+      "COOL"
+    when 4.0..5.0
+      "OK"
+    else
+      "HOT"
+    end
+  end
+
   def play(quiet_option=quiet_table)
     #
     # players make automatic strategy bets,
@@ -186,10 +229,12 @@ class Table
     players.any? {|p| p.bets.length > 0}
   end
 
-  def reset_stats
+  def reset
+    players.each {|p| p.stats.reset}
     shooter.reset_stats
     tracking_bet_stats.reset
     player_bet_stats.reset
+    table_state.reset
   end
 
   def house_credit(amount)
@@ -226,15 +271,22 @@ class Table
   end
 
   def inspect
-    puts name unless name.nil?
+    summary
+  end
+
+  def summary
+    puts "%s [%s (%4.2f)]" % [name||"table", hot_or_cold, heat_index]
+    #{name||'table'} [%s ()]"
     puts "ON (point is #{table_state.point})" if on? 
     puts "OFF" if off? 
     puts "rolls: #{total_rolls}"
   end
 
   def stats
+    summary
+    puts '-'*100
     tracking_bet_stats.print(BET_STATS_HEADERS)
-    puts "============"
+    puts '-'*100
     shooter.roll_stats.print
     puts "\n"
   end

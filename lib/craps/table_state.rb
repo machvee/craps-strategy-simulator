@@ -2,12 +2,18 @@ class TableState
   attr_reader :on_off #  true table on, false table off
   attr_reader :point  # 4,5,6,8,9 or 10
   attr_reader :table  # table we belong to
+  attr_reader :roll_count # number of rolls between ON and OFF
+  attr_reader :numbers # history of number of rolls between ON and OFF
+
+  NUMBERS_HISTORY_LENGTH = 10
 
   delegate :dice, to: :table
 
   def initialize(table)
     @table = table
-    table_off
+    @numbers = RingBuffer.new(NUMBERS_HISTORY_LENGTH)
+    @roll_count = 0
+    clear_point
   end
 
   def update
@@ -18,7 +24,14 @@ class TableState
     elsif seven_out?
       table_off
       table.shooter.done
+    else
+      bump_roll_count
     end
+  end
+
+  def reset
+    numbers.clear
+    clear_point
   end
 
   def last_roll
@@ -26,6 +39,11 @@ class TableState
   end
 
   def table_off
+    clear_point
+    @numbers << roll_count
+  end
+
+  def clear_point
     @on_off = false
     @point = nil
   end
@@ -33,7 +51,12 @@ class TableState
   def table_on_with_point(point)
     @on_off = true
     @point = point
+    @roll_count = 0
     return
+  end
+
+  def bump_roll_count
+    @roll_count += 1 if on?
   end
 
   def seven_out?

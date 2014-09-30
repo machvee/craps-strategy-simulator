@@ -60,7 +60,8 @@ class PlayerBet
     winnings = (amount/for_every) * pay_this
     bet_stat.won(made: amount, won: winnings)
     player.to_rail(winnings)
-    player.take_down(self)
+
+    player.wagers_to_rail(self.amount)
     table.status "#{player.name} wins $#{winnings} on #{self}"
     table.house_debit(winnings)
   end
@@ -73,7 +74,7 @@ class PlayerBet
   end
 
   def return_bet
-    player.take_down(self)
+    player.wagers_to_rail(self.amount)
     table.status "#{player.name} returned $#{amount} for #{self}"
   end
 

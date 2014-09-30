@@ -4,6 +4,10 @@ class PlaceBet < CrapsBet
     "Place Bet #{number}"
   end
 
+  def rolls_up
+    true
+  end
+
   def min_bet
     pay_this, for_every = config.payoff_odds(self, number)
     (super.to_f / for_every).ceil * for_every

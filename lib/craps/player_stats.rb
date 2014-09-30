@@ -30,16 +30,43 @@ class PlayerStats
     "#{sign}$#{ud.abs}"
   end
 
+  def total_wagers
+    bet_stats.counter_sum(:made)
+  end
+
+  def total_money_won
+    bet_stats.counter_sum(:won)
+  end
+
+  def total_money_lost
+    bet_stats.counter_sum(:lost)
+  end
+
   def print
     puts "#{player.name} stats for table '#{table.name}' - #{Time.now.to_s(:db)}"
+    puts "\n"
+    puts player.inspect
     puts "\n"
     puts "start $: #{start_bank}"
     puts "hi    $: #{hi_bank}"
     puts "low   $: #{lo_bank}"
     puts "\n"
+    puts "wagers: $#{total_wagers}"
+    puts "wins:   $#{total_money_won}"
+    puts "losses: $#{total_money_lost}"
+    puts "\n"
     bet_stats.print
     puts "-"*80
     roll_stats.print
+  end
+
+  def inspect
+    print
+  end
+
+  def reset
+    @bet_stats.reset
+    @roll_stats.reset
   end
 
 end

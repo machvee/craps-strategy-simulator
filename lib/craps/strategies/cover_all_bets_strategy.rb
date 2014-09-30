@@ -20,6 +20,7 @@ class CoverAllBetsStrategy < BaseStrategy
     across
     all_prop_bets
     field
+    craps_check
   end
 
 end
