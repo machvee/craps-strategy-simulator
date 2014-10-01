@@ -22,6 +22,9 @@ class PlayerTest < ActiveSupport::TestCase
     player_bet = mock('player_bet')
     bet_box = mock('bet_box')
     bet_box.expects(:new_player_bet).with(@player, @amount).returns(player_bet)
+    craps_bet = mock('craps_bet')
+    craps_bet.expects(:scale_bet).with(10).returns(10)
+    bet_box.expects(:craps_bet).returns(craps_bet)
     @table.expects(:find_bet_box).once.with('pass_line', 2).returns(bet_box)
     start_r = @player.rail
     @player.make_bet('pass_line', @amount, 2)
@@ -37,6 +40,7 @@ class PlayerTest < ActiveSupport::TestCase
     shooter.expects(:roll_stats).once.returns(roll_stats)
     roll_stats.expects(:new_child_instance).once
     @table.expects(:player_bet_stats).returns(bet_stats)
+    @table.expects(:config).returns(mock('config', min_bet: 10))
     @table.expects(:shooter).once.returns(shooter)
     @player = Player.new('dave', @table, @amount)
   end

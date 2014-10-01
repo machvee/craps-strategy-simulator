@@ -8,11 +8,6 @@ class PlaceBet < CrapsBet
     true
   end
 
-  def min_bet
-    pay_this, for_every = config.payoff_odds(self, number)
-    (super.to_f / for_every).ceil * for_every
-  end
-
   def table_on_status
     OnStatus::FOLLOW # follows the table on/off status
   end

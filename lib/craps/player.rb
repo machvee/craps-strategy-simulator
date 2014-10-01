@@ -8,15 +8,19 @@ class Player
   attr_reader   :start_rail # amount started with
   attr_reader   :rail    # amount of money in rail
   attr_reader   :wagers  # amount of money bet
+
+  attr_accessor :bet_unit
   attr_accessor :strategy
 
   delegate :table_state, :config, to: :table
   delegate :bet_stats, :roll_stats, to: :stats
 
-  def initialize(name, table, start_amount, strategy_class=BasicStrategy)
+  def initialize(name, table, start_amount, bet_unit=nil, strategy_class=BasicStrategy)
     @bets = []
     @name = name
     @table = table
+    valid_bet_unit?(bet_unit)
+    @bet_unit = bet_unit || config.min_bet
     @wagers = 0
     @rail = 0
     @stats = init_stats(start_amount)
@@ -47,11 +51,11 @@ class Player
     # e.g   make_bet('place', 12, 6)
     #    $12.00 Place bet on 6
     #
+    amount ||= bet_unit
     bet_box = table.find_bet_box(bet_short_name, number)
-    amount ||= bet_box.craps_bet.min_bet
     raise "#{name} needs to buy chips.  only $#{rail} remains" unless can_bet?(amount)
-    bet_box.new_player_bet(self, amount)
-    rail_to_wagers(amount)
+    scaled_bet_amount = bet_box.craps_bet.scale_bet(amount)
+    put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
     return
   end
 
@@ -63,12 +67,15 @@ class Player
     # if you have it covered but at a different amount, you
     # may want to press/reduce the bet instead
     #
+    amount ||= bet_unit
     bet_box = table.find_bet_box(bet_short_name, number)
-    amount ||= bet_box.craps_bet.min_bet
     bet = find_bet(bet_short_name, number)
-    return if bet.present? && bet.amount == amount
 
-    make_bet(bet_short_name, amount, number)
+    scaled_bet_amount = bet_box.craps_bet.scale_bet(amount)
+    return if bet.present? && bet.amount == scaled_bet_amount
+
+    put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
+    return
   end
 
 
@@ -98,24 +105,28 @@ class Player
     end
   end
 
-  def pass_odds!(amount=nil)
-    amt = base_pass_odds(amount)
-    make_bet('pass_odds', amt, table_state.point)
+  #
+  # pass_odds and come_odds bet helper are passed a multiple, 1 to
+  # configured max odds for that number.  the default is the max odds
+  # 
+  def pass_odds!(multiple=config.max_odds(table_state.point))
+    amount = base_pass_odds(multiple)
+    make_bet('pass_odds', amount, table_state.point)
   end
 
-  def pass_odds(amount=nil)
-    amt = base_pass_odds(amount)
-    ensure_bet('pass_odds', amt, table_state.point)
+  def pass_odds(multiple=config.max_odds(table_state.point))
+    amount = base_pass_odds(multiple)
+    ensure_bet('pass_odds', amount, table_state.point)
   end
 
-  def come_odds!(number = table.last_roll, amount=nil)
-    amt = base_come_odds(number, amount)
-    make_bet('come_odds', amt, number)
+  def come_odds!(number = table.last_roll, multiple=config.max_odds(number))
+    amount = base_come_odds(number, multiple)
+    make_bet('come_odds', amount, number)
   end
 
-  def come_odds(number = table.last_roll, amount=nil)
-    amt = base_come_odds(number, amount)
-    ensure_bet('come_odds', amt, number)
+  def come_odds(number = table.last_roll, multiple=config.max_odds(number))
+    amount = base_come_odds(number, multiple)
+    ensure_bet('come_odds', amount, number)
   end
 
   def has_bet?(bet_short_name, number=nil)
@@ -176,19 +187,12 @@ class Player
   end
 
   def play_strategy
-    #
-    # here's where the configurable player strategy comes in
-    #
-    #  e.g.  when table is off?, make a 10 pass_line bet and a 2 CE
-    #        when point is established, make full odds bet on that number, and a 10 come bet
-    #        make come odds bet and place bet on any uncovered 6 or 8
-    #        on place winners, have a bet progression strategy
-    #
     strategy.make_bets
   end
 
   def to_s
-    "#{name}: rail: $#{rail} (#{stats.up_down}), wagers: $#{wagers}\nbets: #{formatted(bets)}"
+    "#{name}: bet_unit: #{bet_unit}, rail: $#{rail} (#{stats.up_down}), "\
+    "wagers: $#{wagers}\nbets: #{formatted(bets)}"
   end
 
   def inspect
@@ -197,20 +201,38 @@ class Player
 
   private
 
-  def base_pass_odds(amount)
-    raise "point must be established" unless table_state.on?
-    pass_line_bet = find_bet('pass_line_point', table_state.point)
-    raise "you must have a Pass Line Bet" if pass_line_bet.nil?
-    amt = amount || (pass_line_bet.amount * config.max_odds(table_state.point))
-    amt
+  def put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
+    bet_box.new_player_bet(self, scaled_bet_amount)
+    rail_to_wagers(scaled_bet_amount)
   end
 
-  def base_come_odds(number, amount)
+  def valid_multiple?(number, multiple)
+    raise "multiple must be between 1 and #{config.max_odds(number)}" unless \
+      multiple.between?(1, config.max_odds(number))
+  end
+
+  def valid_bet_unit?(bet_unit)
+    raise "bet_unit must be at least #{config.min_bet} and at most #{config.max_bet}" if bet_unit.present? &&
+      !bet_unit.between?(config.min_bet, config.max_bet)
+  end
+
+  def base_pass_odds(multiple)
+    number = table_state.point
+    raise "point must be established" unless table_state.on?
+    pass_line_bet = find_bet('pass_line_point', number)
+    raise "you must have a Pass Line Bet" if pass_line_bet.nil?
+    valid_multiple?(number, multiple)
+    amount = pass_line_bet.amount * multiple
+    amount
+  end
+
+  def base_come_odds(number, multiple)
     raise "point must be established" unless table_state.on?
     come_bet = find_bet('come', number)
     raise "you must have a Come Bet on #{number}" if come_bet.nil?
-    amt = amount || (come_bet.amount * config.max_odds(number))
-    amt
+    valid_multiple?(number, multiple)
+    amount = come_bet.amount * multiple
+    amount
   end
 
   def new_player_bet(bet_box, amount)

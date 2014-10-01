@@ -112,11 +112,24 @@ class CrapsBet
   end
 
   def min_bet
+    #
+    # override if bet allows < table minimum
+    #
     config.min_bet
   end
 
   def max_bet
     config.max_bet
+  end
+
+  def scale_bet(amount)
+    #
+    # upscales an amount to be appropriate for
+    # easy payout.  e.g.  place 6 bets should be
+    # a multiple of 6
+    #
+    _, for_every = payout
+    (amount.to_f / for_every).ceil * for_every
   end
 
   def rolled_the_number?

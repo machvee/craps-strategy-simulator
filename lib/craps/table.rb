@@ -198,8 +198,8 @@ class Table
     return
   end
 
-  def new_player(name, start_amount)
-    Player.new(name, self, start_amount).tap do |p|
+  def new_player(name, start_amount, bet_unit=nil, strategy=nil)
+    Player.new(name, self, start_amount, bet_unit, strategy||BasicStrategy).tap do |p|
       @players << p
     end
   end

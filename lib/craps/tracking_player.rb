@@ -1,7 +1,7 @@
 class TrackingPlayer < Player
 
   def initialize(table)
-    super('tracking player', table, 0, CoverAllBetsStrategy)
+    super('tracking player', table, 0, nil, CoverAllBetsStrategy)
   end
 
   def rail_to_wagers(amount); end
