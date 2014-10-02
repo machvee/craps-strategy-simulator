@@ -11,7 +11,8 @@ class Table
   attr_reader    :players
   attr_reader    :morph_bets
   attr_reader    :shooter # one of the above players or nil
-  attr_reader    :house   # dollar amount of chips the house has
+  attr_reader    :house   # house Account
+  attr_reader    :wagers  # Account holding all active table bets
   attr_accessor  :quiet_table # not verbose about all actions
 
   delegate :on?, :off?,        to: :table_state
@@ -76,7 +77,13 @@ class Table
     @table_state = TableState.new(self)
     table_state.table_off
 
-    @house = config.house_bank
+    #
+    # house is the houses money Account
+    # wagers is waged bets on the table, neither belongs to player or house
+    #
+    @house = Account.new('house', config.house_bank)
+    @wagers = Account.new('current wagers', 0)
+
     @quiet_table = options[:quiet_table]
 
     @dice_tray = DiceTray.new(self, options[:die_seeder])
@@ -186,6 +193,13 @@ class Table
     end
   end
 
+  def shooters_turn(quiet_option=quiet_table)
+    start_outs = tracking_bet_stats.pass_line_point.total_lost
+    while tracking_bet_stats.pass_line_point.total_lost == start_outs do
+      play(quiet_option) 
+    end
+  end
+
   def play_points(number_of_points, quiet_option=quiet_table)
     #
     # roll as many times from as many shooters as it takes
@@ -237,15 +251,6 @@ class Table
     table_state.reset
   end
 
-  def house_credit(amount)
-    # the sound of a player losing a bet
-    @house += amount
-  end
-
-  def house_debit(amount)
-    @house -= amount
-  end
-
   def shooter_rolls
     shooter.set
     shooter.roll
@@ -275,11 +280,12 @@ class Table
   end
 
   def summary
-    puts "%s [%s (%4.2f)]" % [name||"table", hot_or_cold, heat_index]
-    #{name||'table'} [%s ()]"
-    puts "ON (point is #{table_state.point})" if on? 
-    puts "OFF" if off? 
-    puts "rolls: #{total_rolls}"
+    [
+     "%s [%s (%4.2f)]" % [name||"table", hot_or_cold, heat_index],
+     on? ? "ON (point is #{table_state.point})" : "OFF" ,
+     "rolls: #{total_rolls}",
+     "#{house}",
+    ].join("\n")
   end
 
   def stats

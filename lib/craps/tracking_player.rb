@@ -4,14 +4,6 @@ class TrackingPlayer < Player
     super('tracking player', table, 0, nil, CoverAllBetsStrategy)
   end
 
-  def rail_to_wagers(amount); end
-
-  def wagers_to_rail(amount); end
-
-  def from_wagers(amount); end
-
-  def to_rail(amount); end
-
   def out?
     false
   end
@@ -24,6 +16,10 @@ class TrackingPlayer < Player
 
   def can_bet?(amount)
     true
+  end
+
+  def new_account(start_amount)
+    TrackingAccount.new('tracking account', start_amount)
   end
 
   def init_stats(start_bank)

@@ -26,10 +26,10 @@ class PlayerTest < ActiveSupport::TestCase
     craps_bet.expects(:scale_bet).with(10).returns(10)
     bet_box.expects(:craps_bet).returns(craps_bet)
     @table.expects(:find_bet_box).once.with('pass_line', 2).returns(bet_box)
-    start_r = @player.rail
+    acct = mock('account')
+    acct.expects(:transfer_from).once.with(@player.rail, @amount)
+    @table.expects(:wagers).once.returns(acct)
     @player.make_bet('pass_line', @amount, 2)
-    assert_equal @amount, @player.wagers
-    assert_equal start_r - @amount, @player.rail
   end
 
   def new_player

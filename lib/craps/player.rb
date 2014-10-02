@@ -5,9 +5,7 @@ class Player
   attr_reader   :bets
   attr_reader   :stats
   attr_reader   :table
-  attr_reader   :start_rail # amount started with
-  attr_reader   :rail    # amount of money in rail
-  attr_reader   :wagers  # amount of money bet
+  attr_reader   :rail    # player account
 
   attr_accessor :bet_unit
   attr_accessor :strategy
@@ -21,15 +19,21 @@ class Player
     @table = table
     valid_bet_unit?(bet_unit)
     @bet_unit = bet_unit || config.min_bet
-    @wagers = 0
-    @rail = 0
+    @rail = new_account(start_amount)
     @stats = init_stats(start_amount)
-    to_rail(start_amount)
     @strategy = strategy_class.new(self)
   end
 
   def money
-    rail + wagers
+    rail.balance + wagers
+  end
+
+  def wagers
+    bets.inject(0) {|s, b| s += b.amount}
+  end
+
+  def new_account(start_amount)
+    Account.new("#{name}'s rail", start_amount)
   end
 
   def new_bet(bet_box, amount)
@@ -53,7 +57,7 @@ class Player
     #
     amount ||= bet_unit
     bet_box = table.find_bet_box(bet_short_name, number)
-    raise "#{name} needs to buy chips.  only $#{rail} remains" unless can_bet?(amount)
+    raise "#{name} needs to buy chips.  only $#{rail.balance} remains" unless can_bet?(amount)
     scaled_bet_amount = bet_box.craps_bet.scale_bet(amount)
     put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
     return
@@ -142,30 +146,8 @@ class Player
     bets.find {|b| b.matches?(bet_short_name, number)}
   end
 
-  def rail_to_wagers(amount)
-    @rail -= amount
-    @wagers += amount
-  end
-
-  def wagers_to_rail(amount)
-    #   player wagers back to rail (house return (or player take_down) bet)
-    from_wagers(amount)
-    to_rail(amount)
-  end
-
-  def from_wagers(amount)
-    #   player wagers to house (lost bet)
-    @wagers -= amount
-  end
-
-  def to_rail(amount)
-    #   house to player rail (won bet)
-    @rail += amount
-    stats.keep_bank_stats
-  end
-
   def take_down(player_bet)
-    wagers_to_rail(player_bet.amount)
+    rail.transfer_from(table.wagers, player_bet.amount)
     player_bet.bet_box.remove_bet(player_bet)
   end
 
@@ -177,7 +159,7 @@ class Player
     #
     # player ready to quit based on current state of bank?
     #
-    bets.empty? && rail == 0
+    bets.empty? && rail.balance == 0
   end
 
   def leave_table
@@ -191,7 +173,7 @@ class Player
   end
 
   def to_s
-    "#{name}: bet_unit: #{bet_unit}, rail: $#{rail} (#{stats.up_down}), "\
+    "#{name}: bet_unit: #{bet_unit}, rail: $#{rail.balance} (#{stats.up_down}), "\
     "wagers: $#{wagers}\nbets: #{formatted(bets)}"
   end
 
@@ -203,7 +185,7 @@ class Player
 
   def put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
     bet_box.new_player_bet(self, scaled_bet_amount)
-    rail_to_wagers(scaled_bet_amount)
+    table.wagers.transfer_from(rail, scaled_bet_amount)
   end
 
   def valid_multiple?(number, multiple)
@@ -244,7 +226,7 @@ class Player
   end
 
   def can_bet?(amount)
-    rail - amount > 0
+    rail.balance - amount > 0
   end
 
   def formatted(a)

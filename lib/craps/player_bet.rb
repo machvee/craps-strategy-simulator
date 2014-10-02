@@ -59,22 +59,21 @@ class PlayerBet
   def winning_bet(pay_this, for_every)
     winnings = (amount/for_every) * pay_this
     bet_stat.won(made: amount, won: winnings)
-    player.to_rail(winnings)
 
-    player.wagers_to_rail(self.amount)
+    player.rail.transfer_from(table.wagers, self.amount)
+    player.rail.transfer_from(table.house, winnings)
+
     table.status "#{player.name} wins $#{winnings} on #{self}"
-    table.house_debit(winnings)
   end
 
   def losing_bet
-    player.from_wagers(amount)
     bet_stat.lost(made: amount, lost: amount)
     table.status "#{player.name} loses $#{amount} on #{self}"
-    table.house_credit(amount)
+    table.house.transfer_from(table.wagers, amount)
   end
 
   def return_bet
-    player.wagers_to_rail(self.amount)
+    player.rail.transfer_from(table.wagers, self.amount)
     table.status "#{player.name} returned $#{amount} for #{self}"
   end
 

@@ -6,15 +6,12 @@ class TrackingBet < PlayerBet
 
   def winning_bet(pay_this, for_every)
     bet_stat.won
-    return_bet
   end
 
   def losing_bet
     bet_stat.lost
   end
 
-  def return_bet
-    player.wagers_to_rail(self.amount)
-  end
+  def return_bet; end
 
 end
