@@ -63,18 +63,18 @@ class PlayerBet
     player.rail.transfer_from(table.wagers, self.amount)
     player.rail.transfer_from(table.house, winnings)
 
-    table.status "#{player.name} wins $#{winnings} on #{self}"
+    status('wins', winnings)
   end
 
   def losing_bet
     bet_stat.lost(made: amount, lost: amount)
-    table.status "#{player.name} loses $#{amount} on #{self}"
+    status('loses', amount)
     table.house.transfer_from(table.wagers, amount)
   end
 
   def return_bet
     player.rail.transfer_from(table.wagers, self.amount)
-    table.status "#{player.name} returned $#{amount} for #{self}"
+    status("returned", amount)
   end
 
   def morph_bet
@@ -98,5 +98,9 @@ class PlayerBet
 
   def set_bet_on
     @bet_off = false
+  end
+
+  def status(verbed, amount)
+    table.status "  #{player.name} #{verbed} $#{amount} on #{self}"
   end
 end

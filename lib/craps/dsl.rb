@@ -18,4 +18,72 @@
 #   8. Hardways bet for $1 (cold table), or $5 (hot table) on the point number 4,6,8,10
 #   9. "Crap check" on the come-out roll
 #
+# strategy object builder
+# no place bet on point number
+# place bet priority [6,8,5,9,4,10] cover when available after rules below met
+# place bet 6,8 always after point established
+# 5 after 1st point won
+# 9 after 2nd point won
+# 4 after 3rd point won
+# 10 after 3rd point won
+place_bet_on(6).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
+place_bet_on(8).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
+place_bet_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
+place_bet_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
+buy_the(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
+buy_the(4).for(25).after_making_point(4).press_after_win_to(50,75,100,150,200,225,250)
 
+
+class BetMaker
+  attr_reader   :bet
+  attr_reader   :amount
+  attr_reader   :rules
+
+  def place_bet_on(number)
+    self
+  end
+
+  def buy_the(number)
+    self
+  end
+
+  def for(amount)
+    self
+  end
+
+  def after_point_established
+    self
+  end
+
+  def after_making_point(n)
+    self
+  end
+
+  def press_after_win_to(*amounts)
+    self
+  end
+
+  def no_press_after_wins(n)
+    self
+  end
+
+  def press_by_amount_after_wins(amount, n)
+    self
+  end
+
+  def full_press_after_wins(n)
+    self
+  end
+
+  def when_tables_hot
+    self
+  end
+
+  def when_tables_cold
+    self
+  end
+
+  def when_tables_up_and_down
+    self
+  end
+end

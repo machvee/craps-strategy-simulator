@@ -117,7 +117,8 @@ class Table
   def heat_index
     #
     # number of pass_line_points bet won vs. lost last 10 points
-    # number of place bets won in the last 10 ??
+    # number of pass_line coming out points won
+    # number of place/come bets won in the last 10
     #
     # VERY HOT  (5 * 1.0) + (4 * 1.0) + (1 * 1.0) = 10.0
     # VERY COLD (5 * 0.0) + (4 * 0.0) + (1 * 0.0) =  0.0
@@ -128,16 +129,19 @@ class Table
 
     won_lost = tracking_bet_stats.pass_line_point.last_counts(10)
     point = won_lost[Stat::WON]/10.0 * point_weight
+
     won_lost = tracking_bet_stats.pass_line.last_counts(10)
     come_out = won_lost[Stat::WON]/10.0 * come_out_weight
+
     numbers = 0.0
     nums = table_state.numbers
     if nums.length > 0
       #
-      # avg of 5+ rolls between point made/seven out will be considered HOT
+      # avg of 4+ rolls of place bet winnign rolls between point made/seven
+      # out will be considered HOT
       # 
       avg_numbers = nums.inject(0) {|n,s| s += n}/(nums.length*1.0)
-      numbers = avg_numbers/5.0 * numbers_weight
+      numbers = avg_numbers/4.0 * numbers_weight
     end
 
     point + come_out + numbers

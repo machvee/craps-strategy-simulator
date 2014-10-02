@@ -2,7 +2,7 @@ class TableState
   attr_reader :on_off #  true table on, false table off
   attr_reader :point  # 4,5,6,8,9 or 10
   attr_reader :table  # table we belong to
-  attr_reader :roll_count # number of rolls between ON and OFF
+  attr_reader :roll_count # number of point number rolls between ON and OFF
   attr_reader :numbers # history of number of rolls between ON and OFF
 
   NUMBERS_HISTORY_LENGTH = 10
@@ -24,8 +24,8 @@ class TableState
     elsif seven_out?
       table_off
       table.shooter.done
-    else
-      bump_roll_count
+    elsif dice.points?
+      bump_hot_roll_count
     end
   end
 
@@ -55,7 +55,7 @@ class TableState
     return
   end
 
-  def bump_roll_count
+  def bump_hot_roll_count
     @roll_count += 1 if on?
   end
 
@@ -109,15 +109,16 @@ class TableState
 
   def stickman_calls_roll
     if point_made?
-      "winner #{last_roll}. pay the line" 
+      trailer = "===== #{table.tracking_bet_stats.pass_line_point.current_winning_streak + 1} ====="
+      "WINNER!! #{last_roll}. Pay the line.  #{trailer}"
     elsif seven_out?
       "7 out"
     elsif front_line_winner?
-      "7 front line winner!"
+      "7 Front line winner!!"
     elsif yo_eleven?
-      "yo 11!" 
+      "yo 11!!" 
     elsif crapped_out?
-      "crap!" 
+      "crap!!" 
     elsif point_established?
       "the point is #{last_roll}"
     elsif rolled?(5)
