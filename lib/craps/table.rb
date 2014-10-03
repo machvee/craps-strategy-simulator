@@ -147,15 +147,29 @@ class Table
     point + come_out + numbers
   end
 
+  def is_hot?
+    heat_index > 5.0
+  end
+
+  def is_good?
+    (4.0..5.0).include?(heat_index)
+  end
+
+  def is_choppy?
+    (2.0..4.0).include?(heat_index)
+  end
+
+  def is_cold?
+    (0.0..2.0).include?(heat_index)
+  end
+
   def hot_or_cold
-    h = heat_index
-    case h 
-    when 0.0..2.0
+    if is_cold?
       "COLD"
-    when 2.0..4.0
-      "COOL"
-    when 4.0..5.0
-      "OK"
+    elsif is_choppy?
+      "CHOPPY"
+    elsif is_good?
+      "GOOD"
     else
       "HOT"
     end

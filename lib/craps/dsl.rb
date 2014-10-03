@@ -26,18 +26,66 @@
 # 9 after 2nd point won
 # 4 after 3rd point won
 # 10 after 3rd point won
-place_bet_on(6).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
-place_bet_on(8).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
-place_bet_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
-place_bet_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
-buy_the(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
-buy_the(4).for(25).after_making_point(4).press_after_win_to(50,75,100,150,200,225,250)
+# pass_line.for(50).with_full_odds
+# come_bet(n).for(25).with_full_odds
+# hard_ways_bet_on(8).for(1).full_press_after_wins(2)
+# hard_ways_bet_on(10).for(5).press_after_win_to(10,20,50)
+# pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
+# place_bet_on(6).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
+# place_bet_on(8).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
+# place_bet_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
+# place_bet_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
+# buy_the(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
+# buy_the(4).for(25).after_making_point(4).press_after_win_to(50,75,100,150,200,225,250)
+#
 
 
 class BetMaker
+  #
+  # specify the bet and initial amount
+  # specify when the bet is initially made
+  # specify when to press it after win and by how much
+  #
+  attr_reader   :player
+  attr_reader   :table
   attr_reader   :bet
+  attr_reader   :odds_bet_multiple
   attr_reader   :amount
   attr_reader   :rules
+  attr_reader   :bet_presser
+
+  FULL_ODDS = -1 # this indicates full odds when odds bet is made
+
+  delegate :table, to: :player
+  delegate :table_state, to: :table
+
+  def initialize(player)
+    @player = player
+    @bet = nil
+    @amount = nil
+    @rules = nil
+    @bet_presser = BetPresser.new
+    @odds_bet_multiple = nil
+  end
+
+  def pass_line
+    @bet = 'pass_line'
+    self
+  end
+
+  def come_bets(n)
+    @bet = 'come_out'
+    self
+  end
+
+  def with_full_odds
+    @odds_bet_multiple = FULL_ODDS
+    self
+  end
+
+  def with_odds_multiple_for_numbers(multiple, *numbers)
+    self
+  end
 
   def place_bet_on(number)
     self
