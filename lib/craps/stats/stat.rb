@@ -71,6 +71,14 @@ class Stat
     total(LOST)
   end
 
+  def won_percentage
+    percentage_formatter(total_won)
+  end
+
+  def lost_percentage
+    percentage_formatter(total_lost)
+  end
+
   def longest_winning_streak
     longest_streak[WON]
   end
@@ -119,13 +127,20 @@ class Stat
       name,
       count,
       total_won,
+      won_percentage,
       longest_winning_streak,
       total_lost, 
+      lost_percentage,
       longest_losing_streak
     ]
   end
 
   private
+
+  def percentage_formatter(stat)
+   return "0.00" if count == 0
+   "%5.2f" % (((stat * 1.0)/count * 100.0))
+  end
 
   def zero_counter
     to_hash(0, 0)

@@ -4,14 +4,16 @@ class StatsCollection
   attr_reader :parent_stats
   attr_reader :column_headers_format
 
-  DEFAULT_OUTPUT_FORMATTER = "%20s    %10s      %10s / %10s      %10s / %10s"
+  DEFAULT_OUTPUT_FORMATTER = "%20s    %10s      %10s   %5s / %10s      %10s   %5s / %10s"
 
   DEFAULT_COLUMN_LABELS = {
     name:          'name',
     count:         'count',
     won:           'won',
+    win_perc:      '%',
     win_streak:    'streak',
     lost:          'lost',
+    losing_perc:   '%',
     losing_streak: 'streak'
   }
 
@@ -147,8 +149,10 @@ class StatsCollection
       column_labels[:name],
       column_labels[:count],
       column_labels[:won],
+      column_labels[:win_perc],
       column_labels[:win_streak],
       column_labels[:lost],
+      column_labels[:losing_perc],
       column_labels[:losing_streak]
     ]
   end

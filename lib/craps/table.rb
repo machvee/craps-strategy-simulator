@@ -152,10 +152,12 @@ class Table
     end
   end
 
-  def shooters_turn(quiet_option=quiet_table)
-    start_outs = tracking_bet_stats.pass_line_point.total_lost
-    while tracking_bet_stats.pass_line_point.total_lost == start_outs do
-      play(quiet_option) 
+  def shooter_turns(number_of_turns=1, quiet_option=quiet_table)
+    number_of_turns.times do
+      start_outs = tracking_bet_stats.pass_line_point.total_lost
+      while tracking_bet_stats.pass_line_point.total_lost == start_outs do
+        play(quiet_option) 
+      end
     end
   end
 
