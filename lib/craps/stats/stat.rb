@@ -15,7 +15,7 @@ class Stat
   WON=true
   LOST=!WON
 
-  DEFAULT_HISTORY_LENGTH = 10 # keep the last 10 results
+  DEFAULT_HISTORY_LENGTH = 40 # keep the last 40 results
 
   def initialize(name, options = {})
     @name = name

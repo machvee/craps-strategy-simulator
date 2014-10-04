@@ -15,9 +15,11 @@ class Table
   attr_reader    :wagers  # Account holding all active table bets
   attr_accessor  :quiet_table # not verbose about all actions
 
-  delegate :on?, :off?,        to: :table_state
+  delegate :on?, :off?, :is_hot?, :is_good?, :is_choppy?, :is_cold?, to: :table_state
+
   delegate :dice,              to: :shooter
   delegate :min_bet, :max_bet, to: :config
+
 
   #
   # NO_NUMBER_BETS and NUMBER_BETS are all the types of bets on the table.  We
@@ -56,9 +58,10 @@ class Table
   ]
 
   DEFAULT_OPTIONS = {
-    config:      TableConfig.new,
-    die_seeder:  nil,
-    quiet_table: false
+    config:                    TableConfig.new,
+    die_seeder:                nil,
+    quiet_table:               false,
+    table_heat_history_points: 15
   }
 
   BET_STATS_HEADERS = {
@@ -74,7 +77,7 @@ class Table
     @name = name
     @config = options[:config]
 
-    @table_state = TableState.new(self)
+    @table_state = TableState.new(self, options[:table_heat_history_points])
     table_state.table_off
 
     #
@@ -113,68 +116,6 @@ class Table
   def max_odds(number)
     config.max_odds(number)
   end
-
-  def heat_index
-    #
-    # number of pass_line_points bet won vs. lost last 10 points
-    # number of pass_line coming out points won
-    # number of place/come bets won in the last 10
-    #
-    # VERY HOT  (5 * 1.0) + (4 * 1.0) + (1 * 1.0) = 10.0
-    # VERY COLD (5 * 0.0) + (4 * 0.0) + (1 * 0.0) =  0.0
-    #
-    point_weight = 5.0
-    numbers_weight = 4.0
-    come_out_weight = 1.0
-
-    won_lost = tracking_bet_stats.pass_line_point.last_counts(10)
-    point = won_lost[Stat::WON]/10.0 * point_weight
-
-    won_lost = tracking_bet_stats.pass_line.last_counts(10)
-    come_out = won_lost[Stat::WON]/10.0 * come_out_weight
-
-    numbers = 0.0
-    nums = table_state.numbers
-    if nums.length > 0
-      #
-      # avg of 4+ rolls of place bet winnign rolls between point made/seven
-      # out will be considered HOT
-      # 
-      avg_numbers = nums.inject(0) {|n,s| s += n}/(nums.length*1.0)
-      numbers = avg_numbers/4.0 * numbers_weight
-    end
-
-    point + come_out + numbers
-  end
-
-  def is_hot?
-    heat_index > 5.0
-  end
-
-  def is_good?
-    (4.0..5.0).include?(heat_index)
-  end
-
-  def is_choppy?
-    (2.0..4.0).include?(heat_index)
-  end
-
-  def is_cold?
-    (0.0..2.0).include?(heat_index)
-  end
-
-  def hot_or_cold
-    if is_cold?
-      "COLD"
-    elsif is_choppy?
-      "CHOPPY"
-    elsif is_good?
-      "GOOD"
-    else
-      "HOT"
-    end
-  end
-
   def play(quiet_option=quiet_table)
     #
     # players make automatic strategy bets,
@@ -218,7 +159,7 @@ class Table
     end
   end
 
-  def play_points(number_of_points, quiet_option=quiet_table)
+  def play_points(number_of_points=1, quiet_option=quiet_table)
     #
     # roll as many times from as many shooters as it takes
     # to make and end number_of_points points
@@ -299,7 +240,7 @@ class Table
 
   def summary
     [
-     "%s [%s (%4.2f)]" % [name||"table", hot_or_cold, heat_index],
+     "%s [%s (%4.2f)]" % [name||"table", table_state.heat_index_in_words, table_state.heat_index],
      on? ? "ON (point is #{table_state.point})" : "OFF" ,
      "rolls: #{total_rolls}",
      "#{house}",

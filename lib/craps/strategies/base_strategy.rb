@@ -14,7 +14,11 @@ class BaseStrategy
     # and table state
   end
 
+  include BetMakerDsl
+
   private
+
+  # TODO: VVV remove or keep these below?
 
   def pass_line_bet_with_full_odds
     player.pass_line if table_state.off?

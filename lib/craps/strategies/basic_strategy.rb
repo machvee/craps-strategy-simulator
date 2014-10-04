@@ -10,7 +10,7 @@ class BasicStrategy < BaseStrategy
     # up a unit each win after that
     #
     pass_line_bet_with_full_odds
-    if table.hot_or_cold == 'HOT'
+    if table.is_hot?
       inside
     else
       six_and_eight 

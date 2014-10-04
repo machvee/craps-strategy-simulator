@@ -1,18 +1,65 @@
-class TableState
-  attr_reader :on_off #  true table on, false table off
-  attr_reader :point  # 4,5,6,8,9 or 10
-  attr_reader :table  # table we belong to
+class PointNumbersCounter
+  #
+  # keep track of the number of point numbers rolled between when the table
+  # is ON and OFF.  This history or the average over the last history_length
+  # points can help determine how hot or cold the table is
+  #
+  attr_reader :numbers    # history of number of rolls between ON and OFF
   attr_reader :roll_count # number of point number rolls between ON and OFF
-  attr_reader :numbers # history of number of rolls between ON and OFF
 
-  NUMBERS_HISTORY_LENGTH = 10
+  DEFAULT_HISTORY_LENGTH = 10
+
+  def initialize(history_length=DEFAULT_HISTORY_LENGTH)
+    @numbers = RingBuffer.new(history_length)
+    reset
+  end
+
+  def commit
+    @numbers << roll_count
+    reset
+  end
+
+  def bump
+    @roll_count += 1
+  end
+
+  def reset
+    @roll_count = 0
+  end
+
+  def clear
+    numbers.clear
+    reset
+  end
+
+  def hot_numbers_average
+    nl = numbers.length
+    return 0.0 if nl.zero?
+    sum = numbers.inject(0) {|t, n| t += n}
+    (sum * 1.0)/nl
+  end
+end
+
+
+class TableState
+  attr_reader  :on_off #  true table on, false table off
+  attr_reader  :point  # 4,5,6,8,9 or 10
+  attr_reader  :table  # table we belong to
+  attr_reader  :numbers # history of number of rolls between ON and OFF
+  attr_reader  :roll_counter
+  attr_reader  :table_heat
 
   delegate :dice, to: :table
+  delegate :numbers, :hot_numbers_average, to: :roll_counter
 
-  def initialize(table)
+  delegate :is_hot?, :is_good?, :is_choppy?, :is_cold?,
+           :heat_index_in_words,
+           :heat_index, to: :table_heat
+
+  def initialize(table, history_length)
     @table = table
-    @numbers = RingBuffer.new(NUMBERS_HISTORY_LENGTH)
-    @roll_count = 0
+    @roll_counter = PointNumbersCounter.new(history_length)
+    @table_heat = TableHeat.new(self, history_length)
     clear_point
   end
 
@@ -25,12 +72,12 @@ class TableState
       table_off
       table.shooter.done
     elsif dice.points?
-      bump_hot_roll_count
+      roll_counter.bump
     end
   end
 
   def reset
-    numbers.clear
+    roll_counter.clear
     clear_point
   end
 
@@ -40,7 +87,7 @@ class TableState
 
   def table_off
     clear_point
-    @numbers << roll_count
+    roll_counter.commit
   end
 
   def clear_point
@@ -51,12 +98,8 @@ class TableState
   def table_on_with_point(point)
     @on_off = true
     @point = point
-    @roll_count = 0
+    roll_counter.reset
     return
-  end
-
-  def bump_hot_roll_count
-    @roll_count += 1 if on?
   end
 
   def seven_out?
@@ -112,7 +155,7 @@ class TableState
       trailer = "===== #{table.tracking_bet_stats.pass_line_point.current_winning_streak + 1} ====="
       "WINNER!! #{last_roll}. Pay the line.  #{trailer}"
     elsif seven_out?
-      "7 out"
+      "7 out  " + '='*20
     elsif front_line_winner?
       "7 Front line winner!!"
     elsif yo_eleven?

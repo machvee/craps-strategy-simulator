@@ -26,6 +26,8 @@
 # 9 after 2nd point won
 # 4 after 3rd point won
 # 10 after 3rd point won
+#
+# example grammar:
 # pass_line.for(50).with_full_odds
 # come_bet(n).for(25).with_full_odds
 # hard_ways_bet_on(8).for(1).full_press_after_wins(2)
@@ -39,81 +41,19 @@
 # buy_the(4).for(25).after_making_point(4).press_after_win_to(50,75,100,150,200,225,250)
 #
 
-class BetPresser
-  #
-  # keeps tabs on a bet by name and number, typically place bets and hardways.
-  # This is attached to a BetMaker instance.  It keeps track of a bet and the number
-  # of consecutive wins.  BetMaker will use the bet_amount method to know how to modify
-  # a bet when it is taken down after a win, or while it is active, by returning one
-  # of the following:  
-  #
-  #   1. a new bet amount > 0, possibly higher or lower than previous bet
-  #   2. zero, indicating the bet is to be taken down and/or not to be remade
-  #
-  # the instance stays active on a bet until that bet loses and is taken down, or the instance
-  # is destroyed, or a new instance is created matching the bet name and number
-  #
-  attr_reader   :index
-  attr_reader   :press_amounts
-  attr_reader   :bet_short_name
-  attr_reader   :number
+module BetMakerDsl
 
-  def initialize(bet_short_name, number)
+  def place_bet_priority(sequence)
   end
-
-  def bet_amount
-  end
-end
-
-
-class BetMaker
-  #
-  # specify the bet and initial amount
-  # specify when the bet is initially made
-  # specify when to press it after win and by how much
-  #
-  attr_reader   :player
-  attr_reader   :table
-  attr_reader   :bet
-  attr_reader   :odds_bet_multiple
-  attr_reader   :amount
-  attr_reader   :rules
-  attr_reader   :bet_presser
-
-  FULL_ODDS = -1 # this indicates full odds when odds bet is made
-
-  delegate :table, to: :player
-  delegate :table_state, to: :table
-
-  def initialize(player)
-    @player = player
-    @bet = nil
-    @amount = nil
-    @rules = nil
-    @bet_presser = BetPresser.new
-    @odds_bet_multiple = nil
-  end
-
-end
-
-module BetMakerDSL
 
   def pass_line
-    @bet = 'pass_line'
+    @bet_maker.commit unless @bet_maker.nil? # commit the last bet_maker construction
+    @bet_maker = BetMaker.new('pass_line')
     self
   end
 
   def come_bets(n)
     @bet = 'come_out'
-    self
-  end
-
-  def with_full_odds
-    @odds_bet_multiple = FULL_ODDS
-    self
-  end
-
-  def with_odds_multiple_for_numbers(multiple, *numbers)
     self
   end
 
@@ -134,6 +74,15 @@ module BetMakerDSL
   end
 
   def after_making_point(n)
+    self
+  end
+
+  def with_full_odds
+    @odds_bet_multiple = FULL_ODDS
+    self
+  end
+
+  def with_odds_multiple_for_numbers(multiple, *numbers)
     self
   end
 
