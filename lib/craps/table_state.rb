@@ -15,7 +15,7 @@ class TableState
 
   def initialize(table, history_length)
     @table = table
-    @roll_counter = PointNumbersCounter.new(history_length)
+    @roll_counter = FrequencyCounter.new(history_length)
     @table_heat = TableHeat.new(self, history_length)
     clear_point
   end

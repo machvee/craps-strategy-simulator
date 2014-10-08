@@ -139,7 +139,7 @@ class Stat
 
   def percentage_formatter(stat)
    return "0.00" if count == 0
-   "%5.2f" % (((stat * 1.0)/count * 100.0))
+   "%6.2f" % (((stat * 1.0)/count * 100.0))
   end
 
   def zero_counter

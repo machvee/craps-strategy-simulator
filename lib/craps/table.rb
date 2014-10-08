@@ -7,6 +7,7 @@ class Table
   attr_reader    :table_state
   attr_reader    :config
   attr_reader    :dice_tray
+  attr_reader    :seed                 # the seed used by the dice_tray prng (for Table.reruns)
   attr_reader    :tracking_player
   attr_reader    :players
   attr_reader    :morph_bets
@@ -19,6 +20,7 @@ class Table
 
   delegate :dice,              to: :shooter
   delegate :min_bet, :max_bet, to: :config
+  delegate :seed, to: :dice_tray
 
 
   #
@@ -73,11 +75,12 @@ class Table
   }
 
 
-  def initialize(name="craps table", options = DEFAULT_OPTIONS)
+  def initialize(name="craps table", options = {})
+    opts = DEFAULT_OPTIONS.merge(options)
     @name = name
-    @config = options[:config]
+    @config = opts[:config]
 
-    @table_state = TableState.new(self, options[:table_heat_history_points])
+    @table_state = TableState.new(self, opts[:table_heat_history_points])
     table_state.table_off
 
     #
@@ -87,9 +90,9 @@ class Table
     @house = Account.new('house', config.house_bank)
     @wagers = Account.new('current wagers', 0)
 
-    @quiet_table = options[:quiet_table]
+    @quiet_table = opts[:quiet_table]
 
-    @dice_tray = DiceTray.new(self, options[:die_seeder])
+    @dice_tray = DiceTray.new(self, opts[:die_seeder])
 
     @player_bet_stats = CountersStatsCollection.new(
                           "player bet results",
@@ -105,6 +108,11 @@ class Table
     @shooter = Shooter.new(self)
   end
 
+  def self.reruns(name, seed, options={})
+    opts = options.merge(die_seeder: DefaultSeeder.new(seed))
+    new(name, opts)
+  end
+
   def last_roll
     shooter.dice.value
   end
@@ -116,6 +124,7 @@ class Table
   def max_odds(number)
     config.max_odds(number)
   end
+
   def play(quiet_option=quiet_table)
     #
     # players make automatic strategy bets,
@@ -205,11 +214,15 @@ class Table
   end
 
   def reset
-    players.each {|p| p.stats.reset}
     shooter.reset_stats
     tracking_bet_stats.reset
     player_bet_stats.reset
     table_state.reset
+    house.reset
+    wagers.reset
+    bet_boxes.each {|bb| bb.reset}
+    players.each {|p| p.reset}
+    return
   end
 
   def shooter_rolls

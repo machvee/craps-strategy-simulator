@@ -5,7 +5,7 @@ class Account
   attr_reader   :start_balance
   attr_reader   :hi_balance
   attr_reader   :lo_balance
-  attr_reader   :loans
+  attr_reader   :markers
 
   #
   # maintains money.  allows credit, debit, transfer between accounts
@@ -14,10 +14,15 @@ class Account
   #
   def initialize(name, start_capital)
     @name = name
-    @start_balance = @balance = start_capital
-    @hi_balance = @balance
-    @lo_balance = @balance
-    markers = []
+    @start_balance = start_capital
+    reset
+  end
+
+  def reset
+    @balance = start_balance
+    @hi_balance = balance
+    @lo_balance = balance
+    @markers = []
   end
 
   def debit(amount)

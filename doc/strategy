@@ -17,3 +17,14 @@ Inputs player strategy can reference (and how they can help shape a strategy)
      "I'm down 50%.  I think I'll quit"
 8. number of rolls
      "I will do 500 rolls and stop to see where I'm at"
+
+
+Testing out Strategies
+
+1. Define your strategy by programming a bot.  Save the strategy with a name.
+2. clear the stats
+3. shooter_turns n
+4. stops at n or when other bot criteria makes the round stop
+5. seed and player/table stats can be saved, so this exact dice sequence can be replayed
+   with slightly different strategy
+

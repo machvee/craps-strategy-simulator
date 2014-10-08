@@ -15,6 +15,13 @@ class BetBox
     @player_bets = []
   end
 
+  def reset
+    player_bets.each do |player_bet|
+      mark_bet_deleted(player_bet)
+    end
+    remove_marked_bets
+  end
+
   def short_name
     craps_bet.class.short_name
   end

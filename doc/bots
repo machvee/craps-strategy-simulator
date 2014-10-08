@@ -1,0 +1,24 @@
+Craps Bots
+
+  1. Background
+
+  A bot has an objective.  A mission.  In the case of Vegas games the mission is to maximize gains and minimize losses.
+  When the conditions are right, the bot should act to take full advantage.   When times are going rough, the bot should
+  hunker down and protect.
+
+  The bot is programmed to carry out the objective.  These are the bot's mission instructions.   But the bot is only as good as 
+  its programming.
+
+  2. Programming the Bot
+
+  The bot has two programming languages.  One language is for people who want the bot to carry out the mission and achieve
+  the objective. This language is in terms of how people understand and appraoch the game.   The other is the machine language
+  of the bot... the language of the instructions the bot actually understands and can process effeciently.  An
+  interpreter program will translate the program that people write into the instructions that be bot will actually process. 
+  
+  As there are many ways to play Vegas games, each person will have their own style, risk tolerance and aggressive or
+  conservative appraoch.  The goal of whaleamker is to capture these bot programs and give feedback on how the bot 
+  strategy works.  The bot programs are stored with their results and can be compared with other bot strategies for 
+  effectiveness.
+
+

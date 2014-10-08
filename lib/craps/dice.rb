@@ -4,6 +4,7 @@ class DefaultSeeder
   VERY_BIG_NUMBER=211308946028030853166801005918724002264
 
   attr_reader :prng
+  attr_reader :seed
 
   def initialize(opt_seed=nil)
     # pass in an optional seed argument to guarantee
@@ -12,7 +13,8 @@ class DefaultSeeder
     # strategy to strategy).  Pass no seed argument to ensure
     # that the Dice will have a 'psuedo-random' roll sequence 
     #
-    @prng = Random.new(opt_seed||Random.new_seed)
+    @seed = opt_seed || Random.new_seed
+    @prng = Random.new(seed)
   end
 
   def rand
@@ -24,7 +26,10 @@ end
 class Dice
   attr_reader   :set
   attr_reader   :value
+  attr_reader   :seeder
   attr_accessor :num_rolls
+
+  delegate :seed, to: :seeder
 
   include Enumerable
 

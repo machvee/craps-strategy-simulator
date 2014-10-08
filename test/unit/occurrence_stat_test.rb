@@ -40,9 +40,9 @@ class OccurrenceStatTest < ActiveSupport::TestCase
      red_count = vals.grep(/red/).length
      not_red_count = vals.length - red_count
      s = OccurrenceStat.new(@name) {@val == 'red'}
-     assert_match %r{#@name,0,0,0,0,0}, s.to_s
+     assert_match %r{#@name,0,0,0.00,0,0,0.00,0}, s.to_s
      vals.each {|v| @val = v; s.update}
-     assert_match %r{#@name,#{red_count + not_red_count},#{red_count},3,#{not_red_count},5}, s.to_s
+     assert_match %r{#@name,#{red_count + not_red_count},#{red_count}, 47.37,3,#{not_red_count}, 52.63,5}, s.to_s
   end
 
   def test_inspect_calls_to_s

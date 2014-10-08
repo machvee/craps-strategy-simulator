@@ -22,7 +22,7 @@ class CountersStatTest < ActiveSupport::TestCase
     @s.lost(alpha: ca, beta: cb); lost += 1
     called = won + lost
 
-    assert_match %r{#@name,#{called},#{won},3,#{lost},2,#{al + ca},#{be + cb}}, @s.to_s
+    assert_match %r{#@name,#{called},#{won}, 60.00,3,#{lost}, 40.00,2,#{al + ca},#{be + cb}}, @s.to_s
   end
 
   def test_inspect_calls_to_s

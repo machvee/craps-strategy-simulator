@@ -24,6 +24,11 @@ class Player
     @strategy = strategy_class.new(self)
   end
 
+  def reset
+    rail.reset
+    stats.reset
+  end
+
   def money
     rail.balance + wagers
   end

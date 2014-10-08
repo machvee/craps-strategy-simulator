@@ -4,7 +4,7 @@ class StatsCollection
   attr_reader :parent_stats
   attr_reader :column_headers_format
 
-  DEFAULT_OUTPUT_FORMATTER = "%20s    %10s      %10s   %5s / %10s      %10s   %5s / %10s"
+  DEFAULT_OUTPUT_FORMATTER = "%20s    %10s      %10s   %6s / %10s      %10s   %6s / %10s"
 
   DEFAULT_COLUMN_LABELS = {
     name:          'name',
