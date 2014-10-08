@@ -108,11 +108,6 @@ class Table
     @shooter = Shooter.new(self)
   end
 
-  def self.reruns(name, seed, options={})
-    opts = options.merge(die_seeder: DefaultSeeder.new(seed))
-    new(name, opts)
-  end
-
   def last_roll
     shooter.dice.value
   end
@@ -222,6 +217,7 @@ class Table
     wagers.reset
     bet_boxes.each {|bb| bb.reset}
     players.each {|p| p.reset}
+    dice_tray.reset(DefaultSeeder.new(seed))
     return
   end
 

@@ -16,8 +16,13 @@ class DiceTray
   delegate :seed, to: :tray
 
   def initialize(table, die_seeder, num_dice_in_tray=DEFAULT_NUM_TRAY_DIE)
-    @tray = CrapsDice.new(@num_dice = num_dice_in_tray, die_seeder)
+    @num_dice = num_dice_in_tray
+    reset(die_seeder)
     @metadice = CrapsDice.new(NUM_SHOOTER_DIE)
+  end
+
+  def reset(die_seeder)
+    @tray = CrapsDice.new(@num_dice, die_seeder)
   end
 
   def take_dice(offsets=nil)
