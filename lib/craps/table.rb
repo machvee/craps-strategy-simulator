@@ -132,9 +132,7 @@ class Table
       # 3. table pay players on winning bets, takes losing bets
       # 4. if 7-out, shooter will return_dice
       #
-
       players_make_your_bets
-  
       roll_dice
     end
     return
