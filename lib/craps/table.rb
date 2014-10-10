@@ -132,9 +132,9 @@ class Table
       # 3. table pay players on winning bets, takes losing bets
       # 4. if 7-out, shooter will return_dice
       #
-      raise "no players" unless players_ready?
+
       players_make_your_bets
-      raise "place your bets" unless at_least_one_bet_made?
+  
       roll_dice
     end
     return
@@ -148,12 +148,15 @@ class Table
   end
 
   def players_make_your_bets
-
+    raise "no players" unless players_ready?
+    
     tracking_player.play_strategy
 
     players.each do |p|
       p.play_strategy
     end
+    
+    raise "place your bets" unless at_least_one_bet_made?
   end
 
   def shooter_turns(number_of_turns=1, quiet_option=quiet_table)
@@ -209,6 +212,13 @@ class Table
   end
 
   def reset
+    #
+    # this is destructive to the current state of the table and accounts.
+    # use this call to set the table and player state back to the point
+    # where the players have just joined and no rolls or bets have been
+    # yet made.   The table dice will be seeded identically so you
+    # can have players use a different strategy against the same roll
+    # outcomes as before.
     shooter.reset_stats
     tracking_bet_stats.reset
     player_bet_stats.reset
