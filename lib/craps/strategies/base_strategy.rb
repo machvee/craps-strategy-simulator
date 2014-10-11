@@ -12,12 +12,18 @@ class BaseStrategy
   def initialize(player)
     @player = player
     @table = player.table
+    @place_sequence = DEFAULT_PLACE_SEQUENCE
     @bet_makers = []
   end
 
-  def make_bets
+  def set
     # override this with logic that makes bets based on player state, bet history
-    # and table state
+    # and table state.  this creates bet_makers
+  end
+
+  def make_bets
+    bet_makers.each do |maker|
+    end
   end
 
   #
@@ -66,58 +72,24 @@ class BaseStrategy
   #  parse DSL => find or create bet_maker_object => \
   #    bet_maker_object[control params, win/rolled_number counts, active (or create) player_bet(s), action_procs]
   #
-  class BetMaker
-
-    attr_reader   :player
-    attr_reader   :table
-
-    def initialize(player, bet_short_name, number)
-      @player = player
-      @place_sequence = DEFAULT_PLACE_SEQUENCE
-      @bet = bet_short_name
-      @number = number
-      @odds_bet = nil
-      @amount = nil
-      @odds_multiple = nil
-      @press_sequence = nil
-      @win_count = 0
-      @point_count = 0
-    end
-  end
-
-  def place_bet_priority(sequence)
-    @place_sequence = sequence
-  end
-
   def pass_line
-    @bet_maker = BetMaker.find_or_create_maker(player, 'pass_line')
-    self
-  end
-
-  def for(amount)
-    @amount = amount
-    self
+    BetMaker.new(player, 'pass_line').tap {|m| @bet_makers << m}
   end
 
   def all_bets_off
-    self
-  end
-
-  def and_reset_win_count
     #
-    # remove the bet_maker in place, if any, and reset win count
+    # iterate thru the player.player_bets and set the ones off that can
+    # bet set off by the player
     #
     self
   end
 
-  def come_bets(n)
-    @bet_maker = find_or_create_maker(@bet_makers, 'come_out')
-    self
+  def come_bets(number)
+    BetMaker.new(player, 'come_out', number).tap {|m| @bet_makers << m}
   end
 
   def place_bet_on(number)
-    @bet_maker = find_or_create_maker(@bet_makers, 'pass_line')
-    self
+    BetMaker.new(player, 'place', number).tap {|m| @bet_makers << m}
   end
 
   def buy_the(number)
@@ -127,44 +99,6 @@ class BaseStrategy
 
   def hardways_bet_on(number)
     @bet_maker = find_or_create_maker(@bet_makers, 'hardways', number)
-  end
-
-  def after_point_established
-    self
-  end
-
-  def after_making_point(n)
-    self
-  end
-
-  def with_full_odds
-    @odds_multiple = FULL_ODDS
-    self
-  end
-
-  def with_odds_multiple(multiple)
-    @odds_multiple = multiple # 1-5
-    self
-  end
-
-  def with_odds_multiple_for_numbers(multiple, *numbers)
-    self
-  end
-
-  def press_after_win_to(*amounts)
-    self
-  end
-
-  def no_press_after_win(win_number)
-    self
-  end
-
-  def press_by_amount_after_win(amount, win_number)
-    self
-  end
-
-  def full_press_after_win(win_number)
-    self
   end
 
   def when_tables_hot
@@ -178,14 +112,6 @@ class BaseStrategy
   def when_tables_up_and_down
     self
   end
-
-  private
-
-  def find_or_create_maker(bet_short_name, number=nil)
-    bet_maker = bet_makers.find {|b| b.bet_short_name == bet_short_name && (number.nil? || number == b.number)}
-    bet_maker || BetMaker.new(bet_short_name, number)
-  end
-
 
   private
 

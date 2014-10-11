@@ -22,7 +22,7 @@ class DiceTray
   end
 
   def reset(die_seeder)
-    @tray = CrapsDice.new(@num_dice, die_seeder)
+    @tray = CrapsDice.new(num_dice, die_seeder)
   end
 
   def take_dice(offsets=nil)

@@ -173,6 +173,10 @@ class Player
     #
   end
 
+  def set_strategy
+    strategy.set(table)
+  end
+
   def play_strategy
     strategy.make_bets
   end
@@ -191,6 +195,10 @@ class Player
   def put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
     bet_box.new_player_bet(self, scaled_bet_amount)
     table.wagers.transfer_from(rail, scaled_bet_amount)
+    commission = bet_box.craps_bet.commission
+    if commission > 0 && !table.config.pay_commission_on_win
+      table.house.transfer_from(rail, bet_box.craps_bet.calculate_commission(scaled_bet_amount))
+    end
   end
 
   def valid_multiple?(number, multiple)

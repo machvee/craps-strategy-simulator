@@ -1,28 +1,169 @@
+#
+# want the dsl grammar to be close to how people think to themselves when at
+# the craps table
+#
+# e.g.
+#   
+#   1. Keep a pass-line bet at table minimum up whenever the point is off
+#   2. I have a conservative strategy when my rail reaches a certain level down (cold table)
+#   3. I have a conservative strategy when I've lost several points in a row quickly (cold table)
+#   4. I have an aggressive strategy when my rail reaches a certain level up (hot table)
+#   3. I have an aggressive strategy when I've won several long points in a row quickly (hot table)
+#   2. I'm going to be conservative on pass line odds.  2x for 6,8,5,9, 1x for 4,10
+#   3. Always place bet for 12 on 6,8 unless one of those is the point
+#   4. Don't press 6,8 after win on first win, but go up a unit each time after that
+#   5. After going 12,18,24,30 on 6,8 place win, then switch to 60,90,120,180 and stop there
+#   6. After the 5,9,4,10 is rolled twice without me covering it, put a place bet on it.
+#   7. Buy the 4 or 10
+#   8. Hardways bet for $1 (cold table), or $5 (hot table) on the point number 4,6,8,10
+#   9. "Crap check" on the come-out roll
+#
+# strategy object builder
+# no place bet on point number
+# place bet priority [6,8,5,9,4,10] cover when available after rules below met
+# place bet 6,8 always after point established
+# 5 after 1st point won
+# 9 after 2nd point won
+# 4 after 3rd point won
+# 10 after 3rd point won
+#
+# example grammar:
+# pass_line.for(50).with_full_odds
+# come_bet(n).for(25).with_full_odds
+# hard_ways_bet_on(8).for(1).full_press_after_win(2)
+# hard_ways_bet_on(10).for(5).press_after_win_to(10,20,50)
+# pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
+# place_bet_on(6).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
+# place_bet_on(8).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
+# place_bet_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
+# place_bet_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
+# buy_the(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
+# buy_the(4).for(25).after_making_point(4).press_by_additional_after_win(25,1)
+# buy_the(4).for(100).after_making_point(7).full_press_after_win(2).no_press_after_win(4)
+#
+#  parse DSL => find or create bet_maker_object => \
+#    bet_maker_object[control params, win/rolled_number counts, active (or create) player_bet(s), action_procs]
+#
 class BetMaker
-  #
-  # specify the bet and initial amount
-  # specify when the bet is initially made
-  # specify when to press it after win and by how much
-  #
+
   attr_reader   :player
   attr_reader   :table
-  attr_reader   :bet
-  attr_reader   :odds_bet_multiple
-  attr_reader   :amount
-  attr_reader   :rules
-  attr_reader   :bet_presser
 
-  FULL_ODDS = -1 # this indicates full odds when odds bet is made
+  PARLAY = -1
+  FOREVER = -1
 
-  delegate :table, to: :player
-  delegate :table_state, to: :table
-
-  def initialize(player)
+  def initialize(player, bet_short_name, number=nil)
     @player = player
-    @bet = nil
+    @table = player.table
+    @bet = bet_short_name
+    @number = number
+
     @amount = nil
-    @rules = nil
-    @bet_presser = BetPresser.new
-    @odds_bet_multiple = nil
+    @odds_bet = false
+    @odds_multiple = [0]*(CrapsDice::POINTS.max+1)
+
+    #
+    # bring bet to exact amount in sequence until 
+    # array is exhausted, and maintain the last
+    # amount until the bet is lost.  Or, press bet by
+    # press_increment if not nil.
+    # PARLAY in sequence or press_increment means full press
+    # of winnings to scale begin processing sequence at
+    # press_sequence_start_win and stop after press_sequence_stop_win
+    #
+    set_press_sequence([], 1, FOREVER)
+
+    #
+    # put the bet down only after the point is established?
+    #
+    @bet_when_table_state_on = true
+
+    @bet_when_point_count = nil
+
+    #
+    # keep track of current win count on a bet for press purposes
+    #
+    @win_count = 0
+    #
+    # keep track of current point made in shooters roll
+    #
+    @point_count = 0
+  end
+
+  def for(amount)
+    @amount = amount
+    self
+  end
+
+  def before_point_established
+    @bet_when_table_state_on = false
+    self
+  end
+
+  def after_making_point(n)
+    @bet_when_point_count = n
+    self
+  end
+
+  def with_full_odds
+    @odds_bet = true
+    CrapsDice::POINTS.each do |n|
+      @odds_multiple[n] = table.config.max_odds(n)
+    end
+    self
+  end
+
+  def with_odds_multiple(multiple)
+    with_odds_multiple_for_numbers(multiple, *CrapsDice::POINTS)
+    self
+  end
+
+  def with_odds_multiple_for_numbers(multiple, *numbers)
+    @odds_bet = true
+    numbers.each do |n|
+      validate_odds_multiple(multiple, n)
+      @odds_multiple[n] = multiple
+    end
+    self
+  end
+
+  def press_after_win_to(*amounts)
+    set_press_sequence(amounts, 1, FOREVER)
+    self
+  end
+
+  def no_press_after_win(win_number)
+    @press_sequence_stop_win = win_number
+    self
+  end
+
+  def press_by_additional_after_win(amount, win_number)
+    set_press_sequence([], win_number, FOREVER, amount)
+    self
+  end
+
+  def full_press_after_win(win_number)
+    set_press_sequence([], win_number, FOREVER, PARLAY)
+    self
+  end
+
+  def and_reset_win_count
+    @win_count = 0
+    self
+  end
+
+  private
+
+  def set_press_sequence(amounts, start, stop, increment=nil)
+    @press_unit = increment
+    @press_sequence = amounts
+    @press_sequence_index = 0
+    @press_sequence_start_win = start
+    @press_sequence_stop_win = stop
+  end
+
+  def validate_odds_multiple(multiple, number)
+    max = table.config.max_odds(number)
+    raise "#{multiple} must be between 1 and #{max}" if multiple > max
   end
 end

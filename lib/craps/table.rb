@@ -158,6 +158,7 @@ class Table
   end
 
   def shooter_turns(number_of_turns=1, quiet_option=quiet_table)
+    players_set_your_strategies
     number_of_turns.times do
       start_outs = tracking_bet_stats.pass_line_point.total_lost
       while tracking_bet_stats.pass_line_point.total_lost == start_outs do
@@ -171,6 +172,7 @@ class Table
     # roll as many times from as many shooters as it takes
     # to make and end number_of_points points
     #
+    players_set_your_strategies
     start_points = point_outcomes
     while (point_outcomes - start_points < number_of_points)
       play(quiet_option)
@@ -217,7 +219,6 @@ class Table
     # yet made.   The table dice will be seeded identically so you
     # can have players use a different strategy against the same roll
     # outcomes as before.
-    shooter.reset_stats
     tracking_bet_stats.reset
     player_bet_stats.reset
     table_state.reset
@@ -225,6 +226,7 @@ class Table
     wagers.reset
     bet_boxes.each {|bb| bb.reset}
     players.each {|p| p.reset}
+    shooter.reset
     dice_tray.reset(DefaultSeeder.new(seed))
     return
   end
@@ -277,6 +279,10 @@ class Table
 
   private
 
+  def players_set_your_strategies
+    players.each {|p| p.set_strategy }
+  end
+    
   def create_bet_boxes
     @bet_boxes = []
     NO_NUMBER_BETS.each do |bet_class|

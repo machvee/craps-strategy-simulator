@@ -57,7 +57,7 @@ class Account
   private
 
   def zero_check(amount)
-    raise "#{name} overdrawn $(#@balance remains)" if balance - amount < 0
+    raise "#{name} overdrawn ($#@balance remains)" if balance - amount < 0
   end
 
   def hi_lo_check

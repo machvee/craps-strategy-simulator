@@ -64,6 +64,11 @@ class Shooter
     no_shooter
   end
 
+  def reset
+    return_dice if dice.present?
+    reset_stats
+  end
+
   def reset_stats
     roll_stats.reset
     @roll_history.clear
@@ -71,6 +76,7 @@ class Shooter
 
   def no_shooter
     @player = nil
+    @dice = nil
   end
 
   def total_rolls

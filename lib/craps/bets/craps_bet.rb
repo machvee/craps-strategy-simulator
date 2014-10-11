@@ -94,6 +94,16 @@ class CrapsBet
     OnStatus::ON
   end
 
+  def commission
+    # override with commission in percentage
+    0
+  end
+
+  def calculate_commission(amount)
+    return 0 if commission == 0
+    (amount * (commission/100.0)).floor
+  end
+
   def on?
     case table_on_status
       when OnStatus::ON

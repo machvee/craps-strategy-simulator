@@ -21,4 +21,17 @@ Craps Bots
   strategy works.  The bot programs are stored with their results and can be compared with other bot strategies for 
   effectiveness.
 
+  3. Bot program
+     a.  define the conditions that the program will execute
+          e.g. table.hot? table.cold?
+     b.  define the bet to make and amount/odds
+          e.g. pass_line $25
+     c.  define the conditions when to make the bet with that amount.  dice, tracking_bet, player_bet stats and table state
+         are available
+          e.g. after 3 rolls of 5 after the point established, make a place bet on 5
+     d.  define a pressing sequence
+          e.g. press after win to 20,50,100,200,200,200,400
+     e.  define the conditions that trigger the next press in the sequence
+          e.g. press after second win to 20,40,80,160
+
 

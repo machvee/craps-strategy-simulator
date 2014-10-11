@@ -58,6 +58,11 @@ class PlayerBet
 
   def winning_bet(pay_this, for_every)
     winnings = (amount/for_every) * pay_this
+
+    if table.config.pay_commission_on_win && craps_bet.commission > 0
+      winnings -= craps_bet.calculate_commission(amount)
+    end
+
     bet_stat.won(made: amount, won: winnings)
 
     player.rail.transfer_from(table.wagers, self.amount)

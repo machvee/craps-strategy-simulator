@@ -2,11 +2,13 @@ class TableConfig
   attr_reader    :max_bet
   attr_reader    :min_bet
   attr_reader    :house_bank
+  attr_reader    :pay_commission_on_win
 
   def initialize(min_bet=10, max_bet=5000)
     @min_bet = min_bet
     @max_bet = max_bet
     @house_bank = 1_000_000
+    @pay_commission_on_win = true
   end
 
   def max_odds(number)
@@ -17,6 +19,8 @@ class TableConfig
         4
       when 6,8
         5
+      else
+        0 # undefined
     end
   end
 
@@ -50,11 +54,20 @@ class TableConfig
       when PlaceBet
        case number
           when 4,10 
-            [2,1]
+            [9,5]
           when 5,9 
             [7,5]
           when 6,8 
             [7,6]
+        end
+      when BuyBet
+        case number
+          when 4,10
+            [2,1]
+          when 5,9 
+            [3,2]
+          when 6,8 
+            [6,5]
         end
       when HardwaysBet
         case number
@@ -76,13 +89,9 @@ class TableConfig
         [8,1]
       when AnySevenBet
         [5,1]
-      when ElevenBet
+      when ElevenBet, AceDeuceBet
         [16,1]
-      when AceDeuceBet
-        [16,1]
-      when AcesBet
-        [31,1]
-      when TwelveBet
+      when AcesBet, TwelveBet
         [31,1]
     end
   end
