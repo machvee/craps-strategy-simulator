@@ -56,6 +56,7 @@ class Table
     HardwaysBet,
     PassOddsBet,
     PlaceBet,
+    BuyBet,
     *MORPH_NUMBER_BETS
   ]
 
@@ -150,9 +151,7 @@ class Table
     
     tracking_player.play_strategy
 
-    players.each do |p|
-      p.play_strategy
-    end
+    players.each { |p| p.play_strategy }
     
     raise "place your bets" unless at_least_one_bet_made?
   end
@@ -165,6 +164,7 @@ class Table
         play(quiet_option) 
       end
     end
+    players_remove_strategies
   end
 
   def play_points(number_of_points=1, quiet_option=quiet_table)
@@ -281,6 +281,10 @@ class Table
 
   def players_set_your_strategies
     players.each {|p| p.set_strategy }
+  end
+
+  def players_retire_strategies
+    players.each {|p| p.retire_strategy }
   end
     
   def create_bet_boxes

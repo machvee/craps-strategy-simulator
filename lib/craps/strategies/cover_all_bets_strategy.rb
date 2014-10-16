@@ -1,10 +1,14 @@
 class CoverAllBetsStrategy < BaseStrategy
+  def name
+    "tracking bet strategy"
+  end
+
   #
   # Warning: this is not a viable player strategy. This strategy
   # is only used for the tracking_player making tracking_bets, which
   # keeps stats on all possible outcomes for all playable bets on the table
   #
-  def make_bets
+  def set
     #
     # make pass line bet and pass odds bet
     # make a come bet every time point is on
@@ -13,14 +17,18 @@ class CoverAllBetsStrategy < BaseStrategy
     # make c/e bets
     # make all hardways bets and keep them on
     # make all place bets when point is on
-
-    pass_line_bet_with_full_odds
-    come_out_bet_with_full_odds
-    all_the_hardways
-    across
-    all_prop_bets
-    field
-    craps_check
+    pass_line.for(10).with_full_odds
+    come_bet.for(15).with_full_odds
+    CrapsBets::HARDS.each {|n| hardways_bet_on(n).for(10)}
+    CrapsBets::POINTS.each {|n| place_bet_on(n).for(10)}
+    field_bet.for(1)
+    ce_bet.for(2)
+    ace_deuce_bet.for(1)
+    aces_bet.for(1)
+    any_craps_bet.for(1)
+    any_seven_bet.for(1)
+    eleven_bet.for(1)
+    twelve_bet.for(1)
   end
 
 end

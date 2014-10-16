@@ -81,12 +81,13 @@ class Player
     bet = find_bet(bet_short_name, number)
 
     scaled_bet_amount = bet_box.craps_bet.scale_bet(amount)
-    return if bet.present? && bet.amount == scaled_bet_amount
-
-    put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
+    if bet.present? 
+      bet.change_amount(scaled_bet_amount)
+    else
+      put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
+    end
     return
   end
-
 
   #
   # gen named methods for the player to make table bets
@@ -174,11 +175,15 @@ class Player
   end
 
   def set_strategy
-    strategy.set(table)
+    strategy.set
   end
 
   def play_strategy
     strategy.make_bets
+  end
+
+  def retire_strategy
+    strategy.retire
   end
 
   def to_s
@@ -195,9 +200,15 @@ class Player
   def put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
     bet_box.new_player_bet(self, scaled_bet_amount)
     table.wagers.transfer_from(rail, scaled_bet_amount)
-    commission = bet_box.craps_bet.commission
+    pay_any_commission(bet_box.craps_bet, scaled_bet_amount)
+  end
+
+ 
+  def pay_any_commission(craps_bet, on_amount)
+    commission = craps_bet.commission
     if commission > 0 && !table.config.pay_commission_on_win
-      table.house.transfer_from(rail, bet_box.craps_bet.calculate_commission(scaled_bet_amount))
+      commission_amount = craps_bet.calculate_commission(on_amount)
+      table.house.transfer_from(rail, commission_amount) if commission_amount > 0
     end
   end
 

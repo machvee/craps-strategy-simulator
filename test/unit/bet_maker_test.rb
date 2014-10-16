@@ -4,11 +4,19 @@ class BetMakerTest < ActiveSupport::TestCase
   def setup
     @table = mock('table')
     @player = mock('player')
+    @bet_stat = mock('bet_stat')
+    @bet_stat.expects(:total).returns(20).at_least_once
+    @bet_stats = mock('bet_stats')
+    @bet_stats.expects(:stat_by_name).returns(@bet_stat).at_least_once
     @player.expects(:table).at_least_once.returns(@table)
+    @player.expects(:bet_stats).at_least_once.returns(@bet_stats)
+
+    set_points
 
     @number = 10
     @bm = BetMaker.new(@player, 'pass_line')
     @pbm = BetMaker.new(@player, 'place', @number)
+
   end
 
   def test_instance
@@ -56,6 +64,14 @@ class BetMakerTest < ActiveSupport::TestCase
   end
 
   private
+
+  def set_points
+    @stats = mock('tracking_stats')
+    @stat = mock('passline point stat')
+    @table.expects(:tracking_bet_stats).returns(@stats).at_least_once
+    @stats.expects(:pass_line_point).returns(@stat).at_least_once
+    @stat.expects(:total).returns(5).at_least_once
+  end
 
   def set_config
     @config = mock('config')

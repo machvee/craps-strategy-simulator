@@ -13,7 +13,11 @@ class BaseStrategy
     @player = player
     @table = player.table
     @place_sequence = DEFAULT_PLACE_SEQUENCE
-    @bet_makers = []
+    reset_bet_makers
+  end
+
+  def name
+    "base strategy" # override with name of strategy
   end
 
   def set
@@ -21,9 +25,12 @@ class BaseStrategy
     # and table state.  this creates bet_makers
   end
 
+  def retire
+    reset_bet_makers
+  end
+
   def make_bets
-    bet_makers.each do |maker|
-    end
+    bet_makers.each { |maker| maker.make_bet }
   end
 
   #
@@ -57,23 +64,31 @@ class BaseStrategy
   #
   # example grammar:
   # pass_line.for(50).with_full_odds
-  # come_bet(n).for(25).with_full_odds
+  # come_bet.for(25).with_full_odds
   # hard_ways_bet_on(8).for(1).full_press_after_win(2)
   # hard_ways_bet_on(10).for(5).press_after_win_to(10,20,50)
-  # pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
+  # pass_line_bet.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
   # place_bet_on(6).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
   # place_bet_on(8).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
   # place_bet_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
   # place_bet_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
-  # buy_the(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
-  # buy_the(4).for(25).after_making_point(4).press_after_win_to(50,75,100)
-  # buy_the(4).for(100).after_making_point(7).full_press_after_win
+  # buy_bet_on(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
+  # buy_bet_on(4).for(25).after_making_point(4).press_after_win_to(50,75,100)
+  # buy_bet_on(4).for(100).after_making_point(7).full_press_after_win
   #
   #  parse DSL => find or create bet_maker_object => \
   #    bet_maker_object[control params, win/rolled_number counts, active (or create) player_bet(s), action_procs]
   #
-  def pass_line
-    BetMaker.new(player, 'pass_line').tap {|m| @bet_makers << m}
+  [PlaceBet, BuyBet, HardwaysBet].each do |b|
+    define_method(b.short_name + "_on") do |number|
+      install_bet(b.short_name, number)
+    end
+  end
+
+  Table::NO_NUMBER_BETS.each do |b|
+    define_method(b.short_name) do
+      install_bet(b.short_name)
+    end
   end
 
   def all_bets_off
@@ -82,23 +97,6 @@ class BaseStrategy
     # bet set off by the player
     #
     self
-  end
-
-  def come_bets(number)
-    BetMaker.new(player, 'come_out', number).tap {|m| @bet_makers << m}
-  end
-
-  def place_bet_on(number)
-    BetMaker.new(player, 'place', number).tap {|m| @bet_makers << m}
-  end
-
-  def buy_the(number)
-    @bet_maker = find_or_create_maker(@bet_makers, 'buy', number)
-    self
-  end
-
-  def hardways_bet_on(number)
-    @bet_maker = find_or_create_maker(@bet_makers, 'hardways', number)
   end
 
   def when_tables_hot
@@ -115,6 +113,14 @@ class BaseStrategy
 
   private
 
+  def install_bet(bet_short_name, number=nil)
+    BetMaker.new(player, bet_short_name, number).tap {|m| @bet_makers << m}
+  end
+
+  def reset_bet_makers
+    @bet_makers = []
+  end
+
   def pass_line_bet_with_full_odds
     player.pass_line if table_state.off?
     player.pass_odds if table_state.on? && player.has_bet?('pass_line_point')
@@ -127,66 +133,14 @@ class BaseStrategy
     player
   end
 
-  def all_the_hardways(amount=nil)
-    CrapsDice::HARDS.each do |n|
-      player.hardways(n, amount)
-    end
-    player
+  def all_the_hardways(amount)
+    CrapsDice::HARDS.each {|n| hardways_bet_on(n).for(amount)}
   end
 
-  def six_and_eight
+  def six_and_eight(amount)
     [6,8].each do |n|
-      player.place(n) unless table_state.point?(n)
-    end if table_state.on?
-    player
-  end
-
-  def inside
-    CrapsDice::INSIDE.each do |n|
-      player.place(n) unless table_state.point?(n)
-    end if table_state.on?
-    player
-  end
-
-  def across
-    CrapsDice::POINTS.each do |n|
-      player.place(n) unless table_state.point?(n)
-    end if table_state.on?
-    player
-  end
-
-  def all_across
-    CrapsDice::POINTS.each do |n|
-      player.place(n)
-    end if table_state.on?
-    player
-  end
-
-  def come_out_bet_with_full_odds
-    if table_state.on?
-      player.come_out 
-      CrapsDice::POINTS.each do |number|
-        player.come_odds(number) if player.has_bet?('come', number)
-      end
+      place_bet_on(n).for(amount)
     end
-    player
-  end
-
-  def all_prop_bets(amount = nil)
-    Table::PROPOSITION_BETS.each do |bet|
-      player.send(bet.short_name, amount)
-    end
-    player
-  end
-
-  def field
-    player.field
-    player
-  end
-
-  def craps_check
-    player.ce
-    player
   end
 
 end

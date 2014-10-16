@@ -48,46 +48,54 @@ class BetMaker
 
   attr_reader   :player
   attr_reader   :table
-
-  PARLAY = -1
-  FOREVER = -1
+  attr_reader   :bet
+  attr_reader   :odds_bet
+  attr_reader   :bet_short_name
+  attr_reader   :bet_presser
 
   def initialize(player, bet_short_name, number=nil)
     @player = player
     @table = player.table
-    @bet = bet_short_name
+    @bet_short_name = bet_short_name
     @number = number
 
+    @bet = @odds_bet = nil
+
     @amount = nil
-    @odds_bet = false
+    @make_odds_bet = false
     @odds_multiple = [0]*(CrapsDice::POINTS.max+1)
 
     #
-    # bring bet to exact amount in sequence until 
-    # array is exhausted, and maintain the last
-    # amount until the bet is lost.  Or, press bet by
-    # press_increment if not nil.
-    # PARLAY in sequence or press_increment means full press
-    # of winnings to scale begin processing sequence at
-    # press_sequence_start_win and stop after press_sequence_stop_win
-    #
-    set_press_sequence([], 1, FOREVER)
+    # TODO: might want to make this an enumerator on an
+    # array of BetPressers so disjoint sequences can be
+    # defined.  e.g. up a unit of 6 for wins 2 thru 5
+    # then up a unit of 30 for wins 6 thru 10, no press
+    # after win 10
+    # 
+    @bet_presser = BetPresser.new(player, self)
 
     #
     # put the bet down only after the point is established?
     #
     @bet_when_table_state_on = true
+    @bet_when_point_count = 0
 
-    @bet_when_point_count = nil
-
-    #
-    # keep track of current win count on a bet for press purposes
-    #
-    @win_count = 0
     #
     # keep track of current point made in shooters roll
     #
-    @point_count = 0
+    @start_point_count = current_points_won
+  end
+
+  def make_bet
+    return if not_yet_at_point_count
+    YOU ARE HERE what about the bet validation table on off?
+    return if table.table_state.off? && @bet_when_table_state_on
+
+    if player.has_bet?(bet_short_name, @number)
+      player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, @number)
+    else
+      @bet = player.make_bet(bet_short_name, @amount, @number)
+    end
   end
 
   def for(amount)
@@ -106,7 +114,7 @@ class BetMaker
   end
 
   def with_full_odds
-    @odds_bet = true
+    @make_odds_bet = true
     CrapsDice::POINTS.each do |n|
       @odds_multiple[n] = table.config.max_odds(n)
     end
@@ -119,7 +127,7 @@ class BetMaker
   end
 
   def with_odds_multiple_for_numbers(multiple, *numbers)
-    @odds_bet = true
+    @make_odds_bet = true
     numbers.each do |n|
       validate_odds_multiple(multiple, n)
       @odds_multiple[n] = multiple
@@ -128,38 +136,38 @@ class BetMaker
   end
 
   def press_after_win_to(*amounts)
-    set_press_sequence(amounts, 1, FOREVER)
+    bet_presser.sequence(amounts, 1)
     self
   end
 
   def no_press_after_win(win_number)
-    @press_sequence_stop_win = win_number
+    bet_presser.stop_win = win_number
     self
   end
 
   def press_by_additional_after_win(amount, win_number)
-    set_press_sequence([], win_number, FOREVER, amount)
+    bet_presser.incremental(amount, win_number)
     self
   end
 
   def full_press_after_win(win_number)
-    set_press_sequence([], win_number, FOREVER, PARLAY)
+    bet_presser.incremental(BetPresser::PARLAY, win_number)
     self
   end
 
   def and_reset_win_count
-    @win_count = 0
+    bet_presser.reset
     self
   end
 
   private
 
-  def set_press_sequence(amounts, start, stop, increment=nil)
-    @press_unit = increment
-    @press_sequence = amounts
-    @press_sequence_index = 0
-    @press_sequence_start_win = start
-    @press_sequence_stop_win = stop
+  def not_yet_at_point_count
+    @bet_when_point_count > 0 && (current_point_count - @starting_point_count < @bet_when_point_count)
+  end
+
+  def current_points_won
+    table.tracking_bet_stats.pass_line_point.total
   end
 
   def validate_odds_multiple(multiple, number)

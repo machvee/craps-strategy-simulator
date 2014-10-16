@@ -29,12 +29,6 @@ class PlayerBet
     player.bet_stats.stat_by_name(craps_bet.stat_name)
   end
 
-  def press(additional_amount)
-    new_amount = amount + additional_amount
-    craps_bet.validate(self, new_amount)
-    @amount = new_amount
-  end
-
   def back_on
     set_bet_on
   end
@@ -54,6 +48,31 @@ class PlayerBet
 
   def off?
     !on?
+  end
+
+  #
+  # press or reduce
+  #
+  def change_amount(new_amount)
+    direction = new_amount - amount
+    delta = direction.abs
+    if direction < 0
+      #
+      # reduce the bet amound put the difference back
+      # in player rail
+      #
+      player.rail.transfer_from(table.wagers, delta)
+      @amount -= delta
+    elsif delta > 0
+      craps_bet.validate(self, amount)
+      #
+      # inrease the bet, moving the difference from the
+      # player rail to the table wagers
+      #
+      table.wagers.transfer_from(player.rail, delta)
+      @amount += delta
+      pay_any_commission(craps_bet, delta)
+    end
   end
 
   def winning_bet(pay_this, for_every)

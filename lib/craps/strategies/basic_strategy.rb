@@ -1,4 +1,9 @@
 class BasicStrategy < BaseStrategy
+
+  def name
+    "Basic"
+  end
+
   def make_bets
     #
     # always have a pass line bet $10
@@ -9,13 +14,13 @@ class BasicStrategy < BaseStrategy
     # TBD: take full winnings on first 6/8 place after the point, but go
     # up a unit each win after that
     #
-    pass_line_bet_with_full_odds
+    pass_line_bet.for(10).with_full_odds
     if table.is_hot?
-      inside
+      CrapsBets::INSIDE.each {|n| place_bet_on(n).for(10)}
     else
-      six_and_eight 
+      [6,8].each {|n| place_bet_on(n).for(10)}
     end
-    hardways_bet_on_the_point(5)
+    CrapsBets::HARDS.each {|n| hardways_bet_on(n).for(1)}
   end
 
 end
