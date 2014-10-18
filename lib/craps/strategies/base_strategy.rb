@@ -4,7 +4,6 @@ class BaseStrategy
   attr_reader   :place_sequence # order in which to make place bets when they're down
   attr_reader   :bet_makers
 
-  DEFAULT_PLACE_SEQUENCE = [6,8,5,9,4,10]
   FULL_ODDS = -1
 
   delegate :table_state, to: :table
@@ -68,13 +67,13 @@ class BaseStrategy
   # hard_ways_bet_on(8).for(1).full_press_after_win(2)
   # hard_ways_bet_on(10).for(5).press_after_win_to(10,20,50)
   # pass_line_bet.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
-  # place_bet_on(6).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
-  # place_bet_on(8).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
-  # place_bet_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
-  # place_bet_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
-  # buy_bet_on(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
-  # buy_bet_on(4).for(25).after_making_point(4).press_after_win_to(50,75,100)
-  # buy_bet_on(4).for(100).after_making_point(7).full_press_after_win
+  # place_on(6).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
+  # place_on(8).for(12).after_point_established.press_after_win_to(18,24,30,60,90,120,180,210)
+  # place_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
+  # place_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
+  # buy_on(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
+  # buy_on(4).for(25).after_making_point(4).press_after_win_to(50,75,100)
+  # buy_on(4).for(100).after_making_point(7).full_press_after_win
   #
   #  parse DSL => find or create bet_maker_object => \
   #    bet_maker_object[control params, win/rolled_number counts, active (or create) player_bet(s), action_procs]

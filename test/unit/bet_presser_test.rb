@@ -3,8 +3,9 @@ require 'test_helper'
 class BetPresserTest < ActiveSupport::TestCase
   def setup
     @player = mock('player')
-    @bet_maker = mock('bet_maker', bet_short_name: 'place_bet')
     @bet_stats = mock('bet_stats')
+    @craps_bet = mock('craps_bet')
+    @craps_bet.expects(:stat_name).returns('place_6').at_least_once
     @stat = mock('stat')
 
     @bet_stats.expects(:stat_by_name).returns(@stat).at_least_once
@@ -12,7 +13,8 @@ class BetPresserTest < ActiveSupport::TestCase
 
     @wins_start=31
     @stat.stubs(:total).returns(@wins_start)
-    @bp = BetPresser.new(@player, @bet_maker)
+    @bp = BetPresser.new(@player, @craps_bet)
+    @bp.amount_to_bet = 10
   end
 
   def test_instance
@@ -22,15 +24,15 @@ class BetPresserTest < ActiveSupport::TestCase
   def test_sequence
     @amounts = [20,40,60,90,120]
     @bp.sequence(@amounts, @start_win = 2)
-    assert_equal @amounts, @bp.amounts
-    assert_equal @start_win, @bp.start_win
+    assert_equal @amounts, @bp.press_amounts
+    assert_equal @start_win, @bp.start_pressing_at_win
   end
 
   def test_incremental
     @incr = 6
     @bp.incremental(@incr, @start_win = 4)
     assert_equal @incr, @bp.press_unit
-    assert_equal @start_win, @bp.start_win
+    assert_equal @start_win, @bp.start_pressing_at_win
   end
 
   def test_reset
@@ -43,13 +45,10 @@ class BetPresserTest < ActiveSupport::TestCase
 
   def test_next_amount_sequence
     @amounts = [20,40,60,90,120]
-    @bet = mock('bet')
-    @bet.expects(:amount).at_least_once.returns(10)
-    @bet_maker.expects(:bet).returns(@bet).at_least_once
     @bp.sequence(@amounts, 2)
     @stat.unstub(:total)
     @stat.stubs(:total).returns(@wins_start)
-    assert_equal @bet.amount, @bp.next_bet_amount
+    assert_equal @bp.amount_to_bet, @bp.next_bet_amount
     ([10,10] + @amounts).each_with_index do |a,i|
       @stat.unstub(:total)
       @stat.stubs(:total).returns(@wins_start+i)

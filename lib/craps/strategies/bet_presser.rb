@@ -1,74 +1,80 @@
 class BetPresser
   #
   # bring bet to exact amount in sequence until 
-  # amounts array is exhausted, and maintain the last
+  # press_amounts array is exhausted, and maintain the last
   # amount until the bet is lost.  Or, press bet by
-  # press_unit if not nil.  PARLAY in sequence or pres_unit means
-  # full press of winnings to scale begin processing sequence at
-  # press_sequence_start_win and stop after press_sequence_stop_win
+  # press_unit if not nil.  PARLAY in sequence or press_unit means
+  # full press of winnings to scale. begin processing sequence at
+  # start_pressing_at_win and stop after stop_win
   #
   #
   attr_reader   :player
-  attr_reader   :bet_maker
-  attr_reader   :amounts
+  attr_reader   :press_amounts
   attr_reader   :press_unit
-  attr_reader   :start_win
-  attr_accessor :stop_win
+  attr_reader   :start_pressing_at_win
   attr_reader   :start_win_count
 
-  delegate :bet, to: :bet_maker
+  attr_accessor :amount_to_bet
+  attr_accessor :stop_win
 
   FOREVER=-1
   PARLAY=-1
 
-  def initialize(player, bet_maker)
+  def initialize(player, craps_bet)
     @player = player
-    @bet_maker = bet_maker
     @press_unit = nil
-    @amounts = []
+    @press_amounts = []
+    @craps_bet = craps_bet
+    @amount_to_bet = nil
     reset
   end
 
   def sequence(amounts, start_win)
-    @amounts = amounts
-    @start_win = start_win
+    @press_amounts = amounts
+    @start_pressing_at_win = start_win
     @stop_win = FOREVER
   end
 
   def incremental(amount, start_win)
     @press_unit = amount
-    @start_win = start_win
+    @start_pressing_at_win = start_win
     @stop_win = FOREVER
   end
 
   def next_bet_amount
-    return bet.amount unless has_press_sequence? # bet amount doesn't change after win
+    raise "You haven't set a starting amount to bet on #{@craps_bet}" if amount_to_bet.nil?
+
+    return amount_to_bet unless has_press_sequence? # bet amount doesn't change after win
 
     num_wins = current_bet_wins - start_win_count
+
     #
     # don't change the bet if we're outside the win/press window
     #
-    return bet.amount if num_wins < start_win || (stop_win != FOREVER && num_wins >= stop_win)
+    return amount_to_bet if num_wins < start_pressing_at_win || (stop_win != FOREVER && num_wins >= stop_win)
 
     #
     # based on current win sequence and programmed press amount,
     # return the new/current bet amount
     #
-    new_bet_amount = if press_unit.present?
-      if press_unit == PARLAY
-        # until we can figure out the last winnings,
-        # just double existing bet amount
-        bet.amount * 2
+    new_bet_amount =
+      if press_unit.present?
+        if press_unit == PARLAY
+          # until we can figure the amount just won,
+          # just double existing bet amount
+          amount_to_bet * 2
+        else
+          amount_to_bet + press_unit
+        end
       else
-        bet_maker.amount + (press_unit * num_wins)
+        #
+        # offset into the press_sequence to find the current betting level
+        #
+        press_amounts[num_wins > press_amounts.length ? -1 : num_wins-start_pressing_at_win]
       end
-    else
-      #
-      # offset into the press_sequence to find the current betting level
-      #
-      amounts[num_wins > amounts.length ? -1 : num_wins-start_win]
-    end
-    new_bet_amount
+
+    @amount_to_bet = new_bet_amount
+    amount_to_bet
   end
 
   def reset
@@ -77,15 +83,15 @@ class BetPresser
 
   private
 
-  def bet_win_stat 
-    @_ws ||= player.bet_stats.stat_by_name(bet_maker.bet_short_name)
+  def current_bet_wins
+    player_bet_win_stat.total
+  end
+
+  def player_bet_win_stat 
+    @_pbws ||= player.bet_stats.stat_by_name(@craps_bet.stat_name)
   end
 
   def has_press_sequence?
-    press_unit.present? || amounts.length > 0
-  end
-
-  def current_bet_wins
-    bet_win_stat.total
+    press_unit.present? || press_amounts.length > 0
   end
 end

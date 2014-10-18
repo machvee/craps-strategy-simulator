@@ -9,6 +9,10 @@ class PassLineBet < CrapsBet
     "Pass Line Bet"
   end
 
+  def makeable?
+    table_state.off?
+  end
+
   def player_can_set_off?
     false
   end

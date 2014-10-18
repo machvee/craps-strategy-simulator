@@ -9,6 +9,10 @@ class ComeOutBet < CrapsBet
     "Come Out Bet"
   end
 
+  def makeable?
+    table_state.on?
+  end
+
   def validate(player_bet, bet_amount)
     super
     raise "point must be established" unless table_state.on?

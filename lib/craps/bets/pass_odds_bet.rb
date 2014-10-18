@@ -16,6 +16,10 @@ class PassOddsBet < CrapsBet
     OnStatus::FOLLOW
   end
 
+  def makeable?
+    table_state.on?
+  end
+
   def validate(player_bet, amount)
     super
     raise "point must be established" unless table_state.on?

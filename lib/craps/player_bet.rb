@@ -23,6 +23,8 @@ class PlayerBet
     craps_bet.validate(self, amount)
 
     set_bet_on
+
+    status 'put', @amount
   end
 
   def set_bet_stat
@@ -63,6 +65,7 @@ class PlayerBet
       #
       player.rail.transfer_from(table.wagers, delta)
       @amount -= delta
+      status 'reduced bet to', @amount
     elsif delta > 0
       craps_bet.validate(self, amount)
       #
@@ -71,6 +74,7 @@ class PlayerBet
       #
       table.wagers.transfer_from(player.rail, delta)
       @amount += delta
+      status 'pressed bet to', @amount
       pay_any_commission(craps_bet, delta)
     end
   end
@@ -125,6 +129,6 @@ class PlayerBet
   end
 
   def status(verbed, amount)
-    table.status "  #{player.name} #{verbed} $#{amount} on #{self}"
+    player.status "#{verbed} $#{amount} on #{craps_bet}"
   end
 end

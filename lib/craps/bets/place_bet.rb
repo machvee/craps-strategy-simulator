@@ -8,6 +8,10 @@ class PlaceBet < CrapsBet
     true
   end
 
+  def makeable?
+    table_state.on?
+  end
+
   def table_on_status
     OnStatus::FOLLOW # follows the table on/off status
   end

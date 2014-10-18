@@ -37,6 +37,10 @@ class Player
     bets.inject(0) {|s, b| s += b.amount}
   end
 
+  def status(str)
+    table.status "  #{name} #{str}"
+  end
+
   def new_account(start_amount)
     Account.new("#{name}'s rail", start_amount)
   end

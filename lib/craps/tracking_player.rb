@@ -12,6 +12,8 @@ class TrackingPlayer < Player
     "#{name}:\nbets: #{formatted(bets)}"
   end
 
+  def status(str); end # quiet
+
   private
 
   def can_bet?(amount)

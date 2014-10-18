@@ -8,6 +8,10 @@ class ComeOddsBet < CrapsBet
     super * config.max_odds(number)
   end
 
+  def makeable?
+    table_state.on?
+  end
+
   def table_on_status
     # 
     # come bet odds are off when the table is off

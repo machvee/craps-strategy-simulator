@@ -7,6 +7,10 @@ class ComeBet < CrapsBet
     false
   end
 
+  def makeable?
+    table_state.on?
+  end
+
   def outcome
     if rolled_the_number?
       Outcome::WIN

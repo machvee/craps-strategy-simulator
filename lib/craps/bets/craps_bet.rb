@@ -94,6 +94,14 @@ class CrapsBet
     OnStatus::ON
   end
 
+  def makeable?
+    #
+    # is the bet traditionally made now? based on table_state and
+    # can be overridden by subclass (e.g. pass_line follows table.table_state.off?
+    #
+    true
+  end
+
   def commission
     # override with commission in percentage
     0
