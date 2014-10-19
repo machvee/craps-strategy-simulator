@@ -16,7 +16,7 @@ class BasicStrategy < BaseStrategy
     #
     pass_line.for(10).with_full_odds
     CrapsDice::INSIDE.each {|n| place_on(n).for(10).press_after_win_to(15,20,25,30,60,90)}
-    CrapsDice::HARDS.each {|n| hardways_on(n).for(1).press_after_win_to(10,25,50)}
+    CrapsDice::HARDS.each {|n| hard(n).for(1).press_after_win_to(10,25,50)}
   end
 
 end

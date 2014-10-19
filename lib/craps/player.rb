@@ -144,13 +144,16 @@ class Player
   end
 
   def has_bet?(bet_short_name, number=nil)
-    find_bet(bet_short_name, number).present?
+    bet = find_bet(bet_short_name, number)
+    if bet.nil? && bet_short_name == 'pass_line'
+      bet = find_bet('pass_line_point')
+    end
+    bet.present?
   end
 
   def find_bet(bet_short_name, number=nil)
     #
-    # helper for pass_line_point and come bets, if number is nil, assume
-    # table_state.point
+    # helper for pass_line_point, if number is nil, assume table_state.point
     #
     number = table_state.point if bet_short_name == 'pass_line_point' && number.nil?
     bets.find {|b| b.matches?(bet_short_name, number)}

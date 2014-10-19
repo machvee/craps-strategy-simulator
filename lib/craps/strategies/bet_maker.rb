@@ -29,35 +29,32 @@
 #
 # example grammar:
 # pass_line.for(50).with_full_odds
-# come_bet(n).for(25).with_full_odds
-# hard_ways_bet_on(8).for(1).full_press_after_win(2)
-# hard_ways_bet_on(10).for(5).working.press_after_win_to(10,20,50)
+# come_out.for(25).with_full_odds
+# hard(8).for(1).full_press_after_win(2)
+# hard(10).for(5).working.press_after_win_to(10,20,50)
 # pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
-# place_bet_on(6).for(12).press_after_win_to(18,24,30,60,90,120,180,210)
-# place_bet_on(8).for(12).press_after_win_to(18,24,30,60,90,120,180,210)
-# place_bet_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
-# place_bet_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
-# place_bet_on(9).for(10).after_rolls(2).press_after_win_to(15,20,40,80,100,120,180,200)
+# place_on(6).for(12).press_after_win_to(18,24,30,60,90,120,180,210)
+# place_on(8).for(12).press_after_win_to(18,24,30,60,90,120,180,210)
+# place_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
+# place_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
+# place_on(9).for(10).after_rolls(2).press_after_win_to(15,20,40,80,100,120,180,200)
 # buy_the(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
 # buy_the(4).for(25).after_making_point(4).press_by_additional_after_win(25,1)
 # buy_the(4).for(100).after_making_point(7).full_press_after_win(2).no_press_after_win(4)
-#
-#  parse DSL => find or create bet_maker_object => \
-#    bet_maker_object[control params, win/rolled_number counts, active (or create) player_bet(s), action_procs]
 #
 class BetMaker
 
   attr_reader   :player
   attr_reader   :table
-  attr_reader   :bet
   attr_reader   :craps_bet
-  attr_reader   :odds_bet
   attr_reader   :bet_short_name
   attr_reader   :number
   attr_reader   :bets_working
   attr_reader   :bets_off
   attr_reader   :bet_presser
   attr_reader   :start_amount
+
+  attr_accessor  :odds_multiple
 
   DEFAULT_PLACE_SEQUENCE = [6,8,5,9,4,10]
 
@@ -67,8 +64,6 @@ class BetMaker
     @bet_short_name = bet_short_name
     @number = number
     @craps_bet = table.find_bet_box(bet_short_name, number).craps_bet
-
-    @bet = @odds_bet = nil
 
     @bets_working = false # overrides a normally not makeable? bet
     @bets_off = false # player has made a normally active bet as OFF
@@ -104,7 +99,7 @@ class BetMaker
       return if bets_off
       player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
     else
-      @bet = player.make_bet(bet_short_name, @start_amount, number)
+      player.make_bet(bet_short_name, @start_amount, number)
     end
   end
 
@@ -124,9 +119,10 @@ class BetMaker
   end
 
   def with_full_odds
+    valid_odds
     @make_odds_bet = true
     CrapsDice::POINTS.each do |n|
-      @odds_multiple[n] = table.config.max_odds(n)
+      odds_multiple[n] = table.config.max_odds(n)
     end
     self
   end
@@ -153,10 +149,11 @@ class BetMaker
   end
 
   def with_odds_multiple_for_numbers(multiple, *numbers)
+    valid_odds
     @make_odds_bet = true
     numbers.each do |n|
       validate_odds_multiple(multiple, n)
-      @odds_multiple[n] = multiple
+      odds_multiple[n] = multiple
     end
     self
   end
@@ -218,6 +215,10 @@ class BetMaker
 
   def current_roll_count
     table.shooter.dice.num_rolls
+  end
+
+  def valid_odds
+    raise "#{craps_bet} doesn't support an odds bet" unless craps_bet.has_odds_bet?
   end
 
   def validate_odds_multiple(multiple, number)

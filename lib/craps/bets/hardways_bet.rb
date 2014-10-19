@@ -8,6 +8,10 @@ class HardwaysBet < CrapsBet
     1
   end
 
+  def short_name
+    'hard'
+  end
+
   def makeable?
     table_state.on?
   end

@@ -18,9 +18,9 @@ class CoverAllBetsStrategy < BaseStrategy
     # make all hardways bets and keep them on
     # make all place bets when point is on
     pass_line.for(10).with_full_odds
-    come_bet.for(15).with_full_odds
-    CrapsBets::HARDS.each {|n| hardways_bet_on(n).for(10)}
-    CrapsBets::POINTS.each {|n| place_bet_on(n).for(10)}
+    come_out.for(15).with_full_odds
+    all_the_hardways_for(1)
+    across_for(10)
     field_bet.for(1)
     ce_bet.for(2)
     ace_deuce_bet.for(1)

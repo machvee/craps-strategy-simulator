@@ -12,6 +12,10 @@ class ComeOddsBet < CrapsBet
     table_state.on?
   end
 
+  def odds_bet_short_name
+    'come_odds'
+  end
+
   def table_on_status
     # 
     # come bet odds are off when the table is off

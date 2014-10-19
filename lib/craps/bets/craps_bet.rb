@@ -29,11 +29,23 @@ class CrapsBet
   def initialize(table, number=nil)
     @table = table
     @number = number
+    @morph_bet_name = nil
     @pay_this, @for_every = config.payoff_odds(self, number)
   end
 
   def morphs_to(bet_short_name)
     @morph_bet_name = bet_short_name
+  end
+
+  def has_odds_bet?
+    @morph_bet_name.present?
+  end
+
+  def odds_bet_short_name
+    #
+    # override in base bet (pass_line, come_out) that has an odds bet
+    #
+    raise "there is no odds bet for #{self}"
   end
 
   def name
