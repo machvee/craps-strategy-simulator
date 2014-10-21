@@ -5,6 +5,7 @@ class BaseStrategy
   attr_reader   :bet_makers
 
   FULL_ODDS = -1
+  DEFAULT_PLACE_SEQUENCE = [6,8,5,9,4,10]
 
   delegate :table_state, to: :table
 
@@ -46,9 +47,12 @@ class BaseStrategy
   # buy_the(4)
   #
   #
-  [[PlaceBet, :on], [BuyBet, :the], [HardwaysBet, nil]].each do |b, prep|
-    define_method(b.short_name + (prep.present? ? "_#{prep}" : '')) do |number|
-      install_bet(b.short_name, number)
+  [[PlaceBet, :on], [BuyBet, :the], [[HardwaysBet, :hard], nil]].each do |b, prep|
+    ap = Array(b) # [PlaceBet], or [HardwaysBet, :hard]
+    bc = ap.first
+    sn = ap.length > 1 ? ap.last.to_s : bc.short_name
+    define_method(sn + (prep.present? ? "_#{prep}" : '')) do |number|
+      install_bet(bc.short_name, number)
     end
   end
 
@@ -81,7 +85,7 @@ class BaseStrategy
   private
 
   def install_bet(bet_short_name, number=nil)
-    BetMaker.new(player, bet_short_name, number).tap {|m| @bet_makers += m}
+    BetMaker.new(player, bet_short_name, number).tap {|m| @bet_makers << m}
   end
 
   def reset_bet_makers
@@ -96,7 +100,7 @@ class BaseStrategy
   end
 
   def across_for(amount)
-    CrapsBets::POINTS.each {|n| place_on(n).for(amount)}
+    CrapsDice::POINTS.each {|n| place_on(n).for(amount)}
   end
 
   def six_and_eight(amount)

@@ -53,10 +53,8 @@ class BetMaker
   attr_reader   :bets_off
   attr_reader   :bet_presser
   attr_reader   :start_amount
-
-  attr_accessor  :odds_multiple
-
-  DEFAULT_PLACE_SEQUENCE = [6,8,5,9,4,10]
+  attr_reader   :odds_multiple
+  attr_reader   :make_odds_bet
 
   def initialize(player, bet_short_name, number=nil)
     @player = player
@@ -97,9 +95,12 @@ class BetMaker
 
     if player.has_bet?(bet_short_name, number)
       return if bets_off
-      player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
+      bet = player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
+      bet.maker = self
     else
-      player.make_bet(bet_short_name, @start_amount, number)
+      bet = player.make_bet(bet_short_name, start_amount, number)
+      bet.maker = self
+      @start_amount = bet.amount # could've been scaled up e.g. place 6/8
     end
   end
 
@@ -116,6 +117,10 @@ class BetMaker
 
   def after_rolls(n)
     @bet_when_roll_count = n
+  end
+
+  def with_no_odds
+    @make_odds_bet = false
   end
 
   def with_full_odds

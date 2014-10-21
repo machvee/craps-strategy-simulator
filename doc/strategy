@@ -28,3 +28,21 @@ Testing out Strategies
 5. seed and player/table stats can be saved, so this exact dice sequence can be replayed
    with slightly different strategy
 
+
+Bet Makers and PassLine and Come Out bets
+
+  1.  Bet makers are responsible only for making the Passline bet and a come Out bet at the appropriate times.
+      The table play will Morph these bets into numbered bets.  The pass_line bet won't get remade because the 
+      table is on.  The come out bets *will be remade because the table in on.
+
+  2.  So BetMakers are good for PassLine and Come Out.  If number of bets on table is important for a bet_maker rule
+      ComeBets will be counted, not Come Out.
+
+  3.  BetMaker stats should account for the morph bets winnings/losing when tabulating
+
+  4.  Odds bets need to be made if odds multiples are specified in PassLine and ComeOut Bets.  Its not easy to know who
+      is responsible for making these bets.  The BetMakers are no longer in scope when the point gets set or a come out
+      bet is morphed to a numbered bet.  Odds bet win/loss stats should be tied to the bet_maker that made the original
+      passline or comeout bet.
+
+

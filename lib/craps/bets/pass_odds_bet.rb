@@ -22,8 +22,7 @@ class PassOddsBet < CrapsBet
 
   def validate(player_bet, amount)
     super
-    raise "point must be established" unless table_state.on?
-    raise "you must have a Pass Line Bet" unless player_bet.player.has_bet?('pass_line_point', table_state.point)
+    raise "you must have a Pass Line Bet" unless player_bet.player.has_bet?('pass_line_point')
   end
 
   def outcome

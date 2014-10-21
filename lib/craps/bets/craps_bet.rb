@@ -190,6 +190,10 @@ class CrapsBet
     #   player must have number bet if making odds bet on PASS and COME
     #
     raise "you already have a #{name}" if player_bet.player.has_bet?(self.short_name, number)
+    validate_amount(player_bet, bet_amount)
+  end
+
+  def validate_amount(player_bet, bet_amount)
     raise "you must bet at least $#{min_bet}" unless \
       bet_amount >= min_bet
     raise "bet amount would exceed maximium of $#{max_bet} for #{name}" if \

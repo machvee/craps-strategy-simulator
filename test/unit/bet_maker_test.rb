@@ -39,12 +39,14 @@ class BetMakerTest < ActiveSupport::TestCase
 
   def test_with_full_odds
     set_config
+    @craps_bet.expects(:has_odds_bet?).at_least_once.returns(true)
     set_mult_for_points
     assert_equal @bm, @bm.for(25).after_making_point(2).with_full_odds
   end
 
   def test_with_odds_multiple
     set_config
+    @craps_bet.expects(:has_odds_bet?).at_least_once.returns(true)
     set_mult_for_points
     assert_equal @bm, @bm.for(25).after_making_point(2).with_odds_multiple(2)
   end

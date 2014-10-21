@@ -9,7 +9,7 @@ class PlaceBet < CrapsBet
   end
 
   def makeable?
-    table_state.on?
+    table_state.on? && table_state.point != number
   end
 
   def table_on_status

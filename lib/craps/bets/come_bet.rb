@@ -7,6 +7,10 @@ class ComeBet < CrapsBet
     false
   end
 
+  def odds_bet_short_name
+    'come_odds'
+  end
+
   def makeable?
     table_state.on?
   end

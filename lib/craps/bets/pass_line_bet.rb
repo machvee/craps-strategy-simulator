@@ -17,10 +17,6 @@ class PassLineBet < CrapsBet
     false
   end
 
-  def odds_bet_short_name
-    'pass_odds'
-  end
-
   def validate(player_bet, amount)
     super
     raise "point must be off" if table_state.on?

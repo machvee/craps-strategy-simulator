@@ -113,7 +113,7 @@ class TableState
       "WINNER!! #{last_roll}. Pay the line.  #{trailer}"
     elsif seven_out?
       "7 out  " + '='*20
-    elsif front_line_winner?
+    elsif winner_seven?
       "7 Front line winner!!"
     elsif yo_eleven?
       "yo 11!!" 

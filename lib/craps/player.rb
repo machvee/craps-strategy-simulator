@@ -68,8 +68,8 @@ class Player
     bet_box = table.find_bet_box(bet_short_name, number)
     raise "#{name} needs to buy chips.  only $#{rail.balance} remains" unless can_bet?(amount)
     scaled_bet_amount = bet_box.craps_bet.scale_bet(amount)
-    put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
-    return
+    bet = put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
+    bet
   end
 
   def ensure_bet(bet_short_name, amount=nil, number=nil)
@@ -82,15 +82,15 @@ class Player
     #
     amount ||= bet_unit
     bet_box = table.find_bet_box(bet_short_name, number)
-    bet = find_bet(bet_short_name, number)
-
     scaled_bet_amount = bet_box.craps_bet.scale_bet(amount)
+
+    bet = find_bet(bet_short_name, number)
     if bet.present? 
       bet.change_amount(scaled_bet_amount)
     else
-      put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
+      bet = put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
     end
-    return
+    bet
   end
 
   #
@@ -144,18 +144,10 @@ class Player
   end
 
   def has_bet?(bet_short_name, number=nil)
-    bet = find_bet(bet_short_name, number)
-    if bet.nil? && bet_short_name == 'pass_line'
-      bet = find_bet('pass_line_point')
-    end
-    bet.present?
+    find_bet(bet_short_name, number).present?
   end
 
   def find_bet(bet_short_name, number=nil)
-    #
-    # helper for pass_line_point, if number is nil, assume table_state.point
-    #
-    number = table_state.point if bet_short_name == 'pass_line_point' && number.nil?
     bets.find {|b| b.matches?(bet_short_name, number)}
   end
 
@@ -202,15 +194,6 @@ class Player
     to_s
   end
 
-  private
-
-  def put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
-    bet_box.new_player_bet(self, scaled_bet_amount)
-    table.wagers.transfer_from(rail, scaled_bet_amount)
-    pay_any_commission(bet_box.craps_bet, scaled_bet_amount)
-  end
-
- 
   def pay_any_commission(craps_bet, on_amount)
     commission = craps_bet.commission
     if commission > 0 && !table.config.pay_commission_on_win
@@ -219,6 +202,15 @@ class Player
     end
   end
 
+  private
+
+  def put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
+    bet = bet_box.new_player_bet(self, scaled_bet_amount)
+    table.wagers.transfer_from(rail, scaled_bet_amount)
+    pay_any_commission(bet_box.craps_bet, scaled_bet_amount)
+    bet
+  end
+ 
   def valid_multiple?(number, multiple)
     raise "multiple must be between 1 and #{config.max_odds(number)}" unless \
       multiple.between?(1, config.max_odds(number))

@@ -21,14 +21,14 @@ class CoverAllBetsStrategy < BaseStrategy
     come_out.for(15).with_full_odds
     all_the_hardways_for(1)
     across_for(10)
-    field_bet.for(1)
-    ce_bet.for(2)
-    ace_deuce_bet.for(1)
-    aces_bet.for(1)
-    any_craps_bet.for(1)
-    any_seven_bet.for(1)
-    eleven_bet.for(1)
-    twelve_bet.for(1)
+    field.for(10)
+    ce.for(2)
+    ace_deuce.for(1)
+    aces.for(1)
+    any_craps.for(1)
+    any_seven.for(1)
+    eleven.for(1)
+    twelve.for(1)
   end
 
 end

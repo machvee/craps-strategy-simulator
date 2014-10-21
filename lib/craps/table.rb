@@ -128,18 +128,16 @@ class Table
     # tallied
     #
     quietly?(quiet_option) do
-      # 1. shooter rolls dice
-      # 2. set table_state if on
-      # 3. table pay players on winning bets, takes losing bets
-      # 4. if 7-out, shooter will return_dice
+      # 1. players make automatic bets based on Strategy
+      # 2. shooter rolls dice and table state is updated
       #
       players_make_your_bets
-      roll_dice
+      roll_dice_and_update_table
     end
     return
   end
 
-  def roll_dice
+  def roll_dice_and_update_table
     shooter_rolls
     settle_bets
     morph_any_bets
@@ -280,6 +278,7 @@ class Table
   private
 
   def players_set_your_strategies
+    tracking_player.set_strategy
     players.each {|p| p.set_strategy }
   end
 

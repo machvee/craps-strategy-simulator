@@ -8,6 +8,10 @@ class PassLinePointBet < CrapsBet
     true
   end
 
+  def odds_bet_short_name
+    'pass_odds'
+  end
+
   def player_can_set_off?
     false
   end

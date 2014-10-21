@@ -10,6 +10,8 @@ class PlayerBet
   attr_reader   :bet_box
   attr_accessor :remove
 
+  attr_accessor :maker # the BetMaker that created us, if 
+
   delegate :craps_bet, to: :bet_box
   delegate :table, to: :player
 
@@ -20,11 +22,12 @@ class PlayerBet
     @number = craps_bet.number
     @remove = false # used to clear losing bets at end of settling bets
     @bet_stat = set_bet_stat
+    @maker = nil
     craps_bet.validate(self, amount)
 
     set_bet_on
 
-    status 'put', @amount
+    status 'puts', @amount
   end
 
   def set_bet_stat
@@ -67,15 +70,15 @@ class PlayerBet
       @amount -= delta
       status 'reduced bet to', @amount
     elsif delta > 0
-      craps_bet.validate(self, amount)
+      @amount += delta
+      craps_bet.validate_amount(self, amount)
       #
       # inrease the bet, moving the difference from the
       # player rail to the table wagers
       #
       table.wagers.transfer_from(player.rail, delta)
-      @amount += delta
-      status 'pressed bet to', @amount
-      pay_any_commission(craps_bet, delta)
+      status 'pressed bet to', amount
+      player.pay_any_commission(craps_bet, delta)
     end
   end
 
@@ -106,12 +109,24 @@ class PlayerBet
   end
 
   def morph_bet
-    dest_bet_box = table.find_bet_box(craps_bet.morph_bet_name, table.last_roll)
-    dest_bet_box.new_player_bet(player, amount)
+    number = table.last_roll
+    point_bet_box = table.find_bet_box(craps_bet.morph_bet_name, number)
+    point_bet = point_bet_box.new_player_bet(player, amount)
+    point_bet.maker = maker
+
+    if maker.present? && maker.make_odds_bet
+      #
+      # build an odds bet based on the BetMaker odds multiples
+      #
+      odds_bet_box = table.find_bet_box(point_bet_box.craps_bet.odds_bet_short_name, number)
+      odds_bet = odds_bet_box.new_player_bet(player, maker.odds_multiple[number] * maker.start_amount)
+      odds_bet.maker = maker
+    end
+    point_bet
   end
 
   def matches?(craps_bet_short_name, arg_number=nil)
-    craps_bet.short_name == craps_bet_short_name && number == arg_number
+    craps_bet.short_name == craps_bet_short_name && (number == arg_number || arg_number.nil?)
   end
 
   def to_s
