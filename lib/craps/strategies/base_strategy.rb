@@ -60,7 +60,7 @@ class BaseStrategy
     end
   end
 
-  Table::NO_NUMBER_BETS.each do |b|
+  BetBox::NO_NUMBER_BETS.each do |b|
     define_method(b.short_name) do
       install_bet(b.short_name)
     end

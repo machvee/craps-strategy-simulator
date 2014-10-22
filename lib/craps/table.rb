@@ -22,44 +22,6 @@ class Table
   delegate :min_bet, :max_bet, to: :config
   delegate :seed, to: :dice_tray
 
-
-  #
-  # NO_NUMBER_BETS and NUMBER_BETS are all the types of bets on the table.  We
-  # will create a BetBox for each NO_NUMBER_BET, and mulitple numbered BetBox for the
-  # NUMBER_BETS.  MORPH_NUMBER_BETS are not directly 'makeable' by a player.  They are moved
-  # (morphed) from a come out bet box to a 'point made' bet box automatically by the game
-  #
-  PROPOSITION_BETS = [
-    AceDeuceBet,
-    AcesBet,
-    AnyCrapsBet,
-    AnySevenBet,
-    ElevenBet,
-    TwelveBet
-  ]
-
-  NO_NUMBER_BETS = [
-    *PROPOSITION_BETS,
-    CeBet,
-    ComeOutBet,
-    FieldBet,
-    PassLineBet
-  ]
-
-  MORPH_NUMBER_BETS = [
-    ComeBet,
-    PassLinePointBet
-  ]
-
-  NUMBER_BETS = [
-    ComeOddsBet,
-    HardwaysBet,
-    PassOddsBet,
-    PlaceBet,
-    BuyBet,
-    *MORPH_NUMBER_BETS
-  ]
-
   DEFAULT_OPTIONS = {
     config:                    TableConfig.new,
     die_seeder:                nil,
@@ -295,12 +257,12 @@ class Table
 
   def create_bet_boxes
     @bet_boxes = []
-    NO_NUMBER_BETS.each do |bet_class|
+    BetBox::NO_NUMBER_BETS.each do |bet_class|
       craps_bet = bet_class.new(self)
       @bet_boxes << BetBox.new(self, craps_bet)
     end
 
-    NUMBER_BETS.each do |bet_class|
+    BetBox::NUMBER_BETS.each do |bet_class|
       craps_bets = bet_class.gen_number_bets(self)
       @bet_boxes += craps_bets.map {|b| BetBox.new(self, b)}
     end

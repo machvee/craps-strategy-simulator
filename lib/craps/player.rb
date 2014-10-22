@@ -100,7 +100,7 @@ class Player
   # for the same amount, no action is taken and no exception is
   # thrown
   #
-  Table::NO_NUMBER_BETS.each do |no_number_bet|
+  BetBox::NO_NUMBER_BETS.each do |no_number_bet|
     define_method(no_number_bet.short_name+'!') do |amount=nil|
       make_bet(no_number_bet.short_name, amount)
     end
@@ -109,7 +109,7 @@ class Player
     end
   end
 
-  (Table::NUMBER_BETS - Table::MORPH_NUMBER_BETS).each do |number_bet|
+  (BetBox::NUMBER_BETS - BetBox::MORPH_NUMBER_BETS).each do |number_bet|
     next if [PassOddsBet, ComeOddsBet].include?(number_bet) # special cases below
     define_method(number_bet.short_name+'!') do |number, amount=nil|
       make_bet(number_bet.short_name, amount, number)
