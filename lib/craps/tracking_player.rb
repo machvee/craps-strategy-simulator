@@ -12,7 +12,7 @@ class TrackingPlayer < Player
     "#{name}:\nbets: #{formatted(bets)}"
   end
 
-  def status(str); end # quiet
+  def status(str, color); end # quiet
 
   private
 

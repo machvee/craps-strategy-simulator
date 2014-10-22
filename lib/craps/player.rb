@@ -37,8 +37,8 @@ class Player
     bets.inject(0) {|s, b| s += b.amount}
   end
 
-  def status(str)
-    table.status "  #{name} #{str}"
+  def status(str, color=:white)
+    table.status "  #{name} #{str}", color
   end
 
   def new_account(start_amount)
@@ -183,6 +183,10 @@ class Player
 
   def retire_strategy
     strategy.retire
+  end
+
+  def reset_strategy
+    strategy.reset
   end
 
   def to_s

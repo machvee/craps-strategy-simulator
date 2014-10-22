@@ -51,7 +51,8 @@ class BetPresser
     #
     # don't change the bet if we're outside the win/press window
     #
-    return amount_to_bet if num_wins < start_pressing_at_win || (stop_win != FOREVER && num_wins >= stop_win)
+    return amount_to_bet if num_wins < start_pressing_at_win ||
+                            (stop_win != FOREVER && num_wins >= stop_win)
 
     #
     # based on current win sequence and programmed press amount,
@@ -77,8 +78,9 @@ class BetPresser
     amount_to_bet
   end
 
-  def reset
+  def reset(start_amount=nil)
     @start_win_count = current_bet_wins
+    @amount_to_bet = start_amount
   end
 
   private

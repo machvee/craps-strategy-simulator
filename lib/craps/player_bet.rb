@@ -27,7 +27,7 @@ class PlayerBet
 
     set_bet_on
 
-    status 'puts', @amount
+    status 'puts', @amount, :blue
   end
 
   def set_bet_stat
@@ -68,7 +68,7 @@ class PlayerBet
       #
       player.rail.transfer_from(table.wagers, delta)
       @amount -= delta
-      status 'reduced bet to', @amount
+      status 'reduced bet to', @amount, :blue
     elsif delta > 0
       @amount += delta
       craps_bet.validate_amount(self, amount)
@@ -77,7 +77,7 @@ class PlayerBet
       # player rail to the table wagers
       #
       table.wagers.transfer_from(player.rail, delta)
-      status 'pressed bet to', amount
+      status 'pressed bet to', amount, :blue
       player.pay_any_commission(craps_bet, delta)
     end
   end
@@ -94,18 +94,18 @@ class PlayerBet
     player.rail.transfer_from(table.wagers, self.amount)
     player.rail.transfer_from(table.house, winnings)
 
-    status('wins', winnings)
+    status('wins', winnings, :green)
   end
 
   def losing_bet
     bet_stat.lost(made: amount, lost: amount)
-    status('loses', amount)
+    status('loses', amount, :red)
     table.house.transfer_from(table.wagers, amount)
   end
 
   def return_bet
     player.rail.transfer_from(table.wagers, self.amount)
-    status("returned", amount)
+    status("returned", amount, :yellow)
   end
 
   def morph_bet
@@ -143,7 +143,7 @@ class PlayerBet
     @bet_off = false
   end
 
-  def status(verbed, amount)
-    player.status "#{verbed} $#{amount} on #{craps_bet}"
+  def status(verbed, amount, color=:white)
+    player.status "#{verbed} $#{amount} on #{craps_bet}", color
   end
 end

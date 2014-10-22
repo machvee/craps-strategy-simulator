@@ -13,7 +13,7 @@ class BaseStrategy
     @player = player
     @table = player.table
     @place_sequence = DEFAULT_PLACE_SEQUENCE
-    reset_bet_makers
+    init_bet_makers
   end
 
   def name
@@ -25,8 +25,12 @@ class BaseStrategy
     # and table state.  this creates bet_makers
   end
 
+  def init_bet_makers
+    @bet_makers = []
+  end
+
   def retire
-    reset_bet_makers
+    init_bet_makers
   end
 
   def make_bets
@@ -82,14 +86,18 @@ class BaseStrategy
     self
   end
 
+  def reset_bet_makers
+    bet_makers.each {|bm| bm.reset}
+  end
+
+  def reset
+    reset_bet_makers
+  end
+
   private
 
   def install_bet(bet_short_name, number=nil)
     BetMaker.new(player, bet_short_name, number).tap {|m| @bet_makers << m}
-  end
-
-  def reset_bet_makers
-    @bet_makers = []
   end
 
   #

@@ -28,6 +28,7 @@ class TableState
     elsif seven_out?
       table_off
       table.shooter.done
+      table.players_reset_strategies
     elsif dice.points?
       roll_counter.bump
     end
@@ -112,7 +113,7 @@ class TableState
       trailer = "===== #{table.tracking_bet_stats.pass_line_point.current_winning_streak + 1} ====="
       "WINNER!! #{last_roll}. Pay the line.  #{trailer}"
     elsif seven_out?
-      "7 out  " + '='*20
+      ("7 out  " + '='*20)
     elsif winner_seven?
       "7 Front line winner!!"
     elsif yo_eleven?

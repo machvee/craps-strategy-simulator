@@ -37,3 +37,4 @@ gem 'mocha', :require => false
 
 # To use debugger
 gem 'byebug'
+gem 'colorize'

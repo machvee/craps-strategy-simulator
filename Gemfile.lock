@@ -41,6 +41,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.8.0)
+    colorize (0.7.3)
     columnize (0.8.9)
     debugger-linecache (1.2.0)
     erubis (2.7.0)
@@ -114,6 +115,7 @@ PLATFORMS
 DEPENDENCIES
   byebug
   coffee-rails (~> 3.2.1)
+  colorize
   jquery-rails
   mocha
   rails (= 3.2.19)

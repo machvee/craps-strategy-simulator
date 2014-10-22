@@ -162,7 +162,7 @@ class Table
         play(quiet_option) 
       end
     end
-    players_remove_strategies
+    players_retire_strategies
   end
 
   def play_points(number_of_points=1, quiet_option=quiet_table)
@@ -175,6 +175,7 @@ class Table
     while (point_outcomes - start_points < number_of_points)
       play(quiet_option)
     end
+    players_retire_strategies
     return
   end
 
@@ -235,8 +236,8 @@ class Table
     announce_roll
   end
 
-  def status(str)
-    puts(str) unless quiet_table
+  def status(str, color=:white)
+    puts(str.colorize(color)) unless quiet_table
   end
 
   def announce_roll
@@ -275,6 +276,11 @@ class Table
     puts "\n"
   end
 
+  def players_reset_strategies
+    tracking_player.reset_strategy
+    players.each {|p| p.reset_strategy }
+  end
+
   private
 
   def players_set_your_strategies
@@ -283,9 +289,10 @@ class Table
   end
 
   def players_retire_strategies
+    tracking_player.retire_strategy
     players.each {|p| p.retire_strategy }
   end
-    
+
   def create_bet_boxes
     @bet_boxes = []
     NO_NUMBER_BETS.each do |bet_class|

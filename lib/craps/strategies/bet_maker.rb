@@ -53,6 +53,7 @@ class BetMaker
   attr_reader   :bets_off
   attr_reader   :bet_presser
   attr_reader   :start_amount
+  attr_reader   :amount_to_bet
   attr_reader   :odds_multiple
   attr_reader   :make_odds_bet
 
@@ -66,7 +67,6 @@ class BetMaker
     @bets_working = false # overrides a normally not makeable? bet
     @bets_off = false # player has made a normally active bet as OFF
 
-    @start_amount = nil
     @make_odds_bet = false
     @odds_multiple = [0]*(CrapsDice::POINTS.max+1)
 
@@ -81,10 +81,16 @@ class BetMaker
 
     @bet_when_point_count = 0
     @bet_when_roll_count = 0
+    set_start_amount(nil)
+    reset_attrs
+  end
 
-    #
-    # keep track of current roll number and point made in shooters roll
-    #
+  def reset
+    reset_attrs
+    bet_presser.reset(start_amount)
+  end
+
+  def reset_attrs
     @start_point_count = current_points_won
     @start_roll_count = 0
   end
@@ -98,15 +104,13 @@ class BetMaker
       bet = player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
       bet.maker = self
     else
-      bet = player.make_bet(bet_short_name, start_amount, number)
+      bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
       bet.maker = self
-      @start_amount = bet.amount # could've been scaled up e.g. place 6/8
     end
   end
 
-  def for(amount_to_bet)
-    @start_amount = amount_to_bet
-    bet_presser.amount_to_bet = start_amount
+  def for(amount)
+    set_start_amount(amount)
     self
   end
 
@@ -189,6 +193,11 @@ class BetMaker
   end
 
   private
+
+  def set_start_amount(amount)
+    @start_amount = amount
+    bet_presser.amount_to_bet = start_amount
+  end
 
   def bet_not_normally_makeable
     #
