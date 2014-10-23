@@ -108,13 +108,7 @@ class BetMaker
       bet.maker = self
     else
       return if bet_not_normally_makeable unless bets_working
-      if pass_line_point_bet?
-        #
-        # take down the place bet and let the player's strategy possibly remake the
-        # bet on another place bet_box
-        #
-        player.take_down(place_bet) if (place_bet = player.find_bet(PlaceBet.short_name, number)).present?
-      end
+      take_down_any_place_bets_on_the_new_point_number if pass_line_point_bet?
       bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
       bet.maker = self
     end
@@ -216,6 +210,16 @@ class BetMaker
   end
 
   private
+
+  def take_down_any_place_bets_on_the_new_point_number
+    #
+    # take down any place/buy bet and let the player's strategy possibly remake the
+    # bet on another place bet_box
+    #
+    [PlaceBet, BuyBet].each do |bclass|
+      player.take_down(pbet) if (pbet = player.find_bet(bclass.short_name, number)).present?
+    end
+  end
 
   def pass_line_point_bet?
     bet_short_name == PassLinePointBet.short_name
