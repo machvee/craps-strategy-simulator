@@ -18,6 +18,10 @@ class Account
     reset
   end
 
+  def net
+    balance - start_balance 
+  end
+
   def reset
     @balance = start_balance
     @hi_balance = balance

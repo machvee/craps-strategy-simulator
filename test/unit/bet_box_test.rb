@@ -89,6 +89,7 @@ class BetBoxTest < ActiveSupport::TestCase
     @player_bet.expects(:player).returns(@player).at_least_once
     @player.expects(:remove_from_player_bets).with(@player_bet).once
     @player_bet.expects(:remove).at_least_once.returns(true)
+    @player_bet.expects(:return_wager).at_least_once
     @player_bet.expects(:remove=).once.with(true)
     @table.expects(:morph_bets).once.returns([])
 

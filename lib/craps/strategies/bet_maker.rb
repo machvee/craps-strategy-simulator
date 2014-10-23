@@ -100,7 +100,6 @@ class BetMaker
 
   def make_bet
     return if not_yet_at_roll_count || not_yet_at_point_count
-    return if bet_not_normally_makeable unless bets_working
     return if bet_when_number_equals_point && (table.on? && table.table_state.point != number)
 
     if player.has_bet?(bet_short_name, number)
@@ -108,6 +107,14 @@ class BetMaker
       bet = player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
       bet.maker = self
     else
+      return if bet_not_normally_makeable unless bets_working
+      if pass_line_point_bet?
+        #
+        # take down the place bet and let the player's strategy possibly remake the
+        # bet on another place bet_box
+        #
+        player.take_down(place_bet) if (place_bet = player.find_bet(PlaceBet.short_name, number)).present?
+      end
       bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
       bet.maker = self
     end
@@ -209,6 +216,10 @@ class BetMaker
   end
 
   private
+
+  def pass_line_point_bet?
+    bet_short_name == PassLinePointBet.short_name
+  end
 
   def set_start_amount(amount)
     @start_amount = amount

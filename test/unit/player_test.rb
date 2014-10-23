@@ -22,13 +22,10 @@ class PlayerTest < ActiveSupport::TestCase
     player_bet = mock('player_bet')
     bet_box = mock('bet_box')
     bet_box.expects(:new_player_bet).with(@player, @amount).returns(player_bet)
-    craps_bet = mock('craps_bet', commission: 0)
+    craps_bet = mock('craps_bet')
     craps_bet.expects(:scale_bet).with(10).returns(10)
     bet_box.expects(:craps_bet).returns(craps_bet).at_least_once
     @table.expects(:find_bet_box).once.with('pass_line', 2).returns(bet_box)
-    acct = mock('account')
-    acct.expects(:transfer_from).once.with(@player.rail, @amount)
-    @table.expects(:wagers).once.returns(acct)
     @player.make_bet('pass_line', @amount, 2)
   end
 

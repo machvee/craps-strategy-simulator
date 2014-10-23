@@ -17,13 +17,16 @@ class BasicStrategy < BaseStrategy
     pass_line.for(10).with_full_odds.
       with_odds_multiple_for_numbers(1, 4, 10).
       with_odds_multiple_for_numbers(2, 5, 9)
-    place_on(6).for(12).press_after_win_to(18,24,30,60,90,120,180)
-    place_on(8).for(12).press_after_win_to(18,24,30,60,90,120,180)
+    place_on(6).for(12).press_after_win_to(12,18,24,30,60,90,120,180)
+    place_on(8).for(12).press_after_win_to(12,18,24,30,60,90,120,180)
+    place_on(5).for(10).after_making_point(1).press_after_win_to(10,15,20,25,30,50)
+    place_on(9).for(10).after_making_point(2).press_after_win_to(10,15,20,25,30,50)
 
     buy_the(10).for(25).after_making_point(1).press_after_win_to(50,75,100,150,200)
+    buy_the(4).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200)
 
-    [4,10].each {|n| hard(n).for(1).on_point.press_after_win_to(10,25,50)}
-    [6,8].each {|n| hard(n).for(5).on_point.press_after_win_to(25,50)}
+    [4,10].each {|n| hard(n).for(2).on_point.press_after_win_to(10,25,50)}
+    [6,8].each {|n| hard(n).for(2).on_point.press_after_win_to(10,20,50)}
   end
 
 end

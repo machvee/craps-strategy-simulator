@@ -13,7 +13,7 @@ class PlayerStats
   end
 
   def up_down
-    ud = money - player.rail.start_balance
+    ud = player.rail.net
     sign = ud == 0 ? '' : (ud < 0 ? '-' : '+')
     "#{sign}$#{ud.abs}"
   end

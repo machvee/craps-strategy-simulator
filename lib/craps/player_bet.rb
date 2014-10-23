@@ -24,10 +24,10 @@ class PlayerBet
     @bet_stat = set_bet_stat
     @maker = nil
     craps_bet.validate(self, amount)
-
     set_bet_on
-
-    status 'puts', @amount, :blue
+    table.wagers.transfer_from(player.rail, amount)
+    player.pay_any_commission(bet_box.craps_bet, amount)
+    status 'puts', amount, :blue
   end
 
   def set_bet_stat
@@ -55,33 +55,6 @@ class PlayerBet
     !on?
   end
 
-  #
-  # press or reduce
-  #
-  def change_amount(new_amount)
-    direction = new_amount - amount
-    delta = direction.abs
-    if direction < 0
-      #
-      # reduce the bet amound put the difference back
-      # in player rail
-      #
-      player.rail.transfer_from(table.wagers, delta)
-      @amount -= delta
-      status 'reduced bet to', @amount, :blue
-    elsif delta > 0
-      @amount += delta
-      craps_bet.validate_amount(self, amount)
-      #
-      # inrease the bet, moving the difference from the
-      # player rail to the table wagers
-      #
-      table.wagers.transfer_from(player.rail, delta)
-      status 'pressed bet to', amount, :blue
-      player.pay_any_commission(craps_bet, delta)
-    end
-  end
-
   def winning_bet(pay_this, for_every)
     winnings = (amount/for_every) * pay_this
 
@@ -99,13 +72,17 @@ class PlayerBet
 
   def losing_bet
     bet_stat.lost(made: amount, lost: amount)
-    status('loses', amount, :red)
     table.house.transfer_from(table.wagers, amount)
+    status('loses', amount, :red)
   end
 
   def return_bet
-    player.rail.transfer_from(table.wagers, self.amount)
+    return_wager
     status("returned", amount, :yellow)
+  end
+
+  def return_wager
+    player.rail.transfer_from(table.wagers, self.amount)
   end
 
   def morph_bet
@@ -139,11 +116,12 @@ class PlayerBet
 
   private
 
+  def status(verbed, amount, color=:white)
+    player.status "#{verbed} $#{amount} on #{craps_bet}", color
+  end
+
   def set_bet_on
     @bet_off = false
   end
 
-  def status(verbed, amount, color=:white)
-    player.status "#{verbed} $#{amount} on #{craps_bet}", color
-  end
 end

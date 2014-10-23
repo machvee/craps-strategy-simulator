@@ -94,15 +94,14 @@ class Table
       # 2. shooter rolls dice and table state is updated
       #
       players_make_your_bets
-      roll_dice_and_update_table
+      roll
     end
     return
   end
 
-  def roll_dice_and_update_table
+  def roll
     shooter_rolls
     settle_bets
-    morph_any_bets
     table_state.update
   end
 
@@ -166,13 +165,14 @@ class Table
 
   def settle_bets
     bet_boxes.each { |bet_box| bet_box.settle_player_bets }
+    morph_any_bets
   end
 
   def at_least_one_bet_made?
     players.any? {|p| p.bets.length > 0}
   end
 
-  def reset
+  def reset(dice_seed=seed)
     #
     # this is destructive to the current state of the table and accounts.
     # use this call to set the table and player state back to the point
@@ -188,7 +188,7 @@ class Table
     bet_boxes.each {|bb| bb.reset}
     players.each {|p| p.reset}
     shooter.reset
-    dice_tray.reset(DefaultSeeder.new(seed))
+    dice_tray.reset(DefaultSeeder.new(dice_seed))
     return
   end
 

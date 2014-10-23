@@ -38,7 +38,7 @@ class Player
   end
 
   def status(str, color=:white)
-    table.status "  #{name} #{str}", color
+    table.status "  #{name} #{str} [#{money_status}]", color
   end
 
   def new_account(start_amount)
@@ -68,27 +68,22 @@ class Player
     bet_box = table.find_bet_box(bet_short_name, number)
     raise "#{name} needs to buy chips.  only $#{rail.balance} remains" unless can_bet?(amount)
     scaled_bet_amount = bet_box.craps_bet.scale_bet(amount)
-    bet = put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
+    bet = bet_box.new_player_bet(self, scaled_bet_amount)
     bet
   end
 
   def ensure_bet(bet_short_name, amount=nil, number=nil)
     #
     # like make_bet, but if the identical bet already exists
-    # just return.  Call this when you want to ensure you have
-    # the bet covered, but you may have it covered already
-    # if you have it covered but at a different amount, you
-    # may want to press/reduce the bet instead
+    # just return.
     #
     amount ||= bet_unit
     bet_box = table.find_bet_box(bet_short_name, number)
     scaled_bet_amount = bet_box.craps_bet.scale_bet(amount)
 
     bet = find_bet(bet_short_name, number)
-    if bet.present? 
-      bet.change_amount(scaled_bet_amount)
-    else
-      bet = put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
+    unless bet.present? 
+      bet = bet_box.new_player_bet(self, scaled_bet_amount)
     end
     bet
   end
@@ -152,7 +147,7 @@ class Player
   end
 
   def take_down(player_bet)
-    rail.transfer_from(table.wagers, player_bet.amount)
+    player_bet.return_bet
     player_bet.bet_box.remove_bet(player_bet)
   end
 
@@ -189,6 +184,10 @@ class Player
     strategy.reset
   end
 
+  def money_status
+    "$#{rail.balance} (#{stats.up_down})"
+  end
+
   def to_s
     "#{name}: bet_unit: #{bet_unit}, rail: $#{rail.balance} (#{stats.up_down}), "\
     "wagers: $#{wagers}\nbets: #{formatted(bets)}"
@@ -209,9 +208,6 @@ class Player
   private
 
   def put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
-    bet = bet_box.new_player_bet(self, scaled_bet_amount)
-    table.wagers.transfer_from(rail, scaled_bet_amount)
-    pay_any_commission(bet_box.craps_bet, scaled_bet_amount)
     bet
   end
  

@@ -92,9 +92,11 @@ class BetBox
 
         when CrapsBet::Outcome::MORPH
           #
-          # delay the morphing so we don't settle the new
-          # morphed bet on this iteration thru bet_boxes
+          # credit the players rail, then delay the morphing
+          # so we don't settle the new morphed bet on this iteration
+          # thru bet_boxes
           #
+          player_bet.return_wager
           table.morph_bets << player_bet
           mark_bet_deleted(player_bet)
 
