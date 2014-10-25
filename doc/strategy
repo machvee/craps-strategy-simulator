@@ -21,13 +21,67 @@ Inputs player strategy can reference (and how they can help shape a strategy)
 
 Testing out Strategies
 
-1. Define your strategy by programming a bot.  Save the strategy with a name.
+1. Define your strategy by programming a bot.  give the strategy and run a unique name.
 2. clear the stats
-3. shooter_turns n
-4. stops at n or when other bot criteria makes the round stop
+3. define stop criteria 
+  a. shooter_turns n
+  b. play points n
+  c. num rolls of dice
+  d. player acct up/down % (or goes bust)
+4. stops at n, when other bot criteria makes the round stop
 5. seed and player/table stats can be saved, so this exact dice sequence can be replayed
    with slightly different strategy
+6. Summary of run. For each bet_maker:
+  a. PassLine
+      money won 7/11 winner, lost craps
+      bets made
+      points established
+      points won/lost
+      max consecutive won/lost
+      money won/lost (line, odds)
+  b. Place Bets, by number
+      bets made
+      number won
+      number lost
+      money won/lost
+      max consecutive won
+      max won single point
+      max bet amount single point
+      pressing stats
+        total presses
+        max presses single point
+        avg presses per point
+  c. Hardways, by number
+      bets made
+      number won
+      number lost
+      number lost soft
+      max consecutive won
+      max won single point
+      max bet amount single point
+      pressing stats
+        total presses
+        max presses single point
+        avg presses per point
+  d. Come Bets
+      bets made
+      money won 7/11 winner, lost craps
+      number won/lost when on number
+      money won/lost (come, odds) when on number
+  e. Other single roll/prop bets
+      bets made
+      bets won/lost
+      money won/lost
 
+7. What to Save
+    Run name (_ count if not unique)
+     Table name
+     Player name
+     Date Time
+     Stop Criteria
+     Dice Seed
+     All Stats from #6
+     Player stats
 
 Bet Makers and PassLine and Come Out bets
 

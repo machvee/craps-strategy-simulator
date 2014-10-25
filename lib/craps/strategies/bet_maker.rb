@@ -57,6 +57,7 @@ class BetMaker
   attr_reader   :odds_multiple
   attr_reader   :make_odds_bet
   attr_reader   :bet_when_number_equals_point
+  attr_reader   :stats
 
   def initialize(player, bet_short_name, number=nil)
     @player = player
@@ -64,6 +65,7 @@ class BetMaker
     @bet_short_name = bet_short_name
     @number = number
     @craps_bet = table.find_bet_box(bet_short_name, number).craps_bet
+    @stats = BetMakerStats.new(self)
 
     @bets_working = false # overrides a normally not makeable? bet
     @bets_off = false # player has made a normally active bet as OFF

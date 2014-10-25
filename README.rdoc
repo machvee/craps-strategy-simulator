@@ -1,261 +1,243 @@
-== Welcome to Rails
+stats - two varieties: 
+  1. Events made/win/loss/streaks (e.g. RollStat)
+  2. Bets made/win/loss/streaks, with summed quantities associated with made/win/loss (TableBet parent, PlayerBet child bets)
 
-Rails is a web-application framework that includes everything needed to create
-database-backed web applications according to the Model-View-Control pattern.
-
-This pattern splits the view (also called the presentation) into "dumb"
-templates that are primarily responsible for inserting pre-built data in between
-HTML tags. The model contains the "smart" domain objects (such as Account,
-Product, Person, Post) that holds all the business logic and knows how to
-persist themselves to a database. The controller handles the incoming requests
-(such as Save New Account, Update Product, Show Post) by manipulating the model
-and directing data to the view.
-
-In Rails, the model is handled by what's called an object-relational mapping
-layer entitled Active Record. This layer allows you to present the data from
-database rows as objects and embellish these data objects with business logic
-methods. You can read more about Active Record in
-link:files/vendor/rails/activerecord/README.html.
-
-The controller and view are handled by the Action Pack, which handles both
-layers by its two parts: Action View and Action Controller. These two layers
-are bundled in a single package due to their heavy interdependence. This is
-unlike the relationship between the Active Record and Action Pack that is much
-more separate. Each of these packages can be used independently outside of
-Rails. You can read more about Action Pack in
-link:files/vendor/rails/actionpack/README.html.
+  Stats can be collected for groups of related stats.  This allows StatDefs to be shared easily, and also 
+  allows iteration over many stats for tabluar print out and aggregating totals (e.g. total amount across all bets)
+  
+  Stat Instances can have a parent/child relationship.  The parent will have a list of zero or more active children, and
+  when the parent stat is tallied, it will tally its active children.  The containing class of the stat child accumulator will be
+  passed an Outcome from the parent stat def, and it calls the child stat accumulator update method with its specific child data.
+  The child stat accumulator is updated, and the child will invoke its parent stat accumulator with the same data.
+  
+  e.g.  a parent table_bet stat for Place 6 bet, will have child stats that are tied to
+  each active player_bet on that table_bet.  When the subclass of crapsbet determines outcome and updates
+  the parent stat (and any additional specialized stats), it also asks the stat for an iterator to the registered child
+  stats for that tallying process to update.  The stat parent and child class that holds the bet needs to implement a
+  stat-updating method.
 
 
-== Getting Started
+craps_bet - abstract bet you can make on a craps table
+  name
+  payout
+  min
+  max
+  basic bet validation
+  on/off rules
 
-1. At the command prompt, create a new Rails application:
-       <tt>rails new myapp</tt> (where <tt>myapp</tt> is the application name)
+specific bet subclass of craps_bet
+  outcome - logic for determining win or loss based on table state and last roll.  returns true Outcome
+  additional_stats - can register and maintain additional stats, and is responsible for their tallys
+  
+table_bet - ties the specific bet subclass to a physical table
+  player_bets - current player_bets (on/off) on the table felt
+  settle - iterates through player_bets outcome method to pay players winnings, takes house winnings, move or return bets
+  stat - based on subclass name bets made/win/loss/streaks, amount bet/won/lost.  Iterates through player_bet and craps_bet subclass 
 
-2. Change directory to <tt>myapp</tt> and start the web server:
-       <tt>cd myapp; rails server</tt> (run with --help for options)
-
-3. Go to http://localhost:3000/ and you'll see:
-       "Welcome aboard: You're riding Ruby on Rails!"
-
-4. Follow the guidelines to start developing your application. You can find
-the following resources handy:
-
-* The Getting Started Guide: http://guides.rubyonrails.org/getting_started.html
-* Ruby on Rails Tutorial Book: http://www.railstutorial.org/
-
-
-== Debugging Rails
-
-Sometimes your application goes wrong. Fortunately there are a lot of tools that
-will help you debug it and get it back on the rails.
-
-First area to check is the application log files. Have "tail -f" commands
-running on the server.log and development.log. Rails will automatically display
-debugging and runtime information to these files. Debugging info will also be
-shown in the browser on requests from 127.0.0.1.
-
-You can also log your own messages directly into the log file from your code
-using the Ruby logger class from inside your controllers. Example:
-
-  class WeblogController < ActionController::Base
-    def destroy
-      @weblog = Weblog.find(params[:id])
-      @weblog.destroy
-      logger.info("#{Time.now} Destroyed Weblog ID ##{@weblog.id}!")
-    end
-  end
-
-The result will be a message in your log file along the lines of:
-
-  Mon Oct 08 14:22:29 +1000 2007 Destroyed Weblog ID #1!
-
-More information on how to use the logger is at http://www.ruby-doc.org/core/
-
-Also, Ruby documentation can be found at http://www.ruby-lang.org/. There are
-several books available online as well:
-
-* Programming Ruby: http://www.ruby-doc.org/docs/ProgrammingRuby/ (Pickaxe)
-* Learn to Program: http://pine.fm/LearnToProgram/ (a beginners guide)
-
-These two books will bring you up to speed on the Ruby language and also on
-programming in general.
+player - when he joins the table, he gets a clone of all table_bet stats and shooter roll_stats.  When these stats are tallied at
+  the table level, they are also tallied for the player when relevent -- when he's the shooter and when he has a player_bet on a
+  active on a table_bet
+  
 
 
-== Debugger
+PassLineBet < CrapsBet
+  WinStat
+  *PointMadeStat
+  *FrontLineWinner
+  OutCome decider given table_state and dice.value.  WIN/LOSE OTHER
 
-Debugger support is available through the debugger command when you start your
-Mongrel or WEBrick server with --debugger. This means that you can break out of
-execution at any point in the code, investigate and change the model, and then,
-resume execution! You need to install ruby-debug to run the server in debugging
-mode. With gems, use <tt>sudo gem install ruby-debug</tt>. Example:
+TableBet has_a PassLineBet
+  add_bet - appends PlayerBet to TableBets player_bets array, and registers that child bet instance with the parent.  A method defined
+  in PlayerBet gives the optional {:amount => player_bet.amount/winnings} to the stats that need amounts passed in.  Each child bet is tallied
+  and the parent bet is tallied each time so it reflects the aggregation of child bets.
 
-  class WeblogController < ActionController::Base
-    def index
-      @posts = Post.all
-      debugger
-    end
-  end
+-------
 
-So the controller will accept the action, run the first line, then present you
-with a IRB prompt in the server window. Here you can do things like:
+Craps Bots
 
-  >> @posts.inspect
-  => "[#<Post:0x14a6be8
-          @attributes={"title"=>nil, "body"=>nil, "id"=>"1"}>,
-       #<Post:0x14a6620
-          @attributes={"title"=>"Rails", "body"=>"Only ten..", "id"=>"2"}>]"
-  >> @posts.first.title = "hello from a debugger"
-  => "hello from a debugger"
+  1. Background
 
-...and even better, you can examine how your runtime objects actually work:
+  A bot has an objective.  A mission.  In the case of Vegas games the mission is to maximize gains and minimize losses.
+  When the conditions are right, the bot should act to take full advantage.   When times are going rough, the bot should
+  hunker down and protect.
 
-  >> f = @posts.first
-  => #<Post:0x13630c4 @attributes={"title"=>nil, "body"=>nil, "id"=>"1"}>
-  >> f.
-  Display all 152 possibilities? (y or n)
+  The bot is programmed to carry out the objective.  These are the bot's mission instructions.   But the bot is only as good as 
+  its programming.
 
-Finally, when you're ready to resume execution, you can enter "cont".
+  2. Programming the Bot
+
+  The bot has two programming languages.  One language is for people who want the bot to carry out the mission and achieve
+  the objective. This language is in terms of how people understand and appraoch the game.   The other is the machine language
+  of the bot... the language of the instructions the bot actually understands and can process effeciently.  An
+  interpreter program will translate the program that people write into the instructions that be bot will actually process. 
+  
+  As there are many ways to play Vegas games, each person will have their own style, risk tolerance and aggressive or
+  conservative appraoch.  The goal of whaleamker is to capture these bot programs and give feedback on how the bot 
+  strategy works.  The bot programs are stored with their results and can be compared with other bot strategies for 
+  effectiveness.
+
+  3. Bot program
+     a.  define the conditions that the program will execute
+          e.g. table.hot? table.cold?
+     b.  define the bet to make and amount/odds
+          e.g. pass_line $25
+     c.  define the conditions when to make the bet with that amount.  dice, tracking_bet, player_bet stats and table state
+         are available
+          e.g. after 3 rolls of 5 after the point established, make a place bet on 5
+     d.  define a pressing sequence
+          e.g. press after win to 20,50,100,200,200,200,400
+     e.  define the conditions that trigger the next press in the sequence
+          e.g. press after second win to 20,40,80,160
+
+--------
+
+Stats to keep
+
+Roll Stats
+# Shoot dice Roll Stats (keep existing)
+
+Bet Stats
+(Tracked for each Bet, each Player)
+  # total made
+  # won (max consec when at least one bet made)
+  # lost (max consec when at least one bet made)
+  # total $ bet
+  # total $ won
+  # total $ lost
+
+Pass Line Bet
+  # total coming out rolls
+  # flw (7,11)      WIN   (max consec)
+  # craps (2,3,12)  LOSE  (max consec)
+
+  # points established (4-10)  (max consec)
+  #   points made (4-10) WIN   (max consec)
+  #   seven out          LOSE  (max consec)
+
+ComeOdds Bet
+  # returned to player
+
+Player
+  Bet Stats
+  rail hi/lo
+  total $ bet
+  total $ won
+  total $ lost
+
+Table
+  Bet stats
+  total bets made
+  total bets won
+  total bets lost
+  consec rolls without a seven_out (max)
 
 
-== Console
-
-The console is a Ruby shell, which allows you to interact with your
-application's domain model. Here you'll have all parts of the application
-configured, just like it is when the application is running. You can inspect
-domain models, change values, and save to the database. Starting the script
-without arguments will launch it in the development environment.
-
-To start the console, run <tt>rails console</tt> from the application
-directory.
-
-Options:
-
-* Passing the <tt>-s, --sandbox</tt> argument will rollback any modifications
-  made to the database.
-* Passing an environment name as an argument will load the corresponding
-  environment. Example: <tt>rails console production</tt>.
-
-To reload your controllers and models after launching the console run
-<tt>reload!</tt>
-
-More information about irb can be found at:
-link:http://www.rubycentral.org/pickaxe/irb.html
+table stats collection
+----------------------
+named group of definitions
+accumulate definitions
+support instantiate a new TSC
 
 
-== dbconsole
+Inputs player strategy can reference (and how they can help shape a strategy)
 
-You can go to the command line of your database directly through <tt>rails
-dbconsole</tt>. You would be connected to the database with the credentials
-defined in database.yml. Starting the script without arguments will connect you
-to the development database. Passing an argument will connect you to a different
-database, like <tt>rails dbconsole production</tt>. Currently works for MySQL,
-PostgreSQL and SQLite 3.
+1. whats the table state?  off on (point)
+     "if table is off I want to make a pass line bet, but not a come bet"
+2. what player bets are on the table
+     "I don't have a place 6/8 bet"  "I already have a pass odds bet"
+3. how much is bet on each
+     "how much do I have on place 5, I want to stop pressing it so high"
+4. outcome of last roll
+     "won hard 8, place 8, lost Field bet"
+5. consecutive win/lost streak of each table bet +2 = 2 wins, -3 = 3 losses
+     "wow, the place 5 bet just hit 3 times, and I'm not on it"
+6. consecutive win/lost streak of each player bet +2 = 2 wins, -3 = 3 losses
+     "my hard 8 just lost 3 in a row, I think I'll stay off of it"
+     "I just won my 4th point in a row.  Table is HOT!  Start Pressing!"
+7. current rail win/losses (% up/down)
+     "I'm down 50%.  I think I'll quit"
+8. number of rolls
+     "I will do 500 rolls and stop to see where I'm at"
 
-== Description of Contents
 
-The default directory structure of a generated Ruby on Rails application:
+Testing out Strategies
 
-  |-- app
-  |   |-- assets
-  |       |-- images
-  |       |-- javascripts
-  |       `-- stylesheets
-  |   |-- controllers
-  |   |-- helpers
-  |   |-- mailers
-  |   |-- models
-  |   `-- views
-  |       `-- layouts
-  |-- config
-  |   |-- environments
-  |   |-- initializers
-  |   `-- locales
-  |-- db
-  |-- doc
-  |-- lib
-  |   `-- tasks
-  |-- log
-  |-- public
-  |-- script
-  |-- test
-  |   |-- fixtures
-  |   |-- functional
-  |   |-- integration
-  |   |-- performance
-  |   `-- unit
-  |-- tmp
-  |   |-- cache
-  |   |-- pids
-  |   |-- sessions
-  |   `-- sockets
-  `-- vendor
-      |-- assets
-          `-- stylesheets
-      `-- plugins
+1. Define your strategy by programming a bot.  give the strategy and run a unique name.
+2. clear the stats
+3. define stop criteria 
+  a. shooter_turns n
+  b. play points n
+  c. num rolls of dice
+  d. player acct up/down % (or goes bust)
+4. stops at n, when other bot criteria makes the round stop
+5. seed and player/table stats can be saved, so this exact dice sequence can be replayed
+   with slightly different strategy
+6. Summary of run. For each bet_maker:
+  a. PassLine
+      money won 7/11 winner, lost craps
+      bets made
+      points established
+      points won/lost
+      max consecutive won/lost
+      money won/lost (line, odds)
+  b. Place Bets, by number
+      bets made
+      number won
+      number lost
+      money won/lost
+      max consecutive won
+      max won single point
+      max bet amount single point
+      pressing stats
+        total presses
+        max presses single point
+        avg presses per point
+  c. Hardways, by number
+      bets made
+      number won
+      number lost
+      number lost soft
+      max consecutive won
+      max won single point
+      max bet amount single point
+      pressing stats
+        total presses
+        max presses single point
+        avg presses per point
+  d. Come Bets
+      bets made
+      money won 7/11 winner, lost craps
+      number won/lost when on number
+      money won/lost (come, odds) when on number
+  e. Other single roll/prop bets
+      bets made
+      bets won/lost
+      money won/lost
 
-app
-  Holds all the code that's specific to this particular application.
+7. What to Save
+    Run name (_ count if not unique)
+     Table name
+     Player name
+     Date Time
+     Stop Criteria
+     Dice Seed
+     All Stats from #6
+     Player stats
 
-app/assets
-  Contains subdirectories for images, stylesheets, and JavaScript files.
+Bet Makers and PassLine and Come Out bets
 
-app/controllers
-  Holds controllers that should be named like weblogs_controller.rb for
-  automated URL mapping. All controllers should descend from
-  ApplicationController which itself descends from ActionController::Base.
+  1.  Bet makers are responsible only for making the Passline bet and a come Out bet at the appropriate times.
+      The table play will Morph these bets into numbered bets.  The pass_line bet won't get remade because the 
+      table is on.  The come out bets *will be remade because the table in on.
 
-app/models
-  Holds models that should be named like post.rb. Models descend from
-  ActiveRecord::Base by default.
+  2.  So BetMakers are good for PassLine and Come Out.  If number of bets on table is important for a bet_maker rule
+      ComeBets will be counted, not Come Out.
 
-app/views
-  Holds the template files for the view that should be named like
-  weblogs/index.html.erb for the WeblogsController#index action. All views use
-  eRuby syntax by default.
+  3.  BetMaker stats should account for the morph bets winnings/losing when tabulating
 
-app/views/layouts
-  Holds the template files for layouts to be used with views. This models the
-  common header/footer method of wrapping views. In your views, define a layout
-  using the <tt>layout :default</tt> and create a file named default.html.erb.
-  Inside default.html.erb, call <% yield %> to render the view using this
-  layout.
+  4.  Odds bets need to be made if odds multiples are specified in PassLine and ComeOut Bets.  Its not easy to know who
+      is responsible for making these bets.  The BetMakers are no longer in scope when the point gets set or a come out
+      bet is morphed to a numbered bet.  Odds bet win/loss stats should be tied to the bet_maker that made the original
+      passline or comeout bet.
 
-app/helpers
-  Holds view helpers that should be named like weblogs_helper.rb. These are
-  generated for you automatically when using generators for controllers.
-  Helpers can be used to wrap functionality for your views into methods.
 
-config
-  Configuration files for the Rails environment, the routing map, the database,
-  and other dependencies.
-
-db
-  Contains the database schema in schema.rb. db/migrate contains all the
-  sequence of Migrations for your schema.
-
-doc
-  This directory is where your application documentation will be stored when
-  generated using <tt>rake doc:app</tt>
-
-lib
-  Application specific libraries. Basically, any kind of custom code that
-  doesn't belong under controllers, models, or helpers. This directory is in
-  the load path.
-
-public
-  The directory available for the web server. Also contains the dispatchers and the
-  default HTML files. This should be set as the DOCUMENT_ROOT of your web
-  server.
-
-script
-  Helper scripts for automation and generation.
-
-test
-  Unit and functional tests along with fixtures. When using the rails generate
-  command, template test files will be generated for you and placed in this
-  directory.
-
-vendor
-  External libraries that the application depends on. Also includes the plugins
-  subdirectory. If the app has frozen rails, those gems also go here, under
-  vendor/rails/. This directory is in the load path.

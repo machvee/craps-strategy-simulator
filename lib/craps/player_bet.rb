@@ -63,6 +63,7 @@ class PlayerBet
     end
 
     bet_stat.won(made: amount, won: winnings)
+    maker_stat_won(winnings)
 
     player.rail.transfer_from(table.wagers, self.amount)
     player.rail.transfer_from(table.house, winnings)
@@ -72,6 +73,7 @@ class PlayerBet
 
   def losing_bet
     bet_stat.lost(made: amount, lost: amount)
+    maker_stat_lost(amount)
     table.house.transfer_from(table.wagers, amount)
     status('loses', amount, :red)
   end
@@ -115,6 +117,16 @@ class PlayerBet
   end
 
   private
+
+  def maker_stat_won(winnings)
+    return unless maker.present?
+    maker.stats.won(winnings)
+  end
+
+  def maker_stat_lost(amount)
+    return unless maker.present?
+    maker.stats.lost(amount)
+  end
 
   def status(verbed, amount, color=:white)
     player.status "#{verbed} $#{amount} on #{craps_bet}", color
