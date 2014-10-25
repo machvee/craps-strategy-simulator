@@ -9,6 +9,7 @@ class BetPresser
   #
   #
   attr_reader   :player
+  attr_reader   :maker
   attr_reader   :press_amounts
   attr_reader   :press_unit
   attr_reader   :start_pressing_at_win
@@ -20,8 +21,9 @@ class BetPresser
   FOREVER=-1
   PARLAY=-1
 
-  def initialize(player, craps_bet)
+  def initialize(player, maker, craps_bet)
     @player = player
+    @maker = maker
     @press_unit = nil
     @press_amounts = []
     @craps_bet = craps_bet
@@ -60,18 +62,26 @@ class BetPresser
     #
     new_bet_amount =
       if press_unit.present?
-        if press_unit == PARLAY
+        press_to_amt = if press_unit == PARLAY
           # until we can figure the amount just won,
           # just double existing bet amount
           amount_to_bet * 2
         else
           amount_to_bet + press_unit
         end
+        maker.stats.press(press_to_amt)
+        press_to_amt
       else
-        #
-        # offset into the press_sequence to find the current betting level
-        #
-        press_amounts[num_wins > press_amounts.length ? -1 : num_wins-start_pressing_at_win]
+        if num_wins > press_amounts.length
+          press_amounts[-1]
+        else
+          #
+          # offset into the press_sequence to find the current betting level
+          #
+          press_amounts[num_wins-start_pressing_at_win].tap do |press_to_amt|
+            maker.stats.press(press_to_amt)
+          end
+        end
       end
 
     @amount_to_bet = new_bet_amount

@@ -80,7 +80,7 @@ class BetMaker
     # then up a unit of 30 for wins 6 thru 10, no press
     # after win 10
     # 
-    @bet_presser = BetPresser.new(player, craps_bet)
+    @bet_presser = BetPresser.new(player, self, craps_bet)
 
     @bet_when_point_count = 0
     @bet_when_roll_count = 0

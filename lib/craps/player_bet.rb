@@ -73,7 +73,6 @@ class PlayerBet
 
   def losing_bet
     bet_stat.lost(made: amount, lost: amount)
-    maker_stat_lost(amount)
     table.house.transfer_from(table.wagers, amount)
     status('loses', amount, :red)
   end
@@ -120,12 +119,7 @@ class PlayerBet
 
   def maker_stat_won(winnings)
     return unless maker.present?
-    maker.stats.won(winnings)
-  end
-
-  def maker_stat_lost(amount)
-    return unless maker.present?
-    maker.stats.lost(amount)
+    maker.stats.winner(winnings)
   end
 
   def status(verbed, amount, color=:white)

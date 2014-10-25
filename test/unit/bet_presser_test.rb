@@ -5,6 +5,8 @@ class BetPresserTest < ActiveSupport::TestCase
     @player = mock('player')
     @bet_stats = mock('bet_stats')
     @craps_bet = mock('craps_bet')
+    @maker = mock('maker')
+    @maker_stats = mock('maker_stats')
     @craps_bet.expects(:stat_name).returns('place_6').at_least_once
     @stat = mock('stat')
 
@@ -13,7 +15,7 @@ class BetPresserTest < ActiveSupport::TestCase
 
     @wins_start=31
     @stat.stubs(:total).returns(@wins_start)
-    @bp = BetPresser.new(@player, @craps_bet)
+    @bp = BetPresser.new(@player, @maker, @craps_bet)
     @bp.amount_to_bet = 10
   end
 
@@ -48,6 +50,8 @@ class BetPresserTest < ActiveSupport::TestCase
     @bp.sequence(@amounts, 2)
     @stat.unstub(:total)
     @stat.stubs(:total).returns(@wins_start)
+    @maker.expects(:stats).at_least_once.returns(@maker_stats)
+    @maker_stats.expects(:press).at_least_once
     assert_equal @bp.amount_to_bet, @bp.next_bet_amount
     ([10,10] + @amounts).each_with_index do |a,i|
       @stat.unstub(:total)
