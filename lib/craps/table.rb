@@ -123,7 +123,7 @@ class Table
         play(quiet_option) 
       end
     end
-    players_retire_strategies
+    #players_retire_strategies
   end
 
   def play_points(number_of_points=1, quiet_option=quiet_table)

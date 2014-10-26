@@ -94,6 +94,10 @@ class BaseStrategy
     reset_bet_makers
   end
 
+  def stats
+    bet_makers.map {|b| b.to_s}.join("\n")
+  end
+
   private
 
   def install_bet(bet_short_name, number=nil)

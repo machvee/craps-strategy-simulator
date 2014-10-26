@@ -25,14 +25,15 @@ class BetPresserTest < ActiveSupport::TestCase
 
   def test_sequence
     @amounts = [20,40,60,90,120]
-    @bp.sequence(@amounts, @start_win = 2)
+    @bp.sequence(@amounts)
     assert_equal @amounts, @bp.press_amounts
-    assert_equal @start_win, @bp.start_pressing_at_win
   end
 
   def test_incremental
     @incr = 6
-    @bp.incremental(@incr, @start_win = 4)
+    @start_win = 4
+    @bp.incremental(@incr)
+    @bp.start_pressing_at_win = @start_win
     assert_equal @incr, @bp.press_unit
     assert_equal @start_win, @bp.start_pressing_at_win
   end
@@ -47,7 +48,8 @@ class BetPresserTest < ActiveSupport::TestCase
 
   def test_next_amount_sequence
     @amounts = [20,40,60,90,120]
-    @bp.sequence(@amounts, 2)
+    @bp.sequence(@amounts)
+    @bp.start_pressing_at_win = 2
     @stat.unstub(:total)
     @stat.stubs(:total).returns(@wins_start)
     @maker.expects(:stats).at_least_once.returns(@maker_stats)

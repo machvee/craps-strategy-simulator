@@ -33,14 +33,14 @@
 # hard(8).for(1).full_press_after_win(2)
 # hard(10).for(5).working.press_after_win_to(10,20,50)
 # pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
-# place_on(6).for(12).press_after_win_to(18,24,30,60,90,120,180,210)
-# place_on(8).for(12).press_after_win_to(18,24,30,60,90,120,180,210)
-# place_on(5).for(10).after_making_point(1).press_after_win_to(15,20,40,80,100,120,180,200)
-# place_on(9).for(10).after_making_point(2).press_after_win_to(15,20,40,80,100,120,180,200)
-# place_on(9).for(10).after_rolls(2).press_after_win_to(15,20,40,80,100,120,180,200)
-# buy_the(10).for(25).after_making_point(3).press_after_win_to(50,75,100,150,200,225,250)
-# buy_the(4).for(25).after_making_point(4).press_by_additional_after_win(25,1)
-# buy_the(4).for(100).after_making_point(7).full_press_after_win(2).no_press_after_win(4)
+# place_on(6).for(12).press_to(18,24,30,60,90,120,180,210)
+# place_on(8).for(12).press_to(18,24,30,60,90,120,180,210)
+# place_on(5).for(10).after_making_point(1).press_to(15,20,40,80,100,120,180,200)
+# place_on(9).for(10).after_making_point(2).press_to(15,20,40,80,100,120,180,200)
+# place_on(9).for(10).after_rolls(2).press_to(15,20,40,80,100,120,180,200)
+# buy_the(10).for(25).after_making_point(3).press_to(50,75,100,150,200,225,250).after_win(2)
+# buy_the(4).for(25).after_making_point(2).press_by_additional(25).after_win(2)
+# buy_the(4).for(100).after_making_point(3).full_press.after_win(2).no_press_after_win(4)
 #
 class BetMaker
 
@@ -186,8 +186,13 @@ class BetMaker
     self
   end
 
-  def press_after_win_to(*bet_amounts)
-    bet_presser.sequence(bet_amounts, 1)
+  def after_win(win_number)
+    bet_presser.start_pressing_at_win = win_number
+    self
+  end
+
+  def press_to(*bet_amounts)
+    bet_presser.sequence(bet_amounts)
     self
   end
 
@@ -196,13 +201,13 @@ class BetMaker
     self
   end
 
-  def press_by_additional_after_win(additional_amount, win_number)
-    bet_presser.incremental(additional_amount, win_number)
+  def press_by_additional(additional_amount)
+    bet_presser.incremental(additional_amount)
     self
   end
 
-  def full_press_after_win(win_number)
-    bet_presser.incremental(BetPresser::PARLAY, win_number)
+  def full_press
+    bet_presser.incremental(BetPresser::PARLAY)
     self
   end
 
@@ -211,7 +216,20 @@ class BetMaker
     self
   end
 
+  def to_s
+    "#{craps_bet.name}: #{starter_s}#{bet_presser}"
+  end
+
   private
+
+  def starter_s
+    return '' if @bet_when_point_count.zero? && @bet_when_roll_count.zero?
+    "after %d %s, " % if @bet_when_point_count > 0
+      [@bet_when_point_count, "point".pluralize(@bet_when_point_count)]
+    elsif @bet_when_roll_count > 0
+      [@bet_when_roll_count, "roll".pluralize(@bet_when_roll_count)]
+    end
+  end
 
   def take_down_any_place_bets_on_the_new_point_number
     #
@@ -272,4 +290,6 @@ class BetMaker
     max = table.config.max_odds(number)
     raise "#{multiple} must be between 1 and #{max}" if multiple > max
   end
+
+
 end

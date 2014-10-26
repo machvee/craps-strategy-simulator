@@ -12,9 +12,9 @@ class BetPresser
   attr_reader   :maker
   attr_reader   :press_amounts
   attr_reader   :press_unit
-  attr_reader   :start_pressing_at_win
   attr_reader   :start_win_count
 
+  attr_accessor :start_pressing_at_win
   attr_accessor :amount_to_bet
   attr_accessor :stop_win
 
@@ -28,18 +28,17 @@ class BetPresser
     @press_amounts = []
     @craps_bet = craps_bet
     @amount_to_bet = nil
+    @start_pressing_at_win = 1 # default is press immediately after first win
     reset
   end
 
-  def sequence(amounts, start_win)
+  def sequence(amounts)
     @press_amounts = amounts
-    @start_pressing_at_win = start_win
     @stop_win = FOREVER
   end
 
-  def incremental(amount, start_win)
+  def incremental(amount)
     @press_unit = amount
-    @start_pressing_at_win = start_win
     @stop_win = FOREVER
   end
 
@@ -91,6 +90,26 @@ class BetPresser
   def reset(start_amount=nil)
     @start_win_count = current_bet_wins
     @amount_to_bet = start_amount
+  end
+
+  def to_s
+    amt = "bet $#{@amount_to_bet} " 
+
+    the_press = if press_unit.present?
+      "then press by #{press_unit}"
+     elsif press_amounts.present?
+      "then press to #{press_amounts}"
+     else
+      'with no press'
+     end
+     
+     when_press = if start_pressing_at_win > 1
+         " after %d %s," % [start_pressing_at_win, "win".pluralize(start_pressing_at_win)]
+       else
+         ''
+       end
+
+     amt + the_press + when_press
   end
 
   private

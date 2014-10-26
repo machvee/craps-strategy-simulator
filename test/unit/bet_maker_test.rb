@@ -52,7 +52,7 @@ class BetMakerTest < ActiveSupport::TestCase
   end
 
   def test_press_after_win_to
-    assert_equal @pbm, @pbm.for(25).after_making_point(2).press_after_win_to(50,100,125,150)
+    assert_equal @pbm, @pbm.for(25).after_making_point(2).press_to(50,100,125,150).after_win(2)
   end
 
   def test_no_press_after_win
@@ -60,11 +60,11 @@ class BetMakerTest < ActiveSupport::TestCase
   end
 
   def test_press_by_additional_after_win
-    assert_equal @pbm, @pbm.for(25).after_making_point(2).press_by_additional_after_win(25, 2)
+    assert_equal @pbm, @pbm.for(25).after_making_point(2).press_by_additional(25).after_win(2)
   end
 
   def test_full_press_after_win
-    assert_equal @pbm, @pbm.for(25).after_making_point(2).full_press_after_win(2).no_press_after_win(4)
+    assert_equal @pbm, @pbm.for(25).after_making_point(2).full_press.after_win(2).no_press_after_win(4)
   end
 
   def test_make_bet_not_yet_at_point_count

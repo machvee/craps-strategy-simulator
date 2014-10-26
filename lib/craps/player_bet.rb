@@ -14,6 +14,7 @@ class PlayerBet
 
   delegate :craps_bet, to: :bet_box
   delegate :table, to: :player
+  delegate :name, to: :craps_bet
 
   def initialize(player, bet_box, amount)
     @player = player
