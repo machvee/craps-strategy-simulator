@@ -143,6 +143,25 @@ class BetMaker
     self
   end
 
+  def with_single_odds
+    with_odds_multiple(1)
+  end
+
+  def with_odds_multiple(multiple)
+    with_odds_multiple_for_numbers(multiple, *CrapsDice::POINTS)
+    self
+  end
+
+  def with_odds_multiple_for_numbers(multiple, *numbers)
+    valid_odds
+    @make_odds_bet = true
+    numbers.each do |n|
+      validate_odds_multiple(multiple, n)
+      odds_multiple[n] = multiple
+    end
+    self
+  end
+
   def working
     @bets_working = true # override if bet is normally made
     @bets_off = false
@@ -164,25 +183,6 @@ class BetMaker
     #
     @bets_off = true 
     @bets_working = false
-    self
-  end
-
-  def with_odds_multiple(multiple)
-    with_odds_multiple_for_numbers(multiple, *CrapsDice::POINTS)
-    self
-  end
-
-  def with_single_odds
-    with_odds_multiple(1)
-  end
-
-  def with_odds_multiple_for_numbers(multiple, *numbers)
-    valid_odds
-    @make_odds_bet = true
-    numbers.each do |n|
-      validate_odds_multiple(multiple, n)
-      odds_multiple[n] = multiple
-    end
     self
   end
 
@@ -217,14 +217,24 @@ class BetMaker
   end
 
   def to_s
-    "#{craps_bet.name}: #{starter_s}#{bet_presser}"
+    "#{craps_bet.name}: #{starter_s}#{bet_presser}#{odds_bet_s}"
   end
 
   private
 
+  def odds_bet_s
+    return '' unless make_odds_bet
+    h = Hash.new {|h,k| h[k] = []}
+    odds_multiple.each_with_index do |n,i|
+      next if n.zero?
+      h["%dx" % n] << i
+    end
+    ', with odds bet: ' + h.map {|k,v| "#{k}: #{v.map(&:to_s).join(',')}"}.join('  ')
+  end
+
   def starter_s
     return '' if @bet_when_point_count.zero? && @bet_when_roll_count.zero?
-    "after %d %s, " % if @bet_when_point_count > 0
+    "after making %d %s, " % if @bet_when_point_count > 0
       [@bet_when_point_count, "point".pluralize(@bet_when_point_count)]
     elsif @bet_when_roll_count > 0
       [@bet_when_roll_count, "roll".pluralize(@bet_when_roll_count)]

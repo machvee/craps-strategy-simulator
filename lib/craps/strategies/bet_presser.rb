@@ -95,21 +95,21 @@ class BetPresser
   def to_s
     amt = "bet $#{@amount_to_bet} " 
 
+    when_press = if start_pressing_at_win > 1
+        ", after %d %s," % [start_pressing_at_win, "win".pluralize(start_pressing_at_win)]
+      else
+        ''
+      end
+
     the_press = if press_unit.present?
-      "then press by #{press_unit}"
+      "then#{when_press} press by #{press_unit}"
      elsif press_amounts.present?
-      "then press to #{press_amounts}"
+      "then#{when_press} press to #{press_amounts}"
      else
       'with no press'
      end
      
-     when_press = if start_pressing_at_win > 1
-         " after %d %s," % [start_pressing_at_win, "win".pluralize(start_pressing_at_win)]
-       else
-         ''
-       end
-
-     amt + the_press + when_press
+     amt + the_press
   end
 
   private

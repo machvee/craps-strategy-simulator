@@ -115,6 +115,9 @@ class Table
     raise "place your bets" unless at_least_one_bet_made?
   end
 
+  def run(name)
+  end
+
   def shooter_turns(number_of_turns=1, quiet_option=quiet_table)
     players_set_your_strategies
     number_of_turns.times do
