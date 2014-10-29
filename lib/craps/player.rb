@@ -138,6 +138,11 @@ class Player
     ensure_bet('come_odds', amount, number)
   end
 
+  def horn(high_number, amount)
+    bets = CrapsBet.horn(high_number, amount)
+    bets.each {|bet_name, amount_to_bet| ensure_bet(bet_name, amount_to_bet)}
+  end
+
   def has_bet?(bet_short_name, number=nil)
     find_bet(bet_short_name, number).present?
   end

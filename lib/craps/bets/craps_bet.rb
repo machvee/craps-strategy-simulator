@@ -209,6 +209,25 @@ class CrapsBet
     base_stat_name + number_part_if_any + suffix
   end
 
+  def self.horn_bets
+    {2 => 'aces',  3 => 'ace_deuce', 11 => 'eleven',  12 => 'twelve'}
+  end
+
+  def self.horn_bet_amounts(amount, high_number=nil)
+    if high_number.present?
+      raise "invalid high number #{high_number}" unless CrapsDice::HORN.include?(high_number)
+      bet_amount = amount / 5
+    else
+      bet_amount = amount / 4
+    end
+
+    bet_amts = {}
+
+    CrapsDice::HORN.each {|n| bet_amts[n] = bet_amount}
+    bet_amts[high_number] = (bet_amount * 2) unless high_number.nil?
+    bet_amts
+  end
+
   private
 
   def base_stat_name

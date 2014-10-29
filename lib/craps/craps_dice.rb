@@ -3,6 +3,7 @@ class CrapsDice < Dice
   # regular Dice but with Craps Semantics
   #
   CRAPS   = [2,3,12]
+  HORN    = [2,3,11,12]
   WINNERS = [7,11]
   HARDS   = [4,6,8,10]
   POINTS  = [4,5,6,8,9,10]

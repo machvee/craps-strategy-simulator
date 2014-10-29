@@ -98,8 +98,6 @@ class BaseStrategy
     bet_makers.map {|b| b.to_s}.join("\n")
   end
 
-  private
-
   def install_bet(bet_short_name, number=nil)
     BetMaker.new(player, bet_short_name, number).tap {|m| @bet_makers << m}
   end
@@ -109,6 +107,26 @@ class BaseStrategy
   #
   def all_the_hardways_for(amount)
     CrapsDice::HARDS.each {|n| hard(n).for(amount)}
+  end
+
+  def horn
+    HornBetMaker.new(self)
+  end
+
+  def horn_high_yo
+    horn.high(11)
+  end
+
+  def horn_high_aces
+    horn.high(2)
+  end
+
+  def horn_high_ace_deuce
+    horn.high(3)
+  end
+
+  def horn_high_twelve
+    horn.high(12)
   end
 
   def across_for(amount)

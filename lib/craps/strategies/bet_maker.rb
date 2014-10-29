@@ -57,6 +57,7 @@ class BetMaker
   attr_reader   :odds_multiple
   attr_reader   :make_odds_bet
   attr_reader   :bet_when_number_equals_point
+  attr_reader   :when_table_is_off
   attr_reader   :stats
 
   def initialize(player, bet_short_name, number=nil)
@@ -64,6 +65,7 @@ class BetMaker
     @table = player.table
     @bet_short_name = bet_short_name
     @number = number
+    @when_table_is_off = false
     @craps_bet = table.find_bet_box(bet_short_name, number).craps_bet
     @stats = BetMakerStats.new(self)
 
@@ -101,8 +103,10 @@ class BetMaker
   end
 
   def make_bet
+
     return if not_yet_at_roll_count || not_yet_at_point_count
     return if bet_when_number_equals_point && (table.on? && table.table_state.point != number)
+    return if when_table_is_off && table.on?
 
     if player.has_bet?(bet_short_name, number)
       return if bets_off
@@ -114,6 +118,7 @@ class BetMaker
       bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
       bet.maker = self
     end
+
   end
 
   def for(amount)
@@ -128,10 +133,12 @@ class BetMaker
 
   def after_rolls(n)
     @bet_when_roll_count = n
+    self
   end
 
   def with_no_odds
     @make_odds_bet = false
+    self
   end
 
   def with_full_odds
@@ -149,7 +156,6 @@ class BetMaker
 
   def with_odds_multiple(multiple)
     with_odds_multiple_for_numbers(multiple, *CrapsDice::POINTS)
-    self
   end
 
   def with_odds_multiple_for_numbers(multiple, *numbers)
@@ -168,7 +174,12 @@ class BetMaker
     self
   end
 
-  def on_point
+  def on_the_come_out_roll
+    @when_table_is_off = true
+    self
+  end
+
+  def on_the_point
     #
     # useful for hardways betting to bet only on point number
     #
@@ -300,6 +311,5 @@ class BetMaker
     max = table.config.max_odds(number)
     raise "#{multiple} must be between 1 and #{max}" if multiple > max
   end
-
 
 end
