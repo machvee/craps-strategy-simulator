@@ -90,8 +90,39 @@ Craps Bots
           e.g. press after second win to 20,40,80,160
 
 --------
+Runs:
+Player walks to the table with and ID, money, a betting level, a playing strategy, and criteria when they will walk away.
 
-Stats to keep
+e.g.
+ID:          "Dave"
+Money:   $1000
+Unit:        $10 min bet table
+Strategy: Basic strategy plus something to try new
+Exit Criteria:  Leave the table when 75% down, or 300% up, or broke (allow negative?)
+
+When a player leaves the table, they want to have a sense as to how the Strategy worked out
+
+Table Stats: (how did the table do in general)
+Roll Stats:  Did I just get unlucky and a lot of 7's happened to have been rolled
+Bet Maker Stats:  how did each bet maker perform?   Did my presses get utilized?  Was it a overall loser or winner?
+Bet Stats:  How did all my bets do in a single view?
+Money Stats:   How did my money level rise/fall during the run?  High/low point?
+Hot Rolls:  Show me where and for how long my hot rolls were.   Points made, press levels, amount won
+Cold Table:  Show me where I couldn't buy a win.  How long did it last.
+
+Saved Run:
+Save all of the above inputs and outputs, including the Dice Seed, and give it a unique name.  The Run should be able to be re-run from the stored inputs and get the identical results.  
+
+Load/Modify Run:  A saved run should be able to be reloaded and inputs tweaked.  Example:
+  1. more start money, higher lower bet unit
+  2. New or tweaked strategy
+  3. New exit criteria.
+  4. New Dice Seed.
+
+Compare Runs.   Runs should be comparable.   Compare the inputs and show differences, then compare the outputs and show the difference in results.
+
+
+un Stats to keep
 
 Roll Stats
 # Shoot dice Roll Stats (keep existing)
