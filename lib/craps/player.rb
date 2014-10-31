@@ -13,7 +13,7 @@ class Player
   delegate :table_state, :config, to: :table
   delegate :bet_stats, :roll_stats, to: :stats
 
-  def initialize(name, table, start_amount, bet_unit=nil, strategy_class=BasicStrategy)
+  def initialize(name, table, start_amount, bet_unit=nil)
     @bets = []
     @name = name
     @table = table
@@ -21,7 +21,7 @@ class Player
     @bet_unit = bet_unit || config.min_bet
     @rail = new_account(start_amount)
     @stats = init_stats(start_amount)
-    @strategy = strategy_class.new(self)
+    @strategy = nil
   end
 
   def reset
@@ -49,6 +49,10 @@ class Player
     new_player_bet(bet_box, amount).tap do |bet|
       bets << bet
     end
+  end
+
+  def new_run(name, options)
+    Run.new(name, self, options)
   end
 
   def self.join_table(table, name, start_amount)

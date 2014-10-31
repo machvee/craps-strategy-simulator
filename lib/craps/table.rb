@@ -126,7 +126,7 @@ class Table
         play(quiet_option) 
       end
     end
-    #players_retire_strategies
+    players_retire_strategies
   end
 
   def play_points(number_of_points=1, quiet_option=quiet_table)
@@ -143,8 +143,8 @@ class Table
     return
   end
 
-  def new_player(name, start_amount, bet_unit=nil, strategy=nil)
-    Player.new(name, self, start_amount, bet_unit, strategy||BasicStrategy).tap do |p|
+  def new_player(name, start_amount, bet_unit=nil)
+    Player.new(name, self, start_amount, bet_unit).tap do |p|
       @players << p
     end
   end
@@ -246,8 +246,6 @@ class Table
     players.each {|p| p.reset_strategy }
   end
 
-  private
-
   def players_set_your_strategies
     tracking_player.set_strategy
     players.each {|p| p.set_strategy }
@@ -257,6 +255,8 @@ class Table
     tracking_player.retire_strategy
     players.each {|p| p.retire_strategy }
   end
+
+  private
 
   def create_bet_boxes
     @bet_boxes = []

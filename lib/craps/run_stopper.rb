@@ -50,53 +50,68 @@ class RunStopper
   end
 
   def stop?
-    if up_percent.present?
-      return true if is_player_bank_percent_up?
-    end
-    if down_percent.present?
-      return true if is_player_bank_percent_down?
-    end
-    if up_amount.present?
-      return true if is_player_bank_amount_up?
-    end
-    if down_amount.present?
-      return true if is_player_bank_amount_down?
-    end
-    if shooters.present?
-      return true if is_shooters_seven_outs_reached?
-    end
-    if points.present?
-      return true if is_points_made_reached?
-    end
-    false
+    (up_percent.present?   && is_player_bank_percent_up?)      ||
+    (down_percent.present? && is_player_bank_percent_down?)    ||
+    (up_amount.present?    && is_player_bank_amount_up?)       ||
+    (down_amount.present?  && is_player_bank_amount_down?)     ||
+    (shooters.present?     && is_shooters_seven_outs_reached?) ||
+    (points.present?       && is_points_made_reached?)
   end
   
+  def explain
+    "player run stopped because " + @msg
+  end
+
   private
 
   def is_player_bank_percent_up?
-    percentage_diff >= up_percent
+    stopping = percentage_diff >= up_percent
+    if stopping
+      @msg = "player's bank (#{player.rail.balance}) is up by #{down_percent}%"
+    end
+    stopping
   end
 
   def is_player_bank_percent_down?
-    percentage_diff <= down_percent
+    stopping = percentage_diff <= down_percent
+    if stopping
+      @msg = "player's bank (#{player.rail.balance}) is down by #{down_percent.abs}%"
+    end
+    stopping
   end
 
   def is_player_bank_amount_up?
     diff = player_rail_delta
-    diff >= up_amount
+    stopping = diff >= up_amount
+    if stopping
+      @msg = "player's bank (#{player.rail.balance}) is up by #{down_amount}"
+    end
+    stopping
   end
 
   def is_player_bank_amount_down?
     diff = player_rail_delta
-    diff <= down_amount
+    stopping = diff <= down_amount
+    if stopping
+      @msg = "player's bank (#{player.rail.balance}) is down by #{down_amount}"
+    end
+    stopping
   end
 
   def is_shooters_seven_outs_reached?
-    (seven_outs - @start_outs) >= shooters
+    stopping = (seven_outs - @start_outs) >= shooters
+    if stopping
+      @msg = "#{shooters} #{"shooters".pluralize(shooters)} have completed their turn" 
+    end
+    stopping
   end
 
   def is_points_made_reached?
-    (point_outcomes - @start_points) >= points
+    stopping = (point_outcomes - @start_points) >= points
+    if stopping
+      @msg = "#{points} #{"point".pluralize(points)} have been established" 
+    end
+    stopping
   end
 
   def percentage_diff
