@@ -31,18 +31,18 @@ class Run
     #
     opts = DEFAULT_OPTIONS.merge(options)
 
-    @name          = name
-    @player        = player
+    @name         = name
+    @player       = player
 
-    @start_bank    = opts[:start_bank]
-    @bet_unit      = opts[:bet_unit]
-    @strategy      = opts[:strategy].new(player)
-    @run_stopper   = RunStopper.new(player, opts[:exit_criteria])
-
-    player.strategy = strategy
+    @start_bank   = opts[:start_bank]
+    @bet_unit     = opts[:bet_unit]
+    @strategy     = opts[:strategy]
+    @run_stopper  = RunStopper.new(player, opts[:exit_criteria])
   end
 
-  def start
+  def start(&block)
+    table.reset
+    setup_player
     table.players_set_your_strategies
     until run_stopper.stop? do
       table.play(quiet_table)
@@ -54,6 +54,12 @@ class Run
   end
 
   def reset
+  end
+
+  def setup_player
+    player.bet_unit = bet_unit
+    player.set_rail(start_bank)
+    player.strategy = strategy.new(player) if strategy.present?
   end
 
   def self.load(name)

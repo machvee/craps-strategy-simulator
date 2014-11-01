@@ -66,6 +66,10 @@ class BaseStrategy
     end
   end
 
+  def bet_unit
+    player.bet_unit
+  end
+
   def all_bets_off
     #
     # TODO: iterate thru the player.player_bets and set the ones off that can

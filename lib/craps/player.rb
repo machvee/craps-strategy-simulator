@@ -19,7 +19,7 @@ class Player
     @table = table
     valid_bet_unit?(bet_unit)
     @bet_unit = bet_unit || config.min_bet
-    @rail = new_account(start_amount)
+    set_rail(start_amount)
     @stats = init_stats(start_amount)
     @strategy = nil
   end
@@ -39,6 +39,10 @@ class Player
 
   def status(str, color=:white)
     table.status "  #{name} #{str} [#{money_status}]", color
+  end
+
+  def set_rail(start_amount)
+    @rail = new_account(start_amount)
   end
 
   def new_account(start_amount)

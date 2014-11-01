@@ -63,12 +63,15 @@ class Table
                         )
     @players = []
     @morph_bets = []
+
     @tracking_player = TrackingPlayer.new(self)
     @tracking_bet_stats = tracking_player.stats.bet_stats
 
     create_bet_boxes
 
     @shooter = Shooter.new(self)
+
+    tracking_player.set_strategy
   end
 
   def last_roll
@@ -247,7 +250,6 @@ class Table
   end
 
   def players_set_your_strategies
-    tracking_player.set_strategy
     players.each {|p| p.set_strategy }
   end
 

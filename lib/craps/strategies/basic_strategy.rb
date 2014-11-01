@@ -14,9 +14,9 @@ class BasicStrategy < BaseStrategy
     # TBD: take full winnings on first 6/8 place after the point, but go
     # up a unit each win after that
     #
-    pass_line.for(10).with_full_odds.
+    pass_line.for(bet_unit).with_full_odds.
       with_odds_multiple_for_numbers(1, 4, 10).
-      with_odds_multiple_for_numbers(2, 5, 9)
+      with_odds_multiple_for_numbers(2, 5, 9).press_to(bet_unit*2).after_win(3)
     horn_high_yo.for(5).on_the_come_out_roll.after_making_point(2)
     place_on(6).for(12).press_to(18,24,30,60,90,120,180)
     place_on(8).for(12).press_to(18,24,30,60,90,120,180)
