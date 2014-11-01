@@ -60,7 +60,14 @@ GEM
     mime-types (1.25.1)
     mocha (1.1.0)
       metaclass (~> 0.0.1)
+    mongoid (3.1.6)
+      activemodel (~> 3.2)
+      moped (~> 1.4)
+      origin (~> 1.0)
+      tzinfo (~> 0.3.29)
+    moped (1.5.2)
     multi_json (1.10.1)
+    origin (1.1.0)
     polyglot (0.3.5)
     rack (1.4.5)
     rack-cache (1.2)
@@ -118,6 +125,7 @@ DEPENDENCIES
   colorize
   jquery-rails
   mocha
+  mongoid
   rails (= 3.2.19)
   sass-rails (~> 3.2.3)
   sqlite3
