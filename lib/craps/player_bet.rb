@@ -98,7 +98,7 @@ class PlayerBet
       # build an odds bet based on the BetMaker odds multiples
       #
       odds_bet_box = table.find_bet_box(point_bet_box.craps_bet.odds_bet_short_name, number)
-      odds_bet = odds_bet_box.new_player_bet(player, maker.odds_multiple[number] * maker.start_amount)
+      odds_bet = odds_bet_box.new_player_bet(player, maker.odds_multiple[number] * amount)
       odds_bet.maker = maker
     end
     point_bet

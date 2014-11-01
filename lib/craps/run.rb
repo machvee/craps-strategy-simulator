@@ -1,4 +1,16 @@
 class Run
+ 
+  include Mongoid::Document
+
+  field :player_name,   type: String
+  field :table_name,    type: String
+  field :seed,          type: Integer
+  field :start_bank,    type: Integer
+  field :bet_unit,      type: Integer
+  field :quiet_table,   type: Boolean
+  field :exit_criteria, type: Hash
+
+  # field strategy
 
   DEFAULT_OPTIONS = {
     start_bank:     1000,
@@ -24,7 +36,7 @@ class Run
     # options:
     #   start_bank      in dollars
     #   bet_unit        10,15,25, ...
-    #   strategy_class  class name
+    #   strategy        class name
     #   quiet_table     when true, eliminate progress and status messages
     #   exit_criteria   RunStopper exit criteria. e.g. :down_amount, :up_amount, :down_percent,
     #                                                  :up_percent, :points, :shooters
@@ -48,12 +60,6 @@ class Run
       table.play(quiet_table)
     end
     puts "\n\n" + run_stopper.explain
-  end
-
-  def save
-  end
-
-  def reset
   end
 
   def setup_player
