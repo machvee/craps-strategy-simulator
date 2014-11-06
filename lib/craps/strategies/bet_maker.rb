@@ -41,6 +41,7 @@
 # buy_the(10).for(25).after_making_point(3).press_to(50,75,100,150,200,225,250).after_win(2)
 # buy_the(4).for(25).after_making_point(2).press_by_additional(25).after_win(2)
 # buy_the(4).for(100).after_making_point(3).full_press.after_win(2).no_press_after_win(4)
+# come_out.for(25).at_most(2).with_full_odds
 #
 class BetMaker
 
@@ -54,6 +55,7 @@ class BetMaker
   attr_reader   :bet_presser
   attr_reader   :start_amount
   attr_reader   :amount_to_bet
+  attr_reader   :number_of_bets
   attr_reader   :odds_multiple
   attr_reader   :make_odds_bet
   attr_reader   :bet_when_number_equals_point
@@ -74,6 +76,7 @@ class BetMaker
 
     @make_odds_bet = false
     @odds_multiple = [0]*(CrapsDice::POINTS.max+1)
+    @number_of_bets = 1
 
     #
     # TODO: might want to make this an enumerator on an
@@ -103,7 +106,6 @@ class BetMaker
   end
 
   def make_bet
-
     return if not_yet_at_roll_count || not_yet_at_point_count
     return if bet_when_number_equals_point && (table.on? && table.table_state.point != number)
     return if when_table_is_off && table.on?
@@ -118,12 +120,18 @@ class BetMaker
       bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
       bet.maker = self
     end
-
   end
 
   def for(amount)
     set_start_amount(amount)
     self
+  end
+  
+  def at_most(number_of_bets)
+    #
+    # TODO: this is a special case for place bets and come_out come_bets
+    #
+    @number_of_bets = number_of_bets
   end
 
   def after_making_point(n)

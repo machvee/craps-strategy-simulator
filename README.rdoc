@@ -122,7 +122,7 @@ Load/Modify Run:  A saved run should be able to be reloaded and inputs tweaked. 
 Compare Runs.   Runs should be comparable.   Compare the inputs and show differences, then compare the outputs and show the difference in results.
 
 
-un Stats to keep
+Run Stats to keep
 
 Roll Stats
 # Shoot dice Roll Stats (keep existing)

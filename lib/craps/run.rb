@@ -1,22 +1,10 @@
 class Run
  
-  include Mongoid::Document
-
-  field :player_name,   type: String
-  field :table_name,    type: String
-  field :seed,          type: Integer
-  field :start_bank,    type: Integer
-  field :bet_unit,      type: Integer
-  field :quiet_table,   type: Boolean
-  field :exit_criteria, type: Hash
-
-  # field strategy
-
   DEFAULT_OPTIONS = {
     start_bank:     1000,
     bet_unit:       10,
     strategy:       BasicStrategy,
-    exit_criteria:  {shooters: 2},
+    exit_criteria:  {shooters: 5},
     quiet_table:    false
   }
 
@@ -62,13 +50,22 @@ class Run
     puts "\n\n" + run_stopper.explain
   end
 
+  def save
+  {
+    name:          name,
+    time:          Time.now.to_s(:db),
+    table:         table.name,
+    player:        player.name,
+    start_bank:    start_bank,
+    bet_unit:      bet_unit,
+    exit_criteria: exit_criteria
+  }
+  end
+
   def setup_player
     player.bet_unit = bet_unit
     player.set_rail(start_bank)
     player.strategy = strategy.new(player) if strategy.present?
-  end
-
-  def self.load(name)
   end
 
 end

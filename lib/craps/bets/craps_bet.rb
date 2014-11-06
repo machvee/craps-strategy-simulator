@@ -141,6 +141,16 @@ class CrapsBet
     config.payoff_odds(self, number)
   end
 
+  def true_odds
+    #
+    # statistical odds of making this bet
+    #
+    raise "override in subclass"
+  end
+
+  def house_advantage
+  end
+
   def min_bet
     #
     # override if bet allows < table minimum

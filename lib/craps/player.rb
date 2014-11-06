@@ -55,7 +55,7 @@ class Player
     end
   end
 
-  def new_run(name, options)
+  def new_run(name, options={})
     Run.new(name, self, options)
   end
 
