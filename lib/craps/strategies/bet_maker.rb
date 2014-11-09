@@ -56,8 +56,7 @@ class BetMaker
   attr_reader   :start_amount
   attr_reader   :amount_to_bet
   attr_reader   :number_of_bets
-  attr_reader   :odds_multiple
-  attr_reader   :make_odds_bet
+  attr_reader   :bet_counter
   attr_reader   :bet_when_number_equals_point
   attr_reader   :when_table_is_off
   attr_reader   :stats
@@ -74,9 +73,8 @@ class BetMaker
     @bets_working = false # overrides a normally not makeable? bet
     @bets_off = false # player has made a normally active bet as OFF
 
-    @make_odds_bet = false
-    @odds_multiple = [0]*(CrapsDice::POINTS.max+1)
     @number_of_bets = 1
+    @bet_counter = 0
 
     #
     # TODO: might want to make this an enumerator on an
@@ -93,6 +91,17 @@ class BetMaker
 
     set_start_amount(nil)
     reset_attrs
+  end
+
+  def self.factory(player, bet_short_name, number)
+    case bet_short_name
+      when 'pass_line'
+        PassLineBetMaker.new(player)
+      when 'come_out'
+        ComeOutBetMaker.new(player)
+      else
+        BetMaker.new(player, bet_short_name, number)
+    end
   end
 
   def reset
@@ -129,7 +138,7 @@ class BetMaker
   
   def at_most(number_of_bets)
     #
-    # TODO: this is a special case for place bets and come_out come_bets
+    # this is a special case for place bets and come_out come_bets
     #
     @number_of_bets = number_of_bets
   end
@@ -141,38 +150,6 @@ class BetMaker
 
   def after_rolls(n)
     @bet_when_roll_count = n
-    self
-  end
-
-  def with_no_odds
-    @make_odds_bet = false
-    self
-  end
-
-  def with_full_odds
-    valid_odds
-    @make_odds_bet = true
-    CrapsDice::POINTS.each do |n|
-      odds_multiple[n] = table.config.max_odds(n)
-    end
-    self
-  end
-
-  def with_single_odds
-    with_odds_multiple(1)
-  end
-
-  def with_odds_multiple(multiple)
-    with_odds_multiple_for_numbers(multiple, *CrapsDice::POINTS)
-  end
-
-  def with_odds_multiple_for_numbers(multiple, *numbers)
-    valid_odds
-    @make_odds_bet = true
-    numbers.each do |n|
-      validate_odds_multiple(multiple, n)
-      odds_multiple[n] = multiple
-    end
     self
   end
 
@@ -236,20 +213,10 @@ class BetMaker
   end
 
   def to_s
-    "#{craps_bet.name}: #{starter_s}#{bet_presser}#{odds_bet_s}"
+    "#{craps_bet.name}: #{if_on_point}#{starter_s}#{bet_presser}"
   end
 
   private
-
-  def odds_bet_s
-    return '' unless make_odds_bet
-    h = Hash.new {|h,k| h[k] = []}
-    odds_multiple.each_with_index do |n,i|
-      next if n.zero?
-      h["%dx" % n] << i
-    end
-    ', with odds bet: ' + h.map {|k,v| "#{k}: #{v.map(&:to_s).join(',')}"}.join('  ')
-  end
 
   def starter_s
     return '' if @bet_when_point_count.zero? && @bet_when_roll_count.zero?
@@ -258,6 +225,11 @@ class BetMaker
     elsif @bet_when_roll_count > 0
       [@bet_when_roll_count, "roll".pluralize(@bet_when_roll_count)]
     end
+  end
+
+  def if_on_point
+    return '' unless bet_when_number_equals_point 
+    "when the point is #{number}, "
   end
 
   def take_down_any_place_bets_on_the_new_point_number
@@ -309,15 +281,6 @@ class BetMaker
 
   def current_roll_count
     table.shooter.dice.num_rolls
-  end
-
-  def valid_odds
-    raise "#{craps_bet} doesn't support an odds bet" unless craps_bet.has_odds_bet?
-  end
-
-  def validate_odds_multiple(multiple, number)
-    max = table.config.max_odds(number)
-    raise "#{multiple} must be between 1 and #{max}" if multiple > max
   end
 
 end

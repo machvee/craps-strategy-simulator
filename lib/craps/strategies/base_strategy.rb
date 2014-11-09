@@ -103,7 +103,7 @@ class BaseStrategy
   end
 
   def install_bet(bet_short_name, number=nil)
-    BetMaker.new(player, bet_short_name, number).tap {|m| @bet_makers << m}
+    BetMaker.factory(player, bet_short_name, number).tap {|m| @bet_makers << m}
   end
 
   #
