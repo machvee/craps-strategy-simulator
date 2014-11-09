@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class BetMakerTest < ActiveSupport::TestCase
+class PassLineBetMakerTest < ActiveSupport::TestCase
   def setup
     @table = mock('table')
     @player = mock('player')
@@ -14,15 +14,12 @@ class BetMakerTest < ActiveSupport::TestCase
     @bet_stats.expects(:stat_by_name).returns(@bet_stat).at_least_once
     @player.expects(:table).at_least_once.returns(@table)
     @player.expects(:bet_stats).at_least_once.returns(@bet_stats)
-    @table.expects(:find_bet_box).at_least_once.with(AcesBet.short_name, nil).returns(@bet_box)
-    @table.expects(:find_bet_box).at_least_once.with(PlaceBet.short_name, 10).returns(@bet_box)
+    @table.expects(:find_bet_box).at_least_once.with(PassLineBet.short_name, nil).returns(@bet_box)
 
     set_points
 
     @number = 10
-    @bm = BetMaker.new(@player, AcesBet.short_name)
-    @pbm = BetMaker.new(@player, PlaceBet.short_name, @number)
-
+    @bm = PassLineBetMaker.new(@player)
   end
 
   def test_instance
@@ -33,24 +30,18 @@ class BetMakerTest < ActiveSupport::TestCase
     assert_equal @bm, @bm.for(25)
   end
 
-  def test_after_making_point_n
-    assert_equal @bm, @bm.for(25).after_making_point(2)
+  def test_with_full_odds
+    set_config
+    @craps_bet.expects(:has_odds_bet?).at_least_once.returns(true)
+    set_mult_for_points
+    assert_equal @bm, @bm.for(25).after_making_point(2).with_full_odds
   end
 
-  def test_press_after_win_to
-    assert_equal @pbm, @pbm.for(25).after_making_point(2).press_to(50,100,125,150).after_win(2)
-  end
-
-  def test_no_press_after_win
-    assert_equal @pbm, @pbm.for(25).after_making_point(2).no_press_after_win(4)
-  end
-
-  def test_press_by_additional_after_win
-    assert_equal @pbm, @pbm.for(25).after_making_point(2).press_by_additional(25).after_win(2)
-  end
-
-  def test_full_press_after_win
-    assert_equal @pbm, @pbm.for(25).after_making_point(2).full_press.after_win(2).no_press_after_win(4)
+  def test_with_odds_multiple
+    set_config
+    @craps_bet.expects(:has_odds_bet?).at_least_once.returns(true)
+    set_mult_for_points
+    assert_equal @bm, @bm.for(25).after_making_point(2).with_odds_multiple(2)
   end
 
   private
@@ -74,6 +65,15 @@ class BetMakerTest < ActiveSupport::TestCase
   def set_config
     @config = mock('config')
     @table.expects(:config).returns(@config).at_least_once
+  end
+
+  def set_mult_for_points
+    @config.expects(:max_odds).with(4).returns(3)
+    @config.expects(:max_odds).with(5).returns(4)
+    @config.expects(:max_odds).with(6).returns(5)
+    @config.expects(:max_odds).with(8).returns(5)
+    @config.expects(:max_odds).with(9).returns(4)
+    @config.expects(:max_odds).with(10).returns(3)
   end
 
 end
