@@ -56,7 +56,7 @@ class Player
   end
 
   def new_run(name, options={})
-    Run.new(name, self, options)
+    Run.new(name, self, options.reverse_merge(start_bank: rail.start_balance, bet_unit: bet_unit))
   end
 
   def self.join_table(table, name, start_amount)

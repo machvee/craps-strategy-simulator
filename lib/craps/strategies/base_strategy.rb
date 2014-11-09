@@ -137,6 +137,13 @@ class BaseStrategy
     CrapsDice::POINTS.each {|n| place_on(n).for(amount)}
   end
 
+  def across
+    #
+    # across for player configured bet_unit
+    #
+    CrapsDice::POINTS.each {|n| place_on(n)}
+  end
+
   def six_and_eight(amount)
     [6,8].each do |n|
       place_on(n).for(amount)
