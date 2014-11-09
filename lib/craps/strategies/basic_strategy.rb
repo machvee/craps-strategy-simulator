@@ -18,7 +18,7 @@ class BasicStrategy < BaseStrategy
       with_odds_multiple_for_numbers(1, 4, 10).
       with_odds_multiple_for_numbers(2, 5, 9).press_to(bet_unit*2).after_win(3)
     horn_high_yo.for(5).on_the_come_out_roll.after_making_point(2)
-    place_on(6).for(12).press_to(18,24,30,60,90,120,180)
+    place_on(6).press_by_additional_bet_unit.after_win(2).no_press_after_win(5)
     place_on(8).for(12).press_to(18,24,30,60,90,120,180)
     place_on(5).for(10).after_making_point(1).press_to(15,20,25,30,50).after_win(2)
     place_on(9).for(10).after_making_point(2).press_to(15,20,25,30,50).after_win(2)

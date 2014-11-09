@@ -14,6 +14,7 @@ class BetMakerTest < ActiveSupport::TestCase
     @bet_stats.expects(:stat_by_name).returns(@bet_stat).at_least_once
     @player.expects(:table).at_least_once.returns(@table)
     @player.expects(:bet_stats).at_least_once.returns(@bet_stats)
+    @player.expects(:bet_unit).at_least_once.returns(10)
     @table.expects(:find_bet_box).at_least_once.with(AcesBet.short_name, nil).returns(@bet_box)
     @table.expects(:find_bet_box).at_least_once.with(PlaceBet.short_name, 10).returns(@bet_box)
 
@@ -47,6 +48,12 @@ class BetMakerTest < ActiveSupport::TestCase
 
   def test_press_by_additional_after_win
     assert_equal @pbm, @pbm.for(25).after_making_point(2).press_by_additional(25).after_win(2)
+  end
+
+  def test_default_bet_amount
+    assert_equal @pbm, @pbm.after_making_point(2).press_by_additional_bet_unit.after_win(2).no_press_after_win(5)
+    assert_equal @player.bet_unit, @pbm.start_amount
+    assert_equal @player.bet_unit, @pbm.bet_presser.amount_to_bet
   end
 
   def test_full_press_after_win

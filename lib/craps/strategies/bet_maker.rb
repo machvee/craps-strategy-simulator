@@ -89,15 +89,15 @@ class BetMaker
     @bet_when_roll_count = 0
     @bet_when_number_equals_point = false
 
-    set_start_amount(nil)
-    reset_attrs
+    set_start_amount(player.bet_unit)
+    reset_counters
   end
 
   def self.factory(player, bet_short_name, number)
     case bet_short_name
-      when 'pass_line'
+      when PassLineBet.short_name
         PassLineBetMaker.new(player)
-      when 'come_out'
+      when ComeOutBet.short_name
         ComeOutBetMaker.new(player)
       else
         BetMaker.new(player, bet_short_name, number)
@@ -105,11 +105,11 @@ class BetMaker
   end
 
   def reset
-    reset_attrs
+    reset_counters
     bet_presser.reset(start_amount)
   end
 
-  def reset_attrs
+  def reset_counters
     @start_point_count = current_point_count
     @start_roll_count = 0
   end
@@ -119,6 +119,13 @@ class BetMaker
     return if bet_when_number_equals_point && (table.on? && table.table_state.point != number)
     return if when_table_is_off && table.on?
 
+    make_or_ensure_bet
+  end
+
+  def make_or_ensure_bet
+    #
+    # override this in subclass for more specialized makers
+    #
     if player.has_bet?(bet_short_name, number)
       return if bets_off
       bet = player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
@@ -202,13 +209,18 @@ class BetMaker
     self
   end
 
+  def press_by_additional_bet_unit
+    bet_presser.incremental(player.bet_unit)
+    self
+  end
+
   def full_press
     bet_presser.incremental(BetPresser::PARLAY)
     self
   end
 
   def and_reset_win_count
-    bet_presser.reset
+    bet_presser.reset(start_amount)
     self
   end
 
@@ -238,7 +250,8 @@ class BetMaker
     # bet on another place bet_box
     #
     [PlaceBet, BuyBet].each do |bclass|
-      player.take_down(pbet) if (pbet = player.find_bet(bclass.short_name, number)).present?
+      place_bet = player.find_bet(bclass.short_name, number)
+      player.take_down(place_bet) if place_bet.present?
     end
   end
 

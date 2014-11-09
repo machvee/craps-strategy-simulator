@@ -13,6 +13,7 @@ class PassLineBetMakerTest < ActiveSupport::TestCase
     @bet_stats = mock('bet_stats')
     @bet_stats.expects(:stat_by_name).returns(@bet_stat).at_least_once
     @player.expects(:table).at_least_once.returns(@table)
+    @player.expects(:bet_unit).at_least_once.returns(10)
     @player.expects(:bet_stats).at_least_once.returns(@bet_stats)
     @table.expects(:find_bet_box).at_least_once.with(PassLineBet.short_name, nil).returns(@bet_box)
 
