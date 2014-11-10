@@ -11,9 +11,9 @@ class ComeBetStrategy < BaseStrategy
     #       not covered by the point or a come bet
     #
     pass_line.for(bet_unit).with_full_odds
-    place_on(6).for(12).press_to(18,24,30,60,90,120,180)
-    place_on(8).for(12).press_to(18,24,30,60,90,120,180)
-    come_out.for(bet_unit).at_most(2).with_full_odds
+    place_on(6).press_by_additional_bet_unit.no_press_after_win(5)
+    place_on(8).press_by_additional_bet_unit.no_press_after_win(5)
+    come_out.at_most(2).with_full_odds
   end
 
 end

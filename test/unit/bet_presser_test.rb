@@ -61,4 +61,21 @@ class BetPresserTest < ActiveSupport::TestCase
       assert_equal a, @bp.next_bet_amount
     end
   end
+
+  def test_next_amount_incremental
+    @incr = 18
+    @bp.incremental(@incr)
+    @bp.start_pressing_at_win = 3
+    @bp.stop_win = 6
+    @stat.unstub(:total)
+    @stat.stubs(:total).returns(@wins_start)
+    @maker.expects(:stats).at_least_once.returns(@maker_stats)
+    @maker_stats.expects(:press).at_least_once
+    assert_equal @bp.amount_to_bet, @bp.next_bet_amount
+    ([10,10,10,10+(@incr),10+(@incr*2),10+(@incr*3), 10+(@incr*3)]).each_with_index do |a,i|
+      @stat.unstub(:total)
+      @stat.stubs(:total).returns(@wins_start+i)
+      assert_equal a, @bp.next_bet_amount
+    end
+  end
 end

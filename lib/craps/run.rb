@@ -68,4 +68,12 @@ class Run
     player.strategy = strategy.new(player) if strategy.present?
   end
 
+  def to_s
+    "'#{name}' for #{player.name}: start_bank: #{start_bank}, bet_unit: #{bet_unit}, stop: #@run_stopper"
+  end
+
+  def inspect
+    to_s
+  end
+
 end

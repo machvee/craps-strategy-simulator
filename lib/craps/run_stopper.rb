@@ -8,36 +8,45 @@ class RunStopper
 
   attr_reader :player
   attr_reader :table
+  attr_reader :as_str
 
   delegate :table, to: :player
 
   def initialize(player, options)
     @player = player
+    as_strs = []
     reset
     @down_percent = options.fetch(:down_percent) {nil}
     if down_percent.present?
       @down_percent = down_percent.to_i * -1
+      as_strs << "down_percent: #@down_percent"
     end
     @up_percent   = options.fetch(:up_percent) {nil}
     if up_percent.present?
       @up_percent = up_percent.to_i
+      as_strs << "up_percent: #@up_percent"
     end
     @down_amount  = options.fetch(:down_amount) {nil}
     if down_amount.present?
       @down_amount = down_amount.to_i * -1
+      as_strs << "down_amount: #@down_amount"
     end
     @up_amount    = options.fetch(:up_amount) {nil}
     if up_amount.present?
       @up_amount = up_amount.to_i
+      as_strs << "up_amount: #@up_amount"
     end
     @shooters     = options.fetch(:shooters) {nil}
     if shooters.present?
       @start_outs = seven_outs
+      as_strs << "shooters: #@shooters"
     end
     @points       = options.fetch(:points) {nil}
     if points.present?
       @start_points = point_outcomes
+      as_strs << "points: #@points"
     end
+    @as_str = as_strs.join(', ')
   end
 
   def reset
@@ -129,5 +138,13 @@ class RunStopper
 
   def point_outcomes
     table.tracking_bet_stats.pass_line_point.count # total won and lost
+  end
+
+  def to_s
+    as_str
+  end
+
+  def inspect
+    to_s
   end
 end

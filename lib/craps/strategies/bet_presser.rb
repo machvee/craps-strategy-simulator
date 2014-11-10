@@ -29,17 +29,16 @@ class BetPresser
     @craps_bet = craps_bet
     @amount_to_bet = nil
     @start_pressing_at_win = 1 # default is press immediately after first win
+    @stop_win = FOREVER        # default is not never stop pressing once its started
     reset
   end
 
   def sequence(amounts)
     @press_amounts = amounts
-    @stop_win = FOREVER
   end
 
   def incremental(amount)
     @press_unit = amount
-    @stop_win = FOREVER
   end
 
   def next_bet_amount

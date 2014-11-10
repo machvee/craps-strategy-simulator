@@ -33,9 +33,9 @@
 # hard(8).for(1).full_press_after_win(2)
 # hard(10).for(5).working.press_after_win_to(10,20,50)
 # pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
-# place_on(6).for(12).press_to(18,24,30,60,90,120,180,210)
-# place_on(8).for(12).press_to(18,24,30,60,90,120,180,210)
-# place_on(5).for(10).after_making_point(1).press_to(15,20,40,80,100,120,180,200)
+# place_on(6).for(12).off_the_point.press_to(18,24,30,60,90,120,180,210)
+# place_on(8).for(12).off_the_point.press_to(18,24,30,60,90,120,180,210)
+# place_on(5).for(10).off_the_point.after_making_point(1).press_to(15,20,40,80,100,120,180,200)
 # place_on(9).for(10).after_making_point(2).press_to(15,20,40,80,100,120,180,200)
 # place_on(9).for(10).after_rolls(2).press_to(15,20,40,80,100,120,180,200)
 # buy_the(10).for(25).after_making_point(3).press_to(50,75,100,150,200,225,250).after_win(2)
@@ -56,8 +56,8 @@ class BetMaker
   attr_reader   :start_amount
   attr_reader   :amount_to_bet
   attr_reader   :number_of_bets
-  attr_reader   :bet_counter
   attr_reader   :bet_when_number_equals_point
+  attr_reader   :bet_when_number_not_equals_point
   attr_reader   :when_table_is_off
   attr_reader   :stats
 
@@ -73,8 +73,7 @@ class BetMaker
     @bets_working = false # overrides a normally not makeable? bet
     @bets_off = false # player has made a normally active bet as OFF
 
-    @number_of_bets = 1
-    @bet_counter = 0
+    @number_of_bets = nil
 
     #
     # TODO: might want to make this an enumerator on an
@@ -88,6 +87,7 @@ class BetMaker
     @bet_when_point_count = 0
     @bet_when_roll_count = 0
     @bet_when_number_equals_point = false
+    @bet_when_number_not_equals_point = false
 
     set_start_amount(player.bet_unit)
     reset_counters
@@ -117,6 +117,7 @@ class BetMaker
   def make_bet
     return if not_yet_at_roll_count || not_yet_at_point_count
     return if bet_when_number_equals_point && (table.on? && table.table_state.point != number)
+    return if bet_when_number_not_equals_point && (table.on? && table.table_state.point == number)
     return if when_table_is_off && table.on?
 
     make_or_ensure_bet
@@ -126,13 +127,12 @@ class BetMaker
     #
     # override this in subclass for more specialized makers
     #
-    if player.has_bet?(bet_short_name, number)
+    if already_made_the_required_number_of_bets
       return if bets_off
       bet = player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
       bet.maker = self
     else
       return if bet_not_normally_makeable unless bets_working
-      take_down_any_place_bets_on_the_new_point_number if pass_line_point_bet?
       bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
       bet.maker = self
     end
@@ -176,6 +176,14 @@ class BetMaker
     # useful for hardways betting to bet only on point number
     #
     @bet_when_number_equals_point = true
+    self
+  end
+
+  def off_the_point
+    #
+    # useful for place/buy betting to bet only off the point number
+    #
+    @bet_when_number_not_equals_point = true
     self
   end
 
@@ -230,6 +238,10 @@ class BetMaker
 
   private
 
+  def already_made_the_required_number_of_bets
+    player.has_bet?(bet_short_name, number)
+  end
+
   def starter_s
     return '' if @bet_when_point_count.zero? && @bet_when_roll_count.zero?
     "after making %d %s, " % if @bet_when_point_count > 0
@@ -242,21 +254,6 @@ class BetMaker
   def if_on_point
     return '' unless bet_when_number_equals_point 
     "when the point is #{number}, "
-  end
-
-  def take_down_any_place_bets_on_the_new_point_number
-    #
-    # take down any place/buy bet and let the player's strategy possibly remake the
-    # bet on another place bet_box
-    #
-    [PlaceBet, BuyBet].each do |bclass|
-      place_bet = player.find_bet(bclass.short_name, number)
-      player.take_down(place_bet) if place_bet.present?
-    end
-  end
-
-  def pass_line_point_bet?
-    bet_short_name == PassLinePointBet.short_name
   end
 
   def set_start_amount(amount)
