@@ -116,8 +116,8 @@ class BetMaker
 
   def make_bet
     return if not_yet_at_roll_count || not_yet_at_point_count
-    return if bet_when_number_equals_point && (table.on? && table.table_state.point != number)
-    return if bet_when_number_not_equals_point && (table.on? && table.table_state.point == number)
+    return if bet_when_number_equals_point && number_is_not_point? 
+    return if bet_when_number_not_equals_point && number_is_point?
     return if when_table_is_off && table.on?
 
     make_or_ensure_bet
@@ -148,6 +148,7 @@ class BetMaker
     # this is a special case for place bets and come_out come_bets
     #
     @number_of_bets = number_of_bets
+    self
   end
 
   def after_making_point(n)
@@ -237,6 +238,14 @@ class BetMaker
   end
 
   private
+
+  def number_is_not_point?
+    table.on? && table.table_state.point != number
+  end
+
+  def number_is_point?
+    table.on? && table.table_state.point == number
+  end
 
   def already_made_the_required_number_of_bets
     player.has_bet?(bet_short_name, number)

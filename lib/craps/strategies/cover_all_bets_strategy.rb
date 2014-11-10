@@ -30,5 +30,4 @@ class CoverAllBetsStrategy < BaseStrategy
     eleven.for(1)
     twelve.for(1)
   end
-
 end

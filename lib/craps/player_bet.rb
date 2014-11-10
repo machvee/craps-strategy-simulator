@@ -88,18 +88,18 @@ class PlayerBet
   end
 
   def morph_bet
+    #
+    # this turns a pass_line bet or come_out bet into a 
+    # pass_line_point bet or come_bet and will make an
+    # accompanying odds bet as the bet maker (if any) defined.
+    #
     number = table.last_roll
     point_bet_box = table.find_bet_box(craps_bet.morph_bet_name, number)
     point_bet = point_bet_box.new_player_bet(player, amount)
     point_bet.maker = maker
 
     if maker.present? && maker.make_odds_bet
-      #
-      # build an odds bet based on the BetMaker odds multiples
-      #
-      odds_bet_box = table.find_bet_box(point_bet_box.craps_bet.odds_bet_short_name, number)
-      odds_bet = odds_bet_box.new_player_bet(player, maker.odds_multiple[number] * amount)
-      odds_bet.maker = maker
+      maker.create_odds_bet(point_bet_box.craps_bet, amount, number)
     end
     point_bet
   end

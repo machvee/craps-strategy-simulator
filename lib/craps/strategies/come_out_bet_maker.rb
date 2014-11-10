@@ -12,6 +12,6 @@ class ComeOutBetMaker < OddsBetMaker
     return false if @number_of_bets.nil?
 
     bets_made = player.bets.count{|b| b.craps_bet.short_name == ComeBet.short_name}
-    bets_made <= @number_of_bets
+    bets_made >= @number_of_bets
   end
 end
