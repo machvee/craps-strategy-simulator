@@ -28,7 +28,7 @@ class TableState
     elsif seven_out?
       table_off
       table.shooter.done
-      table.players_reset_strategies
+      table.reset_player_strategies
     elsif dice.points?
       roll_counter.bump
     end

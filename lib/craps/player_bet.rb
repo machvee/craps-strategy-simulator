@@ -12,6 +12,8 @@ class PlayerBet
 
   attr_accessor :maker # the BetMaker that created us, if 
 
+  MORPH_BET_SHORT_NAMES = BetBox::MORPH_NUMBER_BETS.map(&:short_name)
+
   delegate :craps_bet, to: :bet_box
   delegate :table, to: :player
   delegate :name, to: :craps_bet
@@ -28,7 +30,7 @@ class PlayerBet
     set_bet_on
     table.wagers.transfer_from(player.rail, amount)
     player.pay_any_commission(bet_box.craps_bet, amount)
-    status 'puts', amount, :blue
+    status verb, amount, :blue
   end
 
   def set_bet_stat
@@ -125,6 +127,14 @@ class PlayerBet
 
   def status(verbed, amount, color=:white)
     player.status "#{verbed} $#{amount} on #{craps_bet}", color
+  end
+
+  def verb
+    if MORPH_BET_SHORT_NAMES.include?(craps_bet.short_name)
+      'now has'
+    else
+      'puts'
+    end
   end
 
   def set_bet_on

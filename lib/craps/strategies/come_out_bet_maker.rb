@@ -9,7 +9,8 @@ class ComeOutBetMaker < OddsBetMaker
     #
     # count the number of ComeBets and compare against @number_of_bets
     #
-    return false if @number_of_bets.nil?
+
+    return false if @number_of_bets.nil? # if not set, always allow the bet to be made
 
     bets_made = player.bets.count{|b| b.craps_bet.short_name == ComeBet.short_name}
     bets_made >= @number_of_bets

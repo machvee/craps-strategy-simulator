@@ -3,8 +3,8 @@ class Run
   DEFAULT_OPTIONS = {
     start_bank:     1000,
     bet_unit:       10,
+    stop:           {shooters: 10},
     strategy:       BasicStrategy,
-    exit_criteria:  {shooters: 5},
     quiet_table:    false
   }
 
@@ -26,8 +26,7 @@ class Run
     #   bet_unit        10,15,25, ...
     #   strategy        class name
     #   quiet_table     when true, eliminate progress and status messages
-    #   exit_criteria   RunStopper exit criteria. e.g. :down_amount, :up_amount, :down_percent,
-    #                                                  :up_percent, :points, :shooters
+    #   stop            RunStopper stop. e.g. :down_amount, :up_amount, :down_percent, :up_percent, :points, :shooters
     #
     opts = DEFAULT_OPTIONS.merge(options)
 
@@ -36,18 +35,19 @@ class Run
 
     @start_bank   = opts[:start_bank]
     @bet_unit     = opts[:bet_unit]
-    @strategy     = opts[:strategy]
-    @run_stopper  = RunStopper.new(player, opts[:exit_criteria])
+    @strategy     = opts[:strategy].new(player)
+    @run_stopper  = RunStopper.new(player, opts[:stop])
   end
 
-  def start(&block)
-    table.reset
+  def start(seed=nil, &block)
+    table.reset(seed)
     setup_player
-    table.players_set_your_strategies
     until run_stopper.stop? do
       table.play(quiet_table)
     end
     puts "\n\n" + run_stopper.explain
+
+    table.retire_player_strategy(strategy)
   end
 
   def save
@@ -58,14 +58,14 @@ class Run
     player:        player.name,
     start_bank:    start_bank,
     bet_unit:      bet_unit,
-    exit_criteria: exit_criteria
+    stop:          stop
   }
   end
 
   def setup_player
     player.bet_unit = bet_unit
     player.set_rail(start_bank)
-    player.strategy = strategy.new(player) if strategy.present?
+    table.set_player_strategy(strategy)
   end
 
   def to_s

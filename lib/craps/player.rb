@@ -5,10 +5,9 @@ class Player
   attr_reader   :bets
   attr_reader   :stats
   attr_reader   :table
-  attr_reader   :rail    # player account
+  attr_reader   :rail     # player account
 
   attr_accessor :bet_unit
-  attr_accessor :strategy
 
   delegate :table_state, :config, to: :table
   delegate :bet_stats, :roll_stats, to: :stats
@@ -21,7 +20,6 @@ class Player
     @bet_unit = bet_unit || config.min_bet
     set_rail(start_amount)
     @stats = init_stats(start_amount)
-    @strategy = nil
   end
 
   def reset
@@ -179,22 +177,6 @@ class Player
     #
     # final stats tally, take down removable bets if any
     #
-  end
-
-  def set_strategy
-    strategy.set
-  end
-
-  def play_strategy
-    strategy.make_bets
-  end
-
-  def retire_strategy
-    strategy.retire
-  end
-
-  def reset_strategy
-    strategy.reset
   end
 
   def money_status

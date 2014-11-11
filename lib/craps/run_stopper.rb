@@ -12,10 +12,24 @@ class RunStopper
 
   delegate :table, to: :player
 
+  VALID_KEYS=[
+    :down_percent,
+    :up_percent,
+    :down_amount,
+    :up_amount,
+    :shooters,
+    :points
+  ]
+
   def initialize(player, options)
+
+    bad_opts = options.keys - VALID_KEYS
+    raise "invalid #{"option".pluralize(bad_opts.length)} '#{bad_opts.join("','")}' passed to run" unless bad_opts.blank?
+
     @player = player
     as_strs = []
     reset
+
     @down_percent = options.fetch(:down_percent) {nil}
     if down_percent.present?
       @down_percent = down_percent.to_i * -1

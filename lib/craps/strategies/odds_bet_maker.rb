@@ -1,6 +1,6 @@
 #
 # example grammar:
-# pass_line.for(50).with_full_odds
+# pass_line.with_full_odds
 # come_out.for(25).with_full_odds
 # pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
 # come_out.for(25).at_most(2).with_full_odds
@@ -96,6 +96,10 @@ class OddsBetMaker < BetMaker
   end
 
   def valid_odds
+    #
+    # this is misleading because its the point number morph of this bet that
+    # supports odds, not the come out/pass line bet
+    #
     raise "#{craps_bet} doesn't support an odds bet" unless craps_bet.has_odds_bet?
   end
 

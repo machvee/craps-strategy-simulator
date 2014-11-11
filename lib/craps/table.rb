@@ -8,8 +8,10 @@ class Table
   attr_reader    :config
   attr_reader    :dice_tray
   attr_reader    :seed                 # the seed used by the dice_tray prng (for Table.reruns)
+  attr_reader    :tracking_strategy    # makes the tracking bets
   attr_reader    :tracking_player
   attr_reader    :players
+  attr_reader    :player_strategies    # bet making strategies tied to players
   attr_reader    :morph_bets
   attr_reader    :shooter # one of the above players or nil
   attr_reader    :house   # house Account
@@ -62,6 +64,7 @@ class Table
                           counter_names: [:made, :won, :lost]
                         )
     @players = []
+    @player_strategies = []
     @morph_bets = []
 
     @tracking_player = TrackingPlayer.new(self)
@@ -69,9 +72,24 @@ class Table
 
     create_bet_boxes
 
-    @shooter = Shooter.new(self)
+    @tracking_strategy = TrackingPlayer::TRACKING_STRATEGY.new(tracking_player)
+    tracking_strategy.set
 
-    tracking_player.set_strategy
+    @shooter = Shooter.new(self)
+  end
+
+  def set_player_strategy(strategy)
+    strategy.set
+    @player_strategies << strategy
+  end
+
+  def retire_player_strategy(strategy)
+    strategy.retire
+    player_strategies.delete(strategy)
+  end
+
+  def reset_player_strategies
+    player_strategies.each {|strategy| strategy.reset}
   end
 
   def last_roll
@@ -96,40 +114,27 @@ class Table
       # 1. players make automatic bets based on Strategy
       # 2. shooter rolls dice and table state is updated
       #
-      players_make_your_bets
+      player_strategies.each {|strategy| strategy.make_bets}
+      raise "place your bets" unless at_least_one_bet_made?
       roll
     end
     return
   end
 
   def roll
+    tracking_strategy.make_bets
     shooter_rolls
     settle_bets
     table_state.update
   end
 
-  def players_make_your_bets
-    raise "no players" unless players_ready?
-    
-    tracking_player.play_strategy
-
-    players.each { |p| p.play_strategy }
-    
-    raise "place your bets" unless at_least_one_bet_made?
-  end
-
-  def run(name)
-  end
-
   def shooter_turns(number_of_turns=1, quiet_option=quiet_table)
-    players_set_your_strategies
     number_of_turns.times do
       start_outs = tracking_bet_stats.pass_line_point.total_lost
       while tracking_bet_stats.pass_line_point.total_lost == start_outs do
         play(quiet_option) 
       end
     end
-    players_retire_strategies
   end
 
   def play_points(number_of_points=1, quiet_option=quiet_table)
@@ -137,12 +142,10 @@ class Table
     # roll as many times from as many shooters as it takes
     # to make and end number_of_points points
     #
-    players_set_your_strategies
     start_points = point_outcomes
     while (point_outcomes - start_points < number_of_points)
       play(quiet_option)
     end
-    players_retire_strategies
     return
   end
 
@@ -178,7 +181,7 @@ class Table
     players.any? {|p| p.bets.length > 0}
   end
 
-  def reset(dice_seed=seed)
+  def reset(dice_seed=nil)
     #
     # this is destructive to the current state of the table and accounts.
     # use this call to set the table and player state back to the point
@@ -187,6 +190,7 @@ class Table
     # can have players use a different strategy against the same roll
     # outcomes as before.
     tracking_bet_stats.reset
+    tracking_strategy.reset
     player_bet_stats.reset
     table_state.reset
     house.reset
@@ -194,7 +198,7 @@ class Table
     bet_boxes.each {|bb| bb.reset}
     players.each {|p| p.reset}
     shooter.reset
-    dice_tray.reset(DefaultSeeder.new(dice_seed))
+    dice_tray.reset(DefaultSeeder.new(dice_seed||seed))
     return
   end
 
@@ -242,20 +246,6 @@ class Table
     puts '-'*100
     shooter.roll_stats.print
     puts "\n"
-  end
-
-  def players_reset_strategies
-    tracking_player.reset_strategy
-    players.each {|p| p.reset_strategy }
-  end
-
-  def players_set_your_strategies
-    players.each {|p| p.set_strategy }
-  end
-
-  def players_retire_strategies
-    tracking_player.retire_strategy
-    players.each {|p| p.retire_strategy }
   end
 
   private

@@ -1,8 +1,9 @@
 class TrackingPlayer < Player
 
+  TRACKING_STRATEGY=CoverAllBetsStrategy
+
   def initialize(table)
     super('tracking player', table, 0, nil)
-    @strategy = CoverAllBetsStrategy.new(self)
   end
 
   def out?
