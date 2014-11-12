@@ -90,7 +90,7 @@ class RunStopper
   def is_player_bank_percent_up?
     stopping = percentage_diff >= up_percent
     if stopping
-      @msg = "player's bank (#{player.rail.balance}) is up by #{down_percent}%"
+      @msg = "player's bank of #{player.rail.balance} is up by #{down_percent}% from #{player.rail.start_balance}"
     end
     stopping
   end
@@ -98,7 +98,7 @@ class RunStopper
   def is_player_bank_percent_down?
     stopping = percentage_diff <= down_percent
     if stopping
-      @msg = "player's bank (#{player.rail.balance}) is down by #{down_percent.abs}%"
+      @msg = "player's bank of #{player.rail.balance} is down by #{down_percent.abs}% from #{player.rail.start_balance}"
     end
     stopping
   end
@@ -107,7 +107,7 @@ class RunStopper
     diff = player_rail_delta
     stopping = diff >= up_amount
     if stopping
-      @msg = "player's bank (#{player.rail.balance}) is up by #{down_amount}"
+      @msg = "player's bank (#{player.rail.balance}) is up by #{up_amount} from #{player.rail.start_balance}"
     end
     stopping
   end
@@ -116,7 +116,7 @@ class RunStopper
     diff = player_rail_delta
     stopping = diff <= down_amount
     if stopping
-      @msg = "player's bank (#{player.rail.balance}) is down by #{down_amount}"
+      @msg = "player's bank (#{player.rail.balance}) is down by #{down_amount} from #{player.rail.start_balance}"
     end
     stopping
   end

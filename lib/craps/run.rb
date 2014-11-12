@@ -45,9 +45,10 @@ class Run
     until run_stopper.stop? do
       table.play(quiet_table)
     end
-    puts "\n\n" + run_stopper.explain
-
     table.retire_player_strategy(strategy)
+    puts "\n\n" + run_stopper.explain
+    return
+
   end
 
   def save
