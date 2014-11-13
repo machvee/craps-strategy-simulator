@@ -128,27 +128,6 @@ class Table
     table_state.update
   end
 
-  def shooter_turns(number_of_turns=1, quiet_option=quiet_table)
-    number_of_turns.times do
-      start_outs = tracking_bet_stats.pass_line_point.total_lost
-      while tracking_bet_stats.pass_line_point.total_lost == start_outs do
-        play(quiet_option) 
-      end
-    end
-  end
-
-  def play_points(number_of_points=1, quiet_option=quiet_table)
-    #
-    # roll as many times from as many shooters as it takes
-    # to make and end number_of_points points
-    #
-    start_points = point_outcomes
-    while (point_outcomes - start_points < number_of_points)
-      play(quiet_option)
-    end
-    return
-  end
-
   def new_player(name, start_amount, bet_unit=nil)
     Player.new(name, self, start_amount, bet_unit).tap do |p|
       @players << p
@@ -192,6 +171,7 @@ class Table
     tracking_bet_stats.reset
     tracking_strategy.reset
     player_bet_stats.reset
+    reset_player_strategies
     table_state.reset
     house.reset
     wagers.reset
