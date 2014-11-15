@@ -5,14 +5,12 @@ class BaseStrategy
   attr_reader   :bet_makers
 
   FULL_ODDS = -1
-  DEFAULT_PLACE_SEQUENCE = [6,8,5,9,4,10]
 
   delegate :table_state, to: :table
 
   def initialize(player)
     @player = player
     @table = player.table
-    @place_sequence = DEFAULT_PLACE_SEQUENCE
     init_bet_makers
   end
 
@@ -103,7 +101,7 @@ class BaseStrategy
   end
 
   def install_bet(bet_short_name, number=nil)
-    BetMaker.factory(player, bet_short_name, number).tap {|m| @bet_makers << m}
+    BetMaker.factory(player, bet_short_name, number).tap {|maker| bet_makers << maker}
   end
 
   #

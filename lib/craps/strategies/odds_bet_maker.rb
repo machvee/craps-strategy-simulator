@@ -19,7 +19,6 @@ class OddsBetMaker < BetMaker
   def make_or_ensure_bet
     return if bet_not_normally_makeable
     return if already_made_the_required_number_of_bets
-    take_down_any_place_bets_on_the_new_point_number
     bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
     bet.maker = self
   end
@@ -70,20 +69,6 @@ class OddsBetMaker < BetMaker
   end
 
   private
-
-  def take_down_any_place_bets_on_the_new_point_number
-    return if table.off?
-    #
-    # take down any place/buy bet and let the player's strategy possibly remake the
-    # bet on another place bet_box
-    #
-    [PlaceBet, BuyBet].each do |bclass|
-      place_bet = player.find_bet(bclass.short_name, table.table_state.point)
-      if place_bet.present?
-        player.take_down(place_bet) 
-      end
-    end
-  end
 
   def odds_bet_s
     return '' unless make_odds_bet

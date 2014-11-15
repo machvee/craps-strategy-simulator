@@ -100,3 +100,16 @@ Bet Makers and PassLine and Come Out bets
       passline or comeout bet.
 
 
+Place Bet Makers and Management
+
+  1. When place bets already exist after a pass/come number bet is made typically the place bet is moved to
+     another open number (unless on_the_point is allowed by the maker).  That number tends to be chosen in the
+     order of 6/8,5/9,4/10, or the bet can be brought down.
+
+  2. If a place bet is normally made on a number, but the point exists there, the place bet will not made on that number 
+     if off_the_point isn't declared.  If not off_the_point, the place bet can be made by the maker on another open
+     Place number in 6/8,5/9,4/10, or the bet can not be made at all.
+
+  3. Support maker semantics to relocate the bet, keep or put it on the point number (we have off_the_point to mean the opposite)
+     and if the bet will be relocated, an order in which to locate a new place bet number (default: 6,8,5,9,4,10)
+

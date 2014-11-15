@@ -87,18 +87,23 @@ class BetMaker
     @bet_when_point_count = 0
     @bet_when_roll_count = 0
     @bet_when_number_equals_point = false
-    @bet_when_number_not_equals_point = false
 
     set_start_amount(player.bet_unit)
     reset_counters
   end
 
   def self.factory(player, bet_short_name, number)
-    case bet_short_name
+    #
+    # create the correct typed BetMaker, then install in the bet_makers array
+    # at the appropriate location
+    #
+    maker = case bet_short_name
       when PassLineBet.short_name
         PassLineBetMaker.new(player)
       when ComeOutBet.short_name
         ComeOutBetMaker.new(player)
+      when PlaceBet.short_name, BuyBet.short_name
+        PlaceBuyBetMaker.new(player, bet_short_name, number)
       else
         BetMaker.new(player, bet_short_name, number)
     end
@@ -177,14 +182,6 @@ class BetMaker
     # useful for hardways betting to bet only on point number
     #
     @bet_when_number_equals_point = true
-    self
-  end
-
-  def off_the_point
-    #
-    # useful for place/buy betting to bet only off the point number
-    #
-    @bet_when_number_not_equals_point = true
     self
   end
 
