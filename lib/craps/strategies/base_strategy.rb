@@ -139,12 +139,12 @@ class BaseStrategy
     #
     # across for player configured bet_unit but not on point
     #
-    CrapsDice::POINTS.each {|n| place_on(n).off_the_point}
+    CrapsDice::POINTS.each {|n| place_on(n)}
   end
 
   def six_and_eight(amount)
     [6,8].each do |n|
-      place_on(n).for(amount).off_the_point
+      place_on(n).for(amount)
     end
   end
 

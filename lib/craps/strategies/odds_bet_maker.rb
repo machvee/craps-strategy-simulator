@@ -5,6 +5,10 @@
 # pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
 # come_out.for(25).at_most(2).with_full_odds
 #
+# OddsBetMaker  additional place/buy bet duties
+#
+#    take_down place/buy bets unless working
+#
 class OddsBetMaker < BetMaker
 
   attr_reader   :odds_multiple
@@ -21,6 +25,14 @@ class OddsBetMaker < BetMaker
     return if already_made_the_required_number_of_bets
     bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
     bet.maker = self
+  end
+
+  def take_down_any_place_buy_bets_unless_working(number)
+    place_buy_bet_to_remove = get_the_current_place_buy_bet(number)
+    if place_buy_bet_to_remove.present? 
+      has_maker = place_buy_bet_to_remove.maker.present?
+      player.take_down(place_buy_bet_to_remove) unless has_maker && place_buy_bet_to_remove.maker.bets_working
+    end
   end
 
   def create_odds_bet(point_craps_bet, amount, point_number)
@@ -91,5 +103,10 @@ class OddsBetMaker < BetMaker
   def validate_odds_multiple(multiple, number)
     max = table.config.max_odds(number)
     raise "#{multiple} must be between 1 and #{max}" if multiple > max
+  end
+
+  def get_the_current_place_buy_bet(number)
+    player.find_bet(PlaceBet.short_name, number) ||
+    player.find_bet(BuyBet.short_name, number)
   end
 end

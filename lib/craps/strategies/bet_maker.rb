@@ -33,9 +33,10 @@
 # hard(8).for(1).full_press_after_win(2)
 # hard(10).for(5).working.press_after_win_to(10,20,50)
 # pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
-# place_on(6).for(12).off_the_point.press_to(18,24,30,60,90,120,180,210)
-# place_on(8).for(12).off_the_point.press_to(18,24,30,60,90,120,180,210)
-# place_on(5).for(10).off_the_point.after_making_point(1).press_to(15,20,40,80,100,120,180,200)
+# place_on(6).for(12).press_to(18,24,30,60,90,120,180,210)
+# place_on(8).for(12).press_to(18,24,30,60,90,120,180,210)
+# place_on(5).after_making_point(1).press_to(15,20,40,80,100,120,180,200)
+# place_on(5).working.press_to(15,20,40,80,100,120,180,200)
 # place_on(9).for(10).after_making_point(2).press_to(15,20,40,80,100,120,180,200)
 # place_on(9).for(10).after_rolls(2).press_to(15,20,40,80,100,120,180,200)
 # buy_the(10).for(25).after_making_point(3).press_to(50,75,100,150,200,225,250).after_win(2)
@@ -57,7 +58,6 @@ class BetMaker
   attr_reader   :amount_to_bet
   attr_reader   :number_of_bets
   attr_reader   :bet_when_number_equals_point
-  attr_reader   :bet_when_number_not_equals_point
   attr_reader   :when_table_is_off
   attr_reader   :stats
 
@@ -122,7 +122,6 @@ class BetMaker
   def make_bet
     return if not_yet_at_roll_count || not_yet_at_point_count
     return if bet_when_number_equals_point && number_is_not_point? 
-    return if bet_when_number_not_equals_point && number_is_point?
     return if when_table_is_off && table.on?
 
     make_or_ensure_bet

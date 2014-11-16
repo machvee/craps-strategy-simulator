@@ -100,8 +100,11 @@ class PlayerBet
     point_bet = point_bet_box.new_player_bet(player, amount)
     point_bet.maker = maker
 
-    if maker.present? && maker.make_odds_bet
-      maker.create_odds_bet(point_bet_box.craps_bet, amount, number)
+    if maker.present? 
+      if maker.make_odds_bet
+        maker.create_odds_bet(point_bet_box.craps_bet, amount, number)
+      end
+      maker.take_down_any_place_buy_bets_unless_working(number)
     end
     point_bet
   end
