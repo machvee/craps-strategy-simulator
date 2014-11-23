@@ -13,10 +13,10 @@ class TableState
            :heat_index_in_words,
            :heat_index, to: :table_heat
 
-  def initialize(table, history_length)
+  def initialize(table, history_length, options={})
     @table = table
-    @roll_counter = FrequencyCounter.new(history_length)
-    @table_heat = TableHeat.new(self, history_length)
+    @roll_counter = options[:frequency_counter] || FrequencyCounter.new(history_length)
+    @table_heat = options[:table_heat] || TableHeat.new(self, history_length)
     clear_point
   end
 
@@ -73,7 +73,7 @@ class TableState
   end
 
   def point_established?(value=nil)
-    off? && dice.points?  && match_roll?(value)
+    off? && dice.points? && match_roll?(value)
   end
 
   def point_made?(value=nil)
