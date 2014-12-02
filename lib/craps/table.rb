@@ -17,6 +17,7 @@ class Table
   attr_reader    :house   # house Account
   attr_reader    :wagers  # Account holding all active table bets
   attr_accessor  :quiet_table # not verbose about all actions
+  attr_accessor  :pause_option # stop after each roll and prompt stdin if true
 
   delegate :on?, :off?, :is_hot?, :is_good?, :is_choppy?, :is_cold?, to: :table_state
 
@@ -108,7 +109,7 @@ class Table
     #
     # players make automatic strategy bets,
     # one roll of the dice, and the outcomes are
-    # tallied
+    # tallied.
     #
     quietly?(quiet_option) do
       # 1. players make automatic bets based on Strategy
@@ -118,6 +119,7 @@ class Table
       raise "place your bets" unless at_least_one_bet_made?
       roll
     end
+    optionally_pause
     return
   end
 
@@ -229,6 +231,15 @@ class Table
   end
 
   private
+
+  def optionally_pause
+    # this allows a viewer in console to read the status for each roll
+    # pause for newline if table.pause_option is true
+    # if anything besides newline is typed, pause_option is set to false
+    return unless pause_option
+    v = $stdin.readline
+    @pause_option = v.strip.length == 0
+  end
 
   def create_bet_boxes
     @bet_boxes = []
