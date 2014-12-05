@@ -12,6 +12,7 @@ class BetPresser
   attr_reader   :maker
   attr_reader   :press_amounts
   attr_reader   :press_unit
+  attr_accessor :start_amount
   attr_reader   :start_win_count
 
   attr_accessor :start_pressing_at_win
@@ -27,10 +28,16 @@ class BetPresser
     @press_unit = nil
     @press_amounts = []
     @craps_bet = craps_bet
+    @start_amount = nil
     @amount_to_bet = nil
     @start_pressing_at_win = 1 # default is press immediately after first win
     @stop_win = FOREVER        # default is not never stop pressing once its started
     reset
+  end
+
+  def set_start_amount(amount)
+    @start_amount = amount
+    @amount_to_bet = start_amount
   end
 
   def sequence(amounts)
@@ -51,8 +58,9 @@ class BetPresser
     #
     # don't change the bet if we're outside the win/press window
     #
-    return amount_to_bet if num_wins < start_pressing_at_win ||
-                            (stop_win != FOREVER && num_wins >= stop_win)
+    if num_wins < start_pressing_at_win || (stop_win != FOREVER && num_wins >= stop_win)
+      return amount_to_bet
+    end
 
     #
     # based on current win sequence and programmed press amount,
@@ -60,13 +68,15 @@ class BetPresser
     #
     new_bet_amount =
       if press_unit.present?
-        press_to_amt = if press_unit == PARLAY
-          # until we can figure the amount just won,
-          # just double existing bet amount
-          amount_to_bet * 2
-        else
-          amount_to_bet + press_unit
-        end
+        press_to_amt =
+          if press_unit == PARLAY
+            # until we can figure the amount just won,
+            # just double existing bet amount
+            amount_to_bet * 2
+          else
+            current_pressable_wins = (num_wins - start_pressing_at_win) + 1
+            start_amount + (press_unit * current_pressable_wins)
+          end
         maker.stats.press(press_to_amt)
         press_to_amt
       else
@@ -86,9 +96,9 @@ class BetPresser
     amount_to_bet
   end
 
-  def reset(start_amount=nil)
+  def reset
     @start_win_count = current_bet_wins
-    @amount_to_bet = start_amount
+    @amount_to_bet = @start_amount
   end
 
   def to_s

@@ -52,7 +52,6 @@ class BetMakerTest < ActiveSupport::TestCase
 
   def test_default_bet_amount
     assert_equal @pbm, @pbm.after_making_point(2).press_by_additional_bet_unit.after_win(2).no_press_after_win(5)
-    assert_equal @player.bet_unit, @pbm.start_amount
     assert_equal @player.bet_unit, @pbm.bet_presser.amount_to_bet
   end
 

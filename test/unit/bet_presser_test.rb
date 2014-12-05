@@ -34,6 +34,7 @@ class BetPresserTest < ActiveSupport::TestCase
     @start_win = 4
     @bp.incremental(@incr)
     @bp.start_pressing_at_win = @start_win
+    @bp.set_start_amount(@incr)
     assert_equal @incr, @bp.press_unit
     assert_equal @start_win, @bp.start_pressing_at_win
   end
@@ -65,6 +66,7 @@ class BetPresserTest < ActiveSupport::TestCase
   def test_next_amount_incremental
     @incr = 18
     @bp.incremental(@incr)
+    @bp.start_amount = 10
     @bp.start_pressing_at_win = 3
     @bp.stop_win = 6
     @stat.unstub(:total)

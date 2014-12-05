@@ -54,7 +54,6 @@ class BetMaker
   attr_reader   :bets_working
   attr_reader   :bets_off
   attr_reader   :bet_presser
-  attr_reader   :start_amount
   attr_reader   :amount_to_bet
   attr_reader   :number_of_bets
   attr_reader   :bet_when_number_equals_point
@@ -111,7 +110,7 @@ class BetMaker
 
   def reset
     reset_counters
-    bet_presser.reset(start_amount)
+    bet_presser.reset
   end
 
   def reset_counters
@@ -225,7 +224,7 @@ class BetMaker
   end
 
   def and_reset_win_count
-    bet_presser.reset(start_amount)
+    bet_presser.reset
     self
   end
 
@@ -262,8 +261,7 @@ class BetMaker
   end
 
   def set_start_amount(amount)
-    @start_amount = amount
-    bet_presser.amount_to_bet = start_amount
+    bet_presser.set_start_amount(amount)
   end
 
   def bet_not_normally_makeable
