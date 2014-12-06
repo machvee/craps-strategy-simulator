@@ -236,6 +236,9 @@ describe TableState do
     expect(@table).to receive(:reset_player_strategies).with(no_args)
 
     @table_state = TableState.new(@table, @history_length, frequency_counter: roll_counter)
+    @table_state.on(:seven_out) {|tbl| @shooter.done}
+    @table_state.on(:seven_out) {|tbl| @table.reset_player_strategies}
+
     @table_state.table_on_with_point(4)
     expect(@table_state.on?).to be true
     expect(@table_state.point).to equal(4)

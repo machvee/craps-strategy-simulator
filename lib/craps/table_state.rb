@@ -5,9 +5,17 @@ class TableState
   attr_reader  :numbers # history of number of rolls between ON and OFF
   attr_reader  :roll_counter
   attr_reader  :table_heat
+  attr_reader  :callbacks
+
+  CALLBACKS = [
+    :point_established,
+    :point_made,
+    :seven_out
+  ]
 
   delegate :dice, to: :table
   delegate :numbers, :hot_numbers_average, to: :roll_counter
+  delegate :on, to: :callbacks
 
   delegate :is_hot?, :is_good?, :is_choppy?, :is_cold?,
            :heat_index_in_words,
@@ -17,18 +25,20 @@ class TableState
     @table = table
     @roll_counter = options[:frequency_counter] || FrequencyCounter.new(history_length)
     @table_heat = options[:table_heat] || TableHeat.new(self, history_length)
+    @callbacks = Callbacks.new(CALLBACKS, table)
     clear_point
   end
 
   def update
     if point_established?
       table_on_with_point(last_roll)
+      callbacks.invoke(:point_established)
     elsif point_made?
+      callbacks.invoke(:point_made)
       table_off
     elsif seven_out?
       table_off
-      table.shooter.done
-      table.reset_player_strategies
+      callbacks.invoke(:seven_out)
     elsif dice.points?
       roll_counter.bump
     end
@@ -126,4 +136,8 @@ class TableState
       "no field 5"
     end
   end
+
+  private
+
+
 end

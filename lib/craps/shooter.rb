@@ -15,6 +15,8 @@ class Shooter
     @roll_stats = RollStats.new("dice", table: table)
     @roll_stats.add_stats
     @roll_history = RingBuffer.new(roll_history_length)
+
+    setup_callback_every_time_the_table_goes_seven_out
   end
 
   def set
@@ -81,5 +83,13 @@ class Shooter
 
   def total_rolls
     roll_stats.stats.first.count
+  end
+
+  private
+  
+  def setup_callback_every_time_the_table_goes_seven_out
+    table.table_state.on(:seven_out) do |tbl|
+      done
+    end
   end
 end

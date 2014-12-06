@@ -49,6 +49,8 @@ class Table
     @table_state = TableState.new(self, opts[:table_heat_history_points])
     table_state.table_off
 
+    setup_callback_every_time_the_table_goes_seven_out
+
     #
     # house is the houses money Account
     # wagers is waged bets on the table, neither belongs to player or house
@@ -231,6 +233,12 @@ class Table
   end
 
   private
+
+  def setup_callback_every_time_the_table_goes_seven_out
+    table_state.on(:seven_out) do |tbl|
+      reset_player_strategies
+    end
+  end
 
   def optionally_pause
     # this allows a viewer in console to read the status for each roll
