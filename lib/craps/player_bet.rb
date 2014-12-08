@@ -10,7 +10,14 @@ class PlayerBet
   attr_reader   :bet_box
   attr_accessor :remove
 
-  attr_accessor :maker # the BetMaker that created us, if 
+  CALLBACKS = [
+    :win,
+    :lose,
+    :morph,
+    :return
+  ]
+  attr_reader  :callbacks
+  delegate :on, to: :callbacks
 
   MORPH_BET_SHORT_NAMES = BetBox::MORPH_NUMBER_BETS.map(&:short_name)
 
@@ -25,7 +32,7 @@ class PlayerBet
     @number = craps_bet.number
     @remove = false # used to clear losing bets at end of settling bets
     @bet_stat = set_bet_stat
-    @maker = nil
+    @callbacks = Callbacks.new(CALLBACKS)
     craps_bet.validate(self, amount)
     set_bet_on
     table.wagers.transfer_from(player.rail, amount)
@@ -58,55 +65,37 @@ class PlayerBet
     !on?
   end
 
-  def winning_bet(pay_this, for_every)
-    winnings = (amount/for_every) * pay_this
-
-    if table.config.pay_commission_on_win && craps_bet.commission > 0
-      winnings -= craps_bet.calculate_commission(amount)
-    end
-
-    bet_stat.won(made: amount, won: winnings)
-    maker_stat_won(winnings)
+  def winning_bet
+    bet_stat.won(made: amount, won: amount_won)
 
     player.rail.transfer_from(table.wagers, self.amount)
-    player.rail.transfer_from(table.house, winnings)
+    player.rail.transfer_from(table.house, amount_won)
 
-    status('wins', winnings, :green)
+    status('wins', amount_won, :green)
+
+    callbacks.invoke(:win, amount_won)
   end
 
   def losing_bet
     bet_stat.lost(made: amount, lost: amount)
     table.house.transfer_from(table.wagers, amount)
     status('loses', amount, :red)
+
+    callbacks.invoke(:lose)
   end
 
   def return_bet
     return_wager
     status("returned", amount, :yellow)
+    callbacks.invoke(:return)
+  end
+
+  def morph_bet
+    callbacks.invoke(:morph)
   end
 
   def return_wager
     player.rail.transfer_from(table.wagers, self.amount)
-  end
-
-  def morph_bet
-    #
-    # this turns a pass_line bet or come_out bet into a 
-    # pass_line_point bet or come_bet and will make an
-    # accompanying odds bet as the bet maker (if any) defined.
-    #
-    number = table.last_roll
-    point_bet_box = table.find_bet_box(craps_bet.morph_bet_name, number)
-    point_bet = point_bet_box.new_player_bet(player, amount)
-    point_bet.maker = maker
-
-    if maker.present? 
-      if maker.make_odds_bet
-        maker.create_odds_bet(point_bet_box.craps_bet, amount, number)
-      end
-      maker.take_down_any_place_buy_bets_unless_working(number)
-    end
-    point_bet
   end
 
   def matches?(craps_bet_short_name, arg_number=nil)
@@ -123,9 +112,17 @@ class PlayerBet
 
   private
 
-  def maker_stat_won(winnings)
-    return unless maker.present?
-    maker.stats.winner(winnings)
+  def amount_won
+    @_amt_won ||= calculate_winnings
+  end
+
+  def calculate_winnings
+    winnings = (amount/craps_bet.for_every) * craps_bet.pay_this
+
+    if table.config.pay_commission_on_win && craps_bet.commission > 0
+      winnings -= craps_bet.calculate_commission(amount)
+    end
+    winnings
   end
 
   def status(verbed, amount, color=:white)

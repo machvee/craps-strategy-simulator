@@ -23,25 +23,28 @@ class OddsBetMaker < BetMaker
   def make_or_ensure_bet
     return if bet_not_normally_makeable
     return if already_made_the_required_number_of_bets
-    bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
-    bet.maker = self
+    bet = make_the_bet
+    bet.on(:morph) do
+      point_number = table.last_roll
+      create_odds_bet(bet.amount, point_number) if make_odds_bet
+      take_down_any_place_buy_bets_unless_working(point_number)
+    end
   end
 
   def take_down_any_place_buy_bets_unless_working(number)
     place_buy_bet_to_remove = get_the_current_place_buy_bet(number)
     if place_buy_bet_to_remove.present? 
-      has_maker = place_buy_bet_to_remove.maker.present?
-      player.take_down(place_buy_bet_to_remove) unless has_maker && place_buy_bet_to_remove.maker.bets_working
+      player.take_down(place_buy_bet_to_remove) # TODO: need to reverse lookup maker and check maker.working, and if true, don't take down
     end
   end
 
-  def create_odds_bet(point_craps_bet, amount, point_number)
+  def create_odds_bet(amount, point_number)
     #
     # build an odds bet based on the BetMaker odds multiples
     #
-    odds_bet_box = table.find_bet_box(point_craps_bet.odds_bet_short_name, point_number)
+    point_bet_box = table.find_bet_box(craps_bet.morph_bet_name, point_number)
+    odds_bet_box = table.find_bet_box(point_bet_box.craps_bet.odds_bet_short_name, point_number)
     odds_bet = odds_bet_box.new_player_bet(player, odds_multiple[point_number] * amount)
-    odds_bet.maker = self
   end
 
   def with_no_odds

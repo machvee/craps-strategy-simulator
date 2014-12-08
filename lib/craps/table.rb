@@ -12,7 +12,6 @@ class Table
   attr_reader    :tracking_player
   attr_reader    :players
   attr_reader    :player_strategies    # bet making strategies tied to players
-  attr_reader    :morph_bets
   attr_reader    :shooter # one of the above players or nil
   attr_reader    :house   # house Account
   attr_reader    :wagers  # Account holding all active table bets
@@ -68,7 +67,6 @@ class Table
                         )
     @players = []
     @player_strategies = []
-    @morph_bets = []
 
     @tracking_player = TrackingPlayer.new(self)
     @tracking_bet_stats = tracking_player.stats.bet_stats
@@ -156,8 +154,12 @@ class Table
   end
 
   def settle_bets
+    #
+    # settle the bets, then morph (move) any come out or pass line bets
+    # to their numbered bet version if a point was established
+    #
     bet_boxes.each { |bet_box| bet_box.settle_player_bets }
-    morph_any_bets
+    bet_boxes.each { |bet_box| bet_box.morph_any_bets }
   end
 
   def at_least_one_bet_made?
@@ -264,14 +266,6 @@ class Table
 
   def point_outcomes
     tracking_bet_stats.pass_line_point.count # total won and lost
-  end
-
-  def morph_any_bets
-    return if morph_bets.empty?
-    morph_bets.each do |player_bet|
-      player_bet.morph_bet
-    end
-    morph_bets.clear
   end
 
   def quietly?(option)

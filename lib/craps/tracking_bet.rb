@@ -4,7 +4,7 @@ class TrackingBet < PlayerBet
     table.tracking_bet_stats.stat_by_name(craps_bet.stat_name)
   end
 
-  def winning_bet(pay_this, for_every)
+  def winning_bet
     bet_stat.won
   end
 

@@ -52,7 +52,7 @@ class BetBoxTest < ActiveSupport::TestCase
     setup_bet_outcome(CrapsBet::Outcome::WIN)
 
     @player_bet.expects(:on?).once.returns(true)
-    @player_bet.expects(:winning_bet).once.with(*@payoff).returns(10000)
+    @player_bet.expects(:winning_bet).once.returns(10000)
     @player_bet.expects(:remove).at_least_once.returns(false)
     @bet_box.expects(:mark_bet_deleted).once
 
@@ -91,9 +91,9 @@ class BetBoxTest < ActiveSupport::TestCase
     @player_bet.expects(:remove).at_least_once.returns(true)
     @player_bet.expects(:return_wager).at_least_once
     @player_bet.expects(:remove=).once.with(true)
-    @table.expects(:morph_bets).once.returns([])
 
     @bet_box.settle_player_bets 
+    assert_equal 1, @bet_box.morph_bets.length
   end
 
   def setup_bet_outcome(outcome)

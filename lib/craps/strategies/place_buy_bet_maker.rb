@@ -22,7 +22,7 @@ class PlaceBuyBetMaker < BetMaker
     #   b. no place/buy but there is a come/pass_line and bets_working
     #
     bet = if no_place_or_buy && (no_passline_or_come || bets_working)
-      put_down_the_bet
+      make_the_bet
     end
     bet
   end
@@ -33,17 +33,9 @@ class PlaceBuyBetMaker < BetMaker
     #   a place/buy bet exists AND NO pass_line_point/come bet exists in the box
     #
     bet = if place_or_buy_present && no_passline_or_come
-      player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number).tap do |b|
-        b.maker = self
-      end
+      player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
     end
     bet
-  end
-
-  def put_down_the_bet
-    player.make_bet(bet_short_name, bet_presser.next_bet_amount, number).tap do |bet|
-      bet.maker = self
-    end
   end
 
   def there_is_no_existing_pass_line_point_or_come_bet

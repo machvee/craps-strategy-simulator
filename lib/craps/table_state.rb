@@ -5,17 +5,17 @@ class TableState
   attr_reader  :numbers # history of number of rolls between ON and OFF
   attr_reader  :roll_counter
   attr_reader  :table_heat
-  attr_reader  :callbacks
 
   CALLBACKS = [
     :point_established,
     :point_made,
     :seven_out
   ]
+  attr_reader  :callbacks
+  delegate :on, to: :callbacks
 
   delegate :dice, to: :table
   delegate :numbers, :hot_numbers_average, to: :roll_counter
-  delegate :on, to: :callbacks
 
   delegate :is_hot?, :is_good?, :is_choppy?, :is_cold?,
            :heat_index_in_words,
@@ -25,7 +25,7 @@ class TableState
     @table = table
     @roll_counter = options[:frequency_counter] || FrequencyCounter.new(history_length)
     @table_heat = options[:table_heat] || TableHeat.new(self, history_length)
-    @callbacks = Callbacks.new(CALLBACKS, table)
+    @callbacks = Callbacks.new(CALLBACKS)
     clear_point
   end
 

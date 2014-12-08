@@ -202,10 +202,6 @@ class Player
 
   private
 
-  def put_new_bet_in_bet_box(bet_box, scaled_bet_amount)
-    bet
-  end
- 
   def valid_multiple?(number, multiple)
     raise "multiple must be between 1 and #{config.max_odds(number)}" unless \
       multiple.between?(1, config.max_odds(number))

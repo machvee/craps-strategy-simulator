@@ -132,12 +132,14 @@ class BetMaker
     #
     if already_made_the_required_number_of_bets
       return if bets_off
-      bet = player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
-      bet.maker = self
+      # TODO: this ensure_bet isn't really needed because bets that win or lose
+      # are always taken down.  So ensure is really here for upping the bet_amount
+      # from a strategy that will up the amount without a win or point being made,
+      # e.g. after n rolls
+      player.ensure_bet(bet_short_name, bet_presser.next_bet_amount, number)
     else
       return if bet_not_normally_makeable unless bets_working
-      bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
-      bet.maker = self
+      make_the_bet
     end
   end
 
@@ -233,6 +235,17 @@ class BetMaker
   end
 
   private
+
+  def make_the_bet
+    #
+    # make the bet and attach any standard callbacks
+    #
+    bet = player.make_bet(bet_short_name, bet_presser.next_bet_amount, number)
+    bet.on(:win) do |amount_won|
+      stats.winner(amount_won)
+    end
+    bet
+  end
 
   def number_is_not_point?
     table.on? && table.table_state.point != number

@@ -4,9 +4,8 @@ class Callbacks
   attr_reader  :args
   attr_reader  :labels
 
-  def initialize(labels, *args)
+  def initialize(labels)
     @callbacks = {}
-    @args = args
     @labels = labels
     labels.each {|l| callbacks[l] = []}
   end
@@ -15,7 +14,7 @@ class Callbacks
     callbacks[label] << block
   end
 
-  def invoke(label)
+  def invoke(label, *args)
     callbacks[label].each {|cb| cb.call(*args)}
   end
 

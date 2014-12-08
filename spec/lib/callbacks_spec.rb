@@ -6,16 +6,18 @@ class MoodSetter
 
   delegate :on, to: :callbacks
 
-  def initialize(something, wild)
-    @callbacks = Callbacks.new([:freaked, :chilled], something, wild)
+  def initialize(wild, thing)
+    @wild = wild
+    @thing = thing
+    @callbacks = Callbacks.new([:freaked, :chilled])
   end
 
   def freak_out
-    callbacks.invoke(:freaked)
+    callbacks.invoke(:freaked, @wild)
   end
 
   def chillax
-    callbacks.invoke(:chilled)
+    callbacks.invoke(:chilled, @thing)
   end
 end
 
@@ -23,19 +25,22 @@ end
 describe Callbacks do
   before(:each) do
     @something = double("something", chilled: true, freaked: true, else_chilled: true)
-    @wild = 'wild'
-    @mood = MoodSetter.new(@something, @wild)
-    @mood.on(:freaked) do |something, wild|
+    @wild = '42wild'
+    @thing = '99thing'
+
+    @mood = MoodSetter.new(@wild, @thing)
+
+    @mood.on(:freaked) do |wild|
       expect(wild).to eq(@wild)
-      something.freaked
+      @something.freaked
     end
-    @mood.on(:chilled) do |something, wild|
-      expect(wild).to eq(@wild)
-      something.chilled
+    @mood.on(:chilled) do |thing|
+      expect(thing).to eq(@thing)
+      @something.chilled
     end
-    @mood.on(:chilled) do |something, wild|
-      expect(wild).to eq(@wild)
-      something.else_chilled
+    @mood.on(:chilled) do |thing|
+      expect(thing).to eq(@thing)
+      @something.else_chilled
     end
   end
 
