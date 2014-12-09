@@ -34,7 +34,8 @@ class OddsBetMaker < BetMaker
   def take_down_any_place_buy_bets_unless_working(number)
     place_buy_bet_to_remove = get_the_current_place_buy_bet(number)
     if place_buy_bet_to_remove.present? 
-      player.take_down(place_buy_bet_to_remove) # TODO: need to reverse lookup maker and check maker.working, and if true, don't take down
+      # TODO: need to reverse lookup maker and check maker.working, and if true, don't take down
+      player.take_down(place_buy_bet_to_remove)
     end
   end
 

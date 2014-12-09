@@ -56,6 +56,10 @@ class Run
     return
   end
 
+  def stats
+    # all maker and player stats
+  end
+
   def save
   {
     name:          name,
