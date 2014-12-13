@@ -101,6 +101,8 @@ class BetMaker
         PassLineBetMaker.new(player)
       when ComeOutBet.short_name
         ComeOutBetMaker.new(player)
+      when HardwaysBet.short_name
+        HardwaysBetMaker.new(player, number)
       when PlaceBet.short_name, BuyBet.short_name
         PlaceBuyBetMaker.new(player, bet_short_name, number)
       else

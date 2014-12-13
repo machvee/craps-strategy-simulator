@@ -12,12 +12,10 @@
 class OddsBetMaker < BetMaker
 
   attr_reader   :odds_multiple
-  attr_reader   :make_odds_bet
 
   def initialize(player, bet_short_name, number=nil)
-    @make_odds_bet = false
-    @odds_multiple = [0]*(CrapsDice::POINTS.max+1)
     super
+    zero_odds_multiples
   end
 
   def make_or_ensure_bet
@@ -26,7 +24,7 @@ class OddsBetMaker < BetMaker
     bet = make_the_bet
     bet.on(:morph) do
       point_number = table.last_roll
-      create_odds_bet(bet.amount, point_number) if make_odds_bet
+      create_odds_bet(bet.amount, point_number) if odds_multiple[point_number] > 0
       take_down_any_place_buy_bets_unless_working(point_number)
     end
   end
@@ -48,22 +46,31 @@ class OddsBetMaker < BetMaker
     odds_bet = odds_bet_box.new_player_bet(player, odds_multiple[point_number] * amount)
   end
 
-  def with_no_odds
-    @make_odds_bet = false
-    self
+  def with_full_odds
+    with_full_odds_on(*CrapsDice::POINTS)
   end
 
-  def with_full_odds
+  def with_full_odds_on(*numbers)
     valid_odds
-    @make_odds_bet = true
-    CrapsDice::POINTS.each do |n|
+    numbers.each do |n|
       odds_multiple[n] = table.config.max_odds(n)
     end
     self
   end
 
-  def with_single_odds
-    with_odds_multiple(1)
+  #
+  # convenience methods for no, single double, etc. odds bets
+  #
+  %w{no single double three_times four_times five_times}.each_with_index do |mult_name, ind|
+    define_method("with_#{mult_name}_odds") do 
+      with_odds_multiple(ind)
+      self
+    end
+
+    define_method("with_#{mult_name}_odds_on") do |*numbers|
+      with_odds_multiple_for_numbers(ind, *numbers)
+      self
+    end
   end
 
   def with_odds_multiple(multiple)
@@ -72,7 +79,6 @@ class OddsBetMaker < BetMaker
 
   def with_odds_multiple_for_numbers(multiple, *numbers)
     valid_odds
-    @make_odds_bet = true
     numbers.each do |n|
       validate_odds_multiple(multiple, n)
       odds_multiple[n] = multiple
@@ -86,8 +92,12 @@ class OddsBetMaker < BetMaker
 
   private
 
+  def zero_odds_multiples
+    @odds_multiple = [0]*(CrapsDice::POINTS.max+1)
+  end
+
   def odds_bet_s
-    return '' unless make_odds_bet
+    return '' if odds_multiple.all?(&:zero?)
     h = Hash.new {|h,k| h[k] = []}
     odds_multiple.each_with_index do |n,i|
       next if n.zero?
@@ -106,7 +116,7 @@ class OddsBetMaker < BetMaker
 
   def validate_odds_multiple(multiple, number)
     max = table.config.max_odds(number)
-    raise "#{multiple} must be between 1 and #{max}" if multiple > max
+    raise "#{multiple} must be between 0 and #{max}" if multiple > max
   end
 
   def get_the_current_place_buy_bet(number)

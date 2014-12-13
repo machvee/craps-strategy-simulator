@@ -4,8 +4,6 @@ class BaseStrategy
   attr_reader   :place_sequence # order in which to make place bets when they're down
   attr_reader   :bet_makers
 
-  FULL_ODDS = -1
-
   delegate :table_state, to: :table
 
   def initialize(player)

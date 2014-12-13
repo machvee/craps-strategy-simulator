@@ -5,8 +5,10 @@ class BasicStrategy < BaseStrategy
   end
 
   def set
-    pass_line.with_full_odds.
-      with_odds_multiple_for_numbers(1, 4, 10).
+    pass_line.
+      with_full_odds_on(6, 8).
+      with_double_odds_on(5, 9).
+      with_single_odds_on(4, 10).
       press_by_additional_bet_unit.after_win(3)
     horn_high_yo.for(5).on_the_come_out_roll.after_making_point(2)
     place_on(6).press_by_additional_bet_unit.after_win(2).no_press_after_win(10)
