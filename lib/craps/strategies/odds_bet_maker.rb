@@ -1,7 +1,9 @@
 #
 # example grammar:
 # pass_line.with_full_odds
-# come_out.for(25).with_full_odds
+# come_out.for(25).with_full_odds_on(6,8,5,9)
+# pass_line.for(10).with_single_odds
+# pass_line.for(25).with_double_odds_on(5,9).with_single_odds_on(4,10)
 # pass_line.for(10).with_odds_multiple(2).with_odds_multiple_for_numbers(1, 4,10)
 # come_out.for(25).at_most(2).with_full_odds
 #
