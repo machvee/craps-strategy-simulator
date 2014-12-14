@@ -12,7 +12,7 @@ class ShooterTest < ActiveSupport::TestCase
   def test_table_shooter_attributes
     assert @shooter.present?
     assert @shooter.player.nil?
-    assert_equal 0, @shooter.total_rolls
+    assert_equal 0, @shooter.num_rolls
   end
 
   def test_set_done
@@ -49,7 +49,7 @@ class ShooterTest < ActiveSupport::TestCase
     assert_equal 5, @shooter.last_rolls(5).length
 
     @shooter.reset
-    assert_equal 0, @shooter.total_rolls
+    assert_equal 0, @shooter.num_rolls
     assert @shooter.last_rolls(10).empty?
     assert @shooter.dice.nil?
     assert @shooter.player.nil?

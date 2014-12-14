@@ -3,7 +3,8 @@ class Shooter
   attr_reader   :player
   attr_reader   :last_shooter
   attr_accessor :dice
-  attr_reader   :roll_stats # across all rolls on this table
+  attr_reader   :roll_stats  # across all rolls on this table
+  attr_reader   :total_rolls # across all shooters
 
   delegate :players, :dice_tray, to: :table
 
@@ -15,8 +16,14 @@ class Shooter
     @roll_stats = RollStats.new("dice", table: table)
     @roll_stats.add_stats
     @roll_history = RingBuffer.new(roll_history_length)
+    @total_rolls = 0
+    @start_point_roll_count = nil
 
     setup_callback_every_time_the_table_goes_seven_out
+
+    table.table_state.on(:point_established) do
+      @start_point_roll_count ||= num_rolls
+    end
   end
 
   def set
@@ -38,6 +45,7 @@ class Shooter
       end
       @last_shooter = @player = players[ns]
       @dice = dice_tray.take_dice
+      @start_point_roll_count = nil
     end
     @player
   end
@@ -52,7 +60,20 @@ class Shooter
     dice.roll.tap { |value|
       @roll_history << value
       player.roll_stats.update
+      @total_rolls += 1
     }
+  end
+
+  def num_rolls
+    #
+    # current roll number for the active shooter.  Resets to zero
+    # when the shooter is 'set'
+    #
+    dice.try(:num_rolls) || 0
+  end
+
+  def num_rolls_after_first_point
+    @start_point_roll_count.nil? ? 0 : num_rolls - @start_point_roll_count
   end
 
   def last_rolls(n=1)
@@ -74,6 +95,7 @@ class Shooter
   def reset_stats
     roll_stats.reset
     @roll_history.clear
+    @total_rolls = 0
   end
 
   def no_shooter
@@ -81,14 +103,10 @@ class Shooter
     @dice = nil
   end
 
-  def total_rolls
-    roll_stats.stats.first.count
-  end
-
   private
   
   def setup_callback_every_time_the_table_goes_seven_out
-    table.table_state.on(:seven_out) do |tbl|
+    table.table_state.on(:seven_out) do
       done
     end
   end

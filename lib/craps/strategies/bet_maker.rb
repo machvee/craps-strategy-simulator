@@ -39,6 +39,7 @@
 # place_on(5).working.press_to(15,20,40,80,100,120,180,200)
 # place_on(9).for(10).after_making_point(2).press_to(15,20,40,80,100,120,180,200)
 # place_on(9).for(10).after_rolls(2).press_to(15,20,40,80,100,120,180,200)
+# place_on(6).for(10).after_rolls_beyond_first_point(1).press_to(15,20,40,80,100,120,180,200)
 # buy_the(10).for(25).after_making_point(3).press_to(50,75,100,150,200,225,250).after_win(2)
 # buy_the(4).for(25).after_making_point(2).press_by_additional(25).after_win(2)
 # buy_the(4).for(100).after_making_point(3).full_press.after_win(2).no_press_after_win(4)
@@ -84,7 +85,9 @@ class BetMaker
     @bet_presser = BetPresser.new(player, self, craps_bet)
 
     @bet_when_point_count = 0
+    @bet_when_point_roll_count = 0
     @bet_when_roll_count = 0
+    @start_point_roll_count = 0
     @bet_when_number_equals_point = false
 
     set_start_amount(player.bet_unit)
@@ -117,12 +120,10 @@ class BetMaker
 
   def reset_counters
     @start_point_count = current_point_count
-    @start_roll_count = 0
   end
 
   def make_bet
-    return if not_yet_at_roll_count || not_yet_at_point_count
-    return if bet_when_number_equals_point && number_is_not_point? 
+    return if not_yet_at_roll_count || not_yet_at_point_count || not_yet_at_point_roll_count
     return if when_table_is_off && table.on?
 
     make_or_ensure_bet
@@ -165,6 +166,11 @@ class BetMaker
 
   def after_rolls(n)
     @bet_when_roll_count = n
+    self
+  end
+
+  def after_rolls_beyond_first_point(n)
+    @bet_when_point_roll_count = n
     self
   end
 
@@ -300,7 +306,11 @@ class BetMaker
   end
 
   def not_yet_at_roll_count
-    @bet_when_roll_count > 0 && (current_roll_count - @start_roll_count < @bet_when_roll_count)
+    @bet_when_roll_count > 0 && (current_roll_count < @bet_when_roll_count)
+  end
+
+  def not_yet_at_point_roll_count
+    @bet_when_point_roll_count > 0 && (current_point_roll_count < @bet_when_point_roll_count)
   end
 
   def current_point_count
@@ -308,7 +318,17 @@ class BetMaker
   end
 
   def current_roll_count
-    table.shooter.dice.num_rolls
+    table.shooter.num_rolls
+  end
+
+  def current_point_roll_count
+    #
+    # point_roll count starts at 1 after the first
+    # point has been established in a shooter roll
+    # this is useful for bettors that want to wait
+    # a few rolls after the point is established before
+    # making place bets
+    table.shooter.num_rolls_after_first_point
   end
 
 end

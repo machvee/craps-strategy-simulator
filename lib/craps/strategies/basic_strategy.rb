@@ -11,8 +11,8 @@ class BasicStrategy < BaseStrategy
       with_single_odds_on(4, 10).
       press_by_additional_bet_unit.after_win(3)
     horn_high_yo.for(5).on_the_come_out_roll.after_making_point(2)
-    place_on(6).press_by_additional_bet_unit.after_win(2).no_press_after_win(10)
-    place_on(8).press_by_additional_bet_unit.after_win(2).no_press_after_win(10)
+    place_on(6).after_rolls_beyond_first_point(1).press_by_additional_bet_unit.after_win(2).no_press_after_win(10)
+    place_on(8).after_rolls_beyond_first_point(1).press_by_additional_bet_unit.after_win(2).no_press_after_win(10)
     place_on(5).after_making_point(1).press_by_additional_bet_unit.after_win(2).no_press_after_win(8)
     place_on(9).after_making_point(2).press_by_additional_bet_unit.after_win(2).no_press_after_win(8)
 

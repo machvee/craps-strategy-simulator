@@ -20,9 +20,9 @@ class Table
 
   delegate :on?, :off?, :is_hot?, :is_good?, :is_choppy?, :is_cold?, to: :table_state
 
-  delegate :dice,              to: :shooter
-  delegate :min_bet, :max_bet, to: :config
-  delegate :seed, to: :dice_tray
+  delegate :dice, :total_rolls, to: :shooter
+  delegate :min_bet, :max_bet,  to: :config
+  delegate :seed,               to: :dice_tray
 
   DEFAULT_OPTIONS = {
     config:                    TableConfig.new,
@@ -95,10 +95,6 @@ class Table
 
   def last_roll
     shooter.dice.value
-  end
-
-  def total_rolls
-    shooter.total_rolls
   end
 
   def max_odds(number)
@@ -200,7 +196,7 @@ class Table
 
   def announce_roll
     status '%d: %s rolls: %2d %s %s' %
-      [shooter.dice.num_rolls,
+      [shooter.num_rolls,
        shooter.player.name,
        last_roll,
        shooter.dice.inspect,
