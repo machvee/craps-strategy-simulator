@@ -33,9 +33,9 @@ class PlayerTest < ActiveSupport::TestCase
     bet_stats = mock('bet_stats')
     bet_stats.expects(:new_child_instance).once
     shooter = mock('shooter')
-    roll_stats = mock('roll_stats')
-    shooter.expects(:roll_stats).once.returns(roll_stats)
-    roll_stats.expects(:new_child_instance).once
+    dice_stats = mock('dice_stats')
+    shooter.expects(:dice_stats).once.returns(dice_stats)
+    dice_stats.expects(:new_child_instance).once
     @table.expects(:player_bet_stats).returns(bet_stats)
     @table.expects(:config).returns(mock('config', min_bet: 10))
     @table.expects(:shooter).once.returns(shooter)

@@ -3,8 +3,12 @@ class Measure
   # keep totals, avg, min and max for ongoing measurement of an quantity
   # e.g. Number of points a shooter made during his turn
   #
+  # incr and commit provide a way to count occurences then commit them
+  # as a measure
+  #
   attr_reader   :name
 
+  attr_reader   :tally  # ongoing counter
   attr_reader   :count  # number of times measured
   attr_reader   :total  # ongoing total
   attr_reader   :min    # ongoing min
@@ -16,6 +20,15 @@ class Measure
     @name = name
     @last_history = RingBuffer.new(options[:history_length]||DEFAULT_HISTORY_LENGTH)
     reset
+  end
+
+  def incr(val=1)
+    @tally += val
+  end
+
+  def commit
+    add(tally)
+    @tally = 0
   end
 
   def add(measurement)
@@ -35,15 +48,16 @@ class Measure
   end
 
   def reset
+    @tally = 0
     @count = 0
     @total = 0
-    @min = 0
-    @max = 0
+    @min = nil
+    @max = nil
     @last_history.clear
   end
 
   def to_s
-    "#{name} - count: %d, total: %d, min: %d, max: %d, avg: %s" % [count, total, min, max, average]
+    "#{name} - count: %d, total: %d, min: %s, max: %s, avg: %s" % [count, total, min||'-', max||'-', average||'-']
   end
 
   def inspect
@@ -59,11 +73,11 @@ class Measure
   private
 
   def keep_min(measurement)
-    @min = measurement if @min > measurement
+    @min = measurement if @min.nil? || @min > measurement
   end
 
   def keep_max(measurement)
-    @max = measurement if @max < measurement
+    @max = measurement if @max.nil? || @max < measurement
   end
 
 end

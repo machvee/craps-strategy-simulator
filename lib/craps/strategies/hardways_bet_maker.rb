@@ -5,8 +5,8 @@ class HardwaysBetMaker < BetMaker
 
   def make_or_ensure_bet
     #
-    # need to make this bet on_the_point, but then keep it there,
-    # and possibly press it, until it loses.
+    # need to make this bet on_the_point, but once made, keep it there until the bet loses
+    # possibly pressing it as it may win again along the way
     #
     if already_made_the_required_number_of_bets
       return if bets_off

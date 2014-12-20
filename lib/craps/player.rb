@@ -10,7 +10,7 @@ class Player
   attr_accessor :bet_unit
 
   delegate :table_state, :config, to: :table
-  delegate :bet_stats, :roll_stats, to: :stats
+  delegate :bet_stats, :dice_stats, to: :stats
 
   def initialize(name, table, start_amount, bet_unit=nil)
     @bets = []

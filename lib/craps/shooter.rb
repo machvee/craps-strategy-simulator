@@ -3,7 +3,7 @@ class Shooter
   attr_reader   :player
   attr_reader   :last_shooter
   attr_accessor :dice
-  attr_reader   :roll_stats  # across all rolls on this table
+  attr_reader   :dice_stats  # across all rolls on this table
   attr_reader   :total_rolls # across all shooters
 
   delegate :players, :dice_tray, to: :table
@@ -13,8 +13,8 @@ class Shooter
   def initialize(table, roll_history_length=ROLL_HISTORY_LENGTH)
     @table = table
     no_shooter
-    @roll_stats = RollStats.new("dice", table: table)
-    @roll_stats.add_stats
+    @dice_stats = RollStats.new("dice", table: table)
+    @dice_stats.add_stats
     @roll_history = RingBuffer.new(roll_history_length)
     @total_rolls = 0
     @start_point_roll_count = nil
@@ -59,7 +59,7 @@ class Shooter
     raise "no roll. need a player to take the dice" if dice.nil?
     dice.roll.tap { |value|
       @roll_history << value
-      player.roll_stats.update
+      player.dice_stats.update
       @total_rolls += 1
     }
   end
@@ -93,7 +93,7 @@ class Shooter
   end
 
   def reset_stats
-    roll_stats.reset
+    dice_stats.reset
     @roll_history.clear
     @total_rolls = 0
   end

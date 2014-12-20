@@ -57,10 +57,10 @@ class ShooterTest < ActiveSupport::TestCase
 
   def test_stats_access
     roll_some(5,5)
-    assert @shooter.roll_stats.rolled_2.total >= 0
-    assert @shooter.roll_stats.rolled_3.total >= 0
-    assert @shooter.roll_stats.rolled_7.total >= 0
-    assert @shooter.roll_stats.rolled_8.total >= 0
+    assert @shooter.dice_stats.rolled_2.total >= 0
+    assert @shooter.dice_stats.rolled_3.total >= 0
+    assert @shooter.dice_stats.rolled_7.total >= 0
+    assert @shooter.dice_stats.rolled_8.total >= 0
   end
 
   private
