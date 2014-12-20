@@ -3,7 +3,7 @@ class TableState
   attr_reader  :point  # 4,5,6,8,9 or 10
   attr_reader  :table  # table we belong to
   attr_reader  :numbers # history of number of rolls between ON and OFF
-  attr_reader  :roll_counter
+  attr_reader  :point_numbers_rolled
   attr_reader  :table_heat
 
   CALLBACKS = [
@@ -15,7 +15,6 @@ class TableState
   delegate :on, to: :callbacks
 
   delegate :dice, to: :table
-  delegate :numbers, :hot_numbers_average, to: :roll_counter
 
   delegate :is_hot?, :is_good?, :is_choppy?, :is_cold?,
            :heat_index_in_words,
@@ -23,7 +22,7 @@ class TableState
 
   def initialize(table, history_length, options={})
     @table = table
-    @roll_counter = options[:frequency_counter] || FrequencyCounter.new(history_length)
+    @point_numbers_rolled = options[:frequency_counter] || Measure.new('point_numbers_rolled', history_length: history_length)
     @table_heat = options[:table_heat] || TableHeat.new(self, history_length)
     @callbacks = Callbacks.new(CALLBACKS)
     clear_point
@@ -40,12 +39,20 @@ class TableState
       table_off
       callbacks.invoke(:seven_out)
     elsif dice.points?
-      roll_counter.bump
+      point_numbers_rolled.incr
     end
   end
 
+  def hot_numbers_average
+    point_numbers_rolled.average
+  end
+
+  def numbers
+    point_numbers_rolled.count
+  end
+
   def reset
-    roll_counter.clear
+    point_numbers_rolled.reset
     clear_point
   end
 
@@ -55,7 +62,7 @@ class TableState
 
   def table_off
     clear_point
-    roll_counter.commit
+    point_numbers_rolled.commit
   end
 
   def clear_point
@@ -66,7 +73,7 @@ class TableState
   def table_on_with_point(point)
     @on_off = true
     @point = point
-    roll_counter.reset
+    point_numbers_rolled.reset
     return
   end
 

@@ -13,17 +13,8 @@ class Shooter
   def initialize(table, roll_history_length=ROLL_HISTORY_LENGTH)
     @table = table
     no_shooter
-    @dice_stats = RollStats.new("dice", table: table)
-    @dice_stats.add_stats
-    @roll_history = RingBuffer.new(roll_history_length)
-    @total_rolls = 0
-    @start_point_roll_count = nil
-
-    setup_callback_every_time_the_table_goes_seven_out
-
-    table.table_state.on(:point_established) do
-      @start_point_roll_count ||= num_rolls
-    end
+    init_stats(roll_history_length)
+    setup_callbacks
   end
 
   def set
@@ -47,7 +38,7 @@ class Shooter
       @dice = dice_tray.take_dice
       @start_point_roll_count = nil
     end
-    @player
+    player
   end
 
   def done
@@ -60,6 +51,7 @@ class Shooter
     dice.roll.tap { |value|
       @roll_history << value
       player.dice_stats.update
+      player.shooter_stats.rolls.incr
       @total_rolls += 1
     }
   end
@@ -105,9 +97,26 @@ class Shooter
 
   private
   
-  def setup_callback_every_time_the_table_goes_seven_out
+  def init_stats(roll_history_length)
+    @dice_stats = RollStats.new("dice", table: table)
+    @dice_stats.add_stats
+    @roll_history = RingBuffer.new(roll_history_length)
+    @total_rolls = 0
+    @start_point_roll_count = nil
+  end
+
+  def setup_callbacks
     table.table_state.on(:seven_out) do
+      player.shooter_stats.commit
       done
+    end
+
+    table.table_state.on(:point_made) do
+      player.shooter_stats.points.incr
+    end
+
+    table.table_state.on(:point_established) do
+      @start_point_roll_count ||= num_rolls
     end
   end
 end

@@ -2,6 +2,7 @@ class PlayerStats
   attr_reader   :player
   attr_reader   :bet_stats
   attr_reader   :dice_stats # keep stats on numbers rolled
+  attr_reader   :shooter_stats
 
   delegate :table, :money, to: :player
 
@@ -10,6 +11,7 @@ class PlayerStats
 
     @bet_stats = table.player_bet_stats.new_child_instance("#{player.name}'s bet stats")
     @dice_stats = table.shooter.dice_stats.new_child_instance("#{player.name}'s shooter stats")
+    @shooter_stats = ShooterStats.new
   end
 
   def up_down
@@ -46,6 +48,8 @@ class PlayerStats
     bet_stats.print
     puts "-"*80
     dice_stats.print
+    puts "-"*80
+    shooter_stats.print
     return
   end
 
@@ -54,8 +58,9 @@ class PlayerStats
   end
 
   def reset
-    @bet_stats.reset
-    @dice_stats.reset
+    bet_stats.reset
+    dice_stats.reset
+    shooter_stats.reset
   end
 
 end

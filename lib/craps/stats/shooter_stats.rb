@@ -8,15 +8,24 @@
 class ShooterStats
   attr_reader :rolls
   attr_reader :points
-  attr_reader :front_line_winners
-  attr_reader :craps
-  attr_reader :player
 
-  def initialize(player)
-    @player = player
-    @rolls = Measure.new("rolls")
-    @points = Measure.new("points")
-    @front_line_winners = Measure.new("winners")
-    @craps = Measure.new("craps")
+  def initialize
+    @rolls  = Measure.new("rolls per turn")
+    @points = Measure.new("points made per turn")
+  end
+
+  def commit
+    rolls.commit
+    points.commit
+  end
+
+  def reset
+    rolls.reset
+    points.reset
+  end
+
+  def print
+    puts @rolls.to_s
+    puts @points.to_s
   end
 end

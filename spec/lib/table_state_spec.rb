@@ -33,8 +33,8 @@ describe TableState do
   end
 
   it 'should clear the roll_counter and clear point when reset' do
-    roll_counter = instance_double('FrequencyCounter')
-    expect(roll_counter).to receive(:clear).with(no_args)
+    roll_counter = instance_double('Measure')
+    expect(roll_counter).to receive(:reset).with(no_args)
     @table_state = TableState.new(@table, @history_length, frequency_counter: roll_counter)
     @table_state.reset
     expect(@table_state.off?).to be true
@@ -42,7 +42,7 @@ describe TableState do
   end
 
   it 'should commit the roll_counter and clear point when table is set off' do
-    roll_counter = instance_double('FrequencyCounter')
+    roll_counter = instance_double('Measure')
     expect(roll_counter).to receive(:commit).with(no_args)
     @table_state = TableState.new(@table, @history_length, frequency_counter: roll_counter)
     @table_state.table_off
@@ -52,7 +52,7 @@ describe TableState do
 
   it 'should respond to table_on_with_point, setting current point and table state on, with new roll_counter' do
     @value = 9
-    roll_counter = instance_double('FrequencyCounter')
+    roll_counter = instance_double('Measure')
     expect(roll_counter).to receive(:reset).with(no_args)
     @table_state = TableState.new(@table, @history_length, frequency_counter: roll_counter)
     @table_state.table_on_with_point(@value)
@@ -212,7 +212,7 @@ describe TableState do
   end
 
   it 'should update the table state to on given the table off and point number rolled then off when rolled again' do
-    roll_counter = instance_double('FrequencyCounter')
+    roll_counter = instance_double('Measure')
     expect(roll_counter).to receive(:reset).with(no_args)
     expect(roll_counter).to receive(:commit).with(no_args)
     @table_state = TableState.new(@table, @history_length, frequency_counter: roll_counter)
@@ -229,7 +229,7 @@ describe TableState do
   end
 
   it 'should set table off and invoke table callbacks when seven out' do
-    roll_counter = instance_double('FrequencyCounter')
+    roll_counter = instance_double('Measure')
     expect(roll_counter).to receive(:commit).with(no_args)
     expect(roll_counter).to receive(:reset).with(no_args)
     expect(@shooter).to receive(:done).with(no_args)
