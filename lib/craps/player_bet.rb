@@ -70,6 +70,7 @@ class PlayerBet
 
     player.rail.transfer_from(table.wagers, self.amount)
     player.rail.transfer_from(table.house, amount_won)
+    player.pay_any_commission(craps_bet, self.amount)
 
     status('wins', amount_won, :green)
 

@@ -7,4 +7,8 @@ class BuyBet < PlaceBet
   def self.gen_number_bets(table)
     CrapsDice::POINTS.map {|number| BuyBet.new(table, number)}
   end
+  
+  def commission
+    5
+  end
 end
