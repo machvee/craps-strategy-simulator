@@ -1,6 +1,7 @@
-stats - two varieties: 
-  1. Events made/win/loss/streaks (e.g. RollStat)
+stats - three varieties: 
+  1. Events made/win/loss/streaks (e.g. rolled a 2,3,4,5...etc)
   2. Bets made/win/loss/streaks, with summed quantities associated with made/win/loss (TableBet parent, PlayerBet child bets)
+  3. Measure.  keep min,max,avg on measurement of an entity.  e.g. # of points made in a shooter turn
 
   Stats can be collected for groups of related stats.  This allows StatDefs to be shared easily, and also 
   allows iteration over many stats for tabluar print out and aggregating totals (e.g. total amount across all bets)
@@ -29,7 +30,7 @@ specific bet subclass of craps_bet
   outcome - logic for determining win or loss based on table state and last roll.  returns true Outcome
   additional_stats - can register and maintain additional stats, and is responsible for their tallys
   
-table_bet - ties the specific bet subclass to a physical table
+bet_box - ties the specific bet subclass to a physical table
   player_bets - current player_bets (on/off) on the table felt
   settle - iterates through player_bets outcome method to pay players winnings, takes house winnings, move or return bets
   stat - based on subclass name bets made/win/loss/streaks, amount bet/won/lost.  Iterates through player_bet and craps_bet subclass 
@@ -38,18 +39,6 @@ player - when he joins the table, he gets a clone of all table_bet stats and sho
   the table level, they are also tallied for the player when relevent -- when he's the shooter and when he has a player_bet on a
   active on a table_bet
   
-
-
-PassLineBet < CrapsBet
-  WinStat
-  *PointMadeStat
-  *FrontLineWinner
-  OutCome decider given table_state and dice.value.  WIN/LOSE OTHER
-
-TableBet has_a PassLineBet
-  add_bet - appends PlayerBet to TableBets player_bets array, and registers that child bet instance with the parent.  A method defined
-  in PlayerBet gives the optional {:amount => player_bet.amount/winnings} to the stats that need amounts passed in.  Each child bet is tallied
-  and the parent bet is tallied each time so it reflects the aggregation of child bets.
 
 -------
 
@@ -95,7 +84,7 @@ Player walks to the table with and ID, money, a betting level, a playing strateg
 
 e.g.
 ID:          "Dave"
-Money:   $1000
+Money:       $1000
 Unit:        $10 min bet table
 Strategy: Basic strategy plus something to try new
 Exit Criteria:  Leave the table when 75% down, or 300% up, or broke (allow negative?)
@@ -110,6 +99,7 @@ Money Stats:   How did my money level rise/fall during the run?  High/low point?
 Hot Rolls:  Show me where and for how long my hot rolls were.   Points made, press levels, amount won
 Cold Table:  Show me where I couldn't buy a win.  How long did it last.
 
+
 Saved Run:
 Save all of the above inputs and outputs, including the Dice Seed, and give it a unique name.  The Run should be able to be re-run from the stored inputs and get the identical results.  
 
@@ -123,6 +113,7 @@ Compare Runs.   Runs should be comparable.   Compare the inputs and show differe
 
 
 Run Stats to keep
+-----------------
 
 Roll Stats
 # Shoot dice Roll Stats (keep existing)
@@ -255,6 +246,7 @@ Testing out Strategies
      All Stats from #6
      Player stats
 
+
 Bet Makers and PassLine and Come Out bets
 
   1.  Bet makers are responsible only for making the Passline bet and a come Out bet at the appropriate times.
@@ -284,4 +276,47 @@ Place Bet Makers and Management
   3. Support maker semantics to relocate the bet, keep or put it on the point number (we have off_the_point to mean the opposite)
      and if the bet will be relocated, an order in which to locate a new place bet number (default: 6,8,5,9,4,10)
 
+
+Bets that are Left up/Taken Down/Working/Off
+--------------------------------------------
+1. With the exception of Come/Passline Bets, all bets can be removed after made.
+2  Come/Passline Bets can be pressed but cannot be reduced or taken down once made
+3. Some bets are left up by nature after a win:
+     a. one roll bets.  winners are paid, but original bet is left up.  Sometimes pressed
+     b. place/buy and hard-ways bets.  Winner is paid, but original bet is left up.  Sometimes pressed.
+4. When bets are left up by nature, they will be:
+     a. hard-ways, and place/buy bets are implicitly 'off' during the come out rolls
+     b. implicitly 'on' during the point making rolls
+5. Any bet that can be removed, can be marked explicitly 'off' by the shooter.
+        e.g. Mark place bets off after dice leave the table
+6. Any bet that is implicitly off during the come-out roll, can be marked explicitly 'on' by the shooter.
+
+
+Table/Dice events to monitor for BetMaker/Presser
+                nPM
+ +----------------------------------+
+ |           +-----------+---+      |
+ v           v     nBW   |   |      |
+COR      PE(n)  BM(n)   BW   BL    PM
+ |.......|.......|.......|...|......|....SO
+ 1 2 3 4 5 6 7 8 9 1 1 1 1 1 1 1 1 1 1 2 2
+           |       0 1 2 3 4 5 6 7 8 9 0 1
+           |         nR
+           1 2 3 4 5 6 7 8 9 1 1 1 1
+                             0 1 2 3
+                   nRPE
+
+COR   = Come out Roll passline bet/one-roll bets
+BW    = Bet Won (e.g. hardways, place, come)
+PM    = Point Made
+BM    = Bet Made (e.g. hardways, place, come)
+BL    = Bet Lost
+SO    = Seven Out.  End of life for BetMakers and counts
+
+PE(n) = nth Point Established
+nPM   = nth Point Made
+nR    = nth of rolls
+nRPE  = nth Rolls after a Point Established
+BM(n) = max of given type of Bets Made (e.g. make only n come/place bets)
+nBW   = number of given bet wins w/o loss
 
