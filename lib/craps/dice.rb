@@ -24,6 +24,9 @@ end
 
 
 class Dice
+
+  include Watchable
+
   attr_reader   :set
   attr_reader   :value
   attr_reader   :seeder
@@ -77,7 +80,8 @@ class Dice
   def roll
     @num_rolls += 1
     shake_dice
-    @value
+    check_watchers
+    value
   end
 
   def gather(num_rolls)
