@@ -8,6 +8,7 @@ class DiceTray
   DEFAULT_NUM_TRAY_DIE=8
   NUM_SHOOTER_DIE=2
 
+  attr_reader :table
   attr_reader :tray
   attr_reader :metadice
   attr_reader :num_dice
@@ -16,6 +17,7 @@ class DiceTray
   delegate :seed, to: :tray
 
   def initialize(table, die_seeder, num_dice_in_tray=DEFAULT_NUM_TRAY_DIE)
+    @table = table
     @num_dice = num_dice_in_tray
     reset(die_seeder)
     @metadice = CrapsDice.new(NUM_SHOOTER_DIE)
@@ -27,9 +29,9 @@ class DiceTray
 
   def take_dice(offsets=nil)
     raise "dice are out" unless tray.count == @num_dice
-    raise "take any #{NUM_SHOOTER_DIE} dice" if \
-      offsets.length != NUM_SHOOTER_DIE unless offsets.nil?
-    offsets.nil? ? tray.extract(NUM_SHOOTER_DIE) : tray.extract(offsets)
+    raise "take any #{NUM_SHOOTER_DIE} dice" if offsets.length != NUM_SHOOTER_DIE unless offsets.nil?
+    dice = offsets.nil? ? tray.extract(NUM_SHOOTER_DIE) : tray.extract(offsets)
+    dice
   end
 
   def return_dice(dice)

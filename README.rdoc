@@ -320,3 +320,29 @@ nRPE  = nth Rolls after a Point Established
 BM(n) = max of given type of Bets Made (e.g. make only n come/place bets)
 nBW   = number of given bet wins w/o loss
 
+Real Table Play to Model in Callback Sequencing
+-----------------------------------------------
+TableState State Chart: Table Off <=> Table On
+  Events: Point_Established, Seven_Out
+  Who Cares: Bet Payout, PlayerBet Validator, BetMakers
+
+Betting State Chart: Betting Allowed <=> Betting Not Allowed
+  Events: Dice Out, Dice Called
+  Who Cares: Players and BetMakers so they can know when to bet
+
+Dice State Chart: Dice In Tray <=> Dice Out <=> Dice Rolled
+  Events: ShooterRolled, SevenOut, StickmanCalls, All PlayerBets Paid/Removed
+  Who Cares: Stickman so he knows where the Dice are, Shooter
+
+Shooter State Chart:  Points in Play <=> Seven Out
+  Events: SevenOut, DiceOut
+  Who Cares: Shooter continues to roll, Stickman takes dice
+
+
+Stickman State Chart
+--------------------
+watch 'AllPlayerBettingStop'
+   [Dice in Tray] offer tray to shooter
+   [Dice Rolled]  give dice to shooter
+watch 'DiceRoll'
+   announce the roll

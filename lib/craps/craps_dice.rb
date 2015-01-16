@@ -12,7 +12,6 @@ class CrapsDice < Dice
   DICE_FREQUENCY_COUNTS = [0,0,1,2,3,4,5,6,5,4,3,2,1]
   ODDS_OF_ROLLING_A = Hash.new {|h,k| h[k] = ((DICE_FREQUENCY_COUNTS[k]*1.0)/36.0)}
 
-
   def seven?
     value == 7
   end
@@ -37,12 +36,12 @@ class CrapsDice < Dice
     CRAPS.include?(value)
   end
 
-  def hard?(value)
-    HARDS.include?(value) && same?
+  def hard?(hard_value)
+    value == hard_value && same?
   end
 
-  def easy?(value)
-    HARDS.include?(value) && !same?
+  def easy?(easy_value)
+    value == easy_value && !same?
   end
 
   def points?
@@ -55,5 +54,19 @@ class CrapsDice < Dice
 
   def rolled?(number)
     number == value
+  end
+
+  private
+
+  def additional_watchers
+    watcher(:seven)   {|d| d.seven?}
+    watcher(:winner)  {|d| d.winner?}
+    watcher(:craps)   {|d| d.craps?}
+    watcher(:fields)  {|d| d.fields?}
+    watcher(:points)  {|d| d.points?}
+    HARDS.each do |hv|
+      watcher("hard_#{hv}".to_sym)  {|d| d.hard?(hv)} 
+      watcher("easy_#{hv}".to_sym)  {|d| d.easy?(hv)} 
+    end
   end
 end

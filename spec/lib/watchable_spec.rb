@@ -61,31 +61,31 @@ class Life
     @name = name
     @time = Time.new
 
-    time.watch_for(:always, :birthday) do
+    time.watch_for(:always, :birthday) do |name, time|
       bake_a_cake("Happy Birthday, #{name}")
     end
   
-    time.watch_for(:school_age, :bus_reminder) do
+    time.watch_for(:school_age, :bus_reminder) do |name, time|
       milestone "Catch the Bus!"
     end
 
-    time.watch_for_once(:school_age, :take_picture_at_bus) do
+    time.watch_for_once(:school_age, :take_picture_at_bus) do |name, time|
       milestone "First Day at School!"
     end
 
-    time.watch_for(:teenager, :just_say_no) do
+    time.watch_for(:teenager, :just_say_no) do |name, time|
       milestone "Don't do drugs"
     end
 
-    time.watch_for(:adulthood, :kick_em_out) do
-      milestone "Grown-up"
+    time.watch_for(:adulthood, :kick_em_out) do |cb_name, cb_time|
+      milestone "Grown-up, #{cb_name} at #{cb_time.current}"
     end
 
-    time.watch_for(:old, :diet_change) do
+    time.watch_for(:old, :diet_change) do |name, time|
       milestone "start buying oatmeal"
     end
 
-    time.watch_for(:centurion, :call_willard) do
+    time.watch_for(:centurion, :call_willard) do |name, time|
       milestone "get on Today Show"
     end
   end
@@ -119,7 +119,7 @@ class School
 
   def enroll(student)
     @attendees << student.name
-    student.time.watch_for(:school_age, :truancy) do
+    student.time.watch_for(:school_age, :truancy) do |name, time|
       raise "call parents" if truant?(student.name)
     end
   end
@@ -193,7 +193,7 @@ describe Watchable do
     expect(@dave).to receive(:milestone).with(/First Day/).once
     expect(@school).to receive(:truant?).with(@dave.name).at_least :once
     expect(@dave).to receive(:milestone).with(/drugs/).at_least :once
-    expect(@dave).to receive(:milestone).with(/Grown-up/).once
+    expect(@dave).to receive(:milestone).with("Grown-up, kick_em_out at 21").once
     expect(@dave).to receive(:milestone).with(/start buying/).exactly(cnt-64).times
     expect(@dave).to receive(:bake_a_cake).exactly(cnt).times
     cnt.times {@dave.birthday}
@@ -218,7 +218,7 @@ describe Watchable do
 
   it "should handle custom watcher/callback combo" do
     @years_of_college = 0
-    @dave.time.watch_it(:college, Proc.new {|time| (18..21).include?(time.current) }) do 
+    @dave.time.watch_it(:college, Proc.new {|time| (18..21).include?(time.current) }) do |name, time|
       @years_of_college += 1
     end
     17.times {

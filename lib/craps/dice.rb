@@ -41,6 +41,7 @@ class Dice
     @num_rolls = 0
     @set = []
     set_size.times {set << Die.new(@seeder.rand)}
+    setup_watchers
     shake_dice
   end
 
@@ -140,6 +141,29 @@ class Dice
   end
 
   private
+
+  def setup_watchers
+    #
+    # dice users an set up callbacks based on roll values
+    #  e.g. dice.watch_for(:a_2) do
+    #         @snake_eyes += 1
+    #       end
+    #    
+    #       dice.watch_for(:a_11) do
+    #         puts "yo!"
+    #       end
+    #
+    #
+    value_range.each do |val|
+      watcher("a_#{val}".to_sym) { |d| d.value == val }
+    end
+
+    additional_watchers
+  end
+
+  def additional_watchers
+    # override in subclass with more watchers if desired
+  end
 
   def shake_dice
     @value = set.inject(0) { |s, d| s += d.roll }

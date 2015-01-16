@@ -1,150 +1,125 @@
 class TableState
-  attr_reader  :on_off #  true table on, false table off
-  attr_reader  :point  # 4,5,6,8,9 or 10
-  attr_reader  :table  # table we belong to
-  attr_reader  :numbers # history of number of rolls between ON and OFF
-  attr_reader  :point_numbers_rolled
-  attr_reader  :table_heat
 
-  CALLBACKS = [
-    :point_established,
-    :point_made,
-    :seven_out
-  ]
-  attr_reader  :callbacks
-  delegate :on, to: :callbacks
+  include Watchable
+
+  attr_reader  :point   # 4,5,6,8,9 or 10
+  attr_reader  :table   # table we belong to
+  attr_reader  :pending # set when going :on or :off
+
+  #
+  # betting is allowed from the point in time that the:
+  #   dice are in the tray
+  #     -- or --
+  #   the dice have just completed a roll
+  # until the:
+  #   shooter takes the dice in hand
+  #
+  attr_reader  :betting_allowed
 
   delegate :dice, to: :table
 
-  delegate :is_hot?, :is_good?, :is_choppy?, :is_cold?,
-           :heat_index_in_words,
-           :heat_index, to: :table_heat
-
   def initialize(table, history_length, options={})
     @table = table
-    @point_numbers_rolled = options[:frequency_counter] || Measure.new('point_numbers_rolled', history_length: history_length)
-    @table_heat = options[:table_heat] || TableHeat.new(self, history_length)
-    @callbacks = Callbacks.new(CALLBACKS)
-    clear_point
+
+    watcher(:point_established) {|ts| ts.point_established?}
+    watcher(:point_made)        {|ts| ts.point_made?}
+    watcher(:seven_out)         {|ts| ts.seven_out?}
+
+    pending_state(:off)
+    new_state_from_pending
+    @betting_allowed = true
   end
 
-  def update
-    if point_established?
-      table_on_with_point(last_roll)
-      callbacks.invoke(:point_established)
-    elsif point_made?
-      callbacks.invoke(:point_made)
-      table_off
-    elsif seven_out?
-      table_off
-      callbacks.invoke(:seven_out)
-    elsif dice.points?
-      point_numbers_rolled.incr
+  def on?
+    point.present?
+  end
+
+  def off?
+    point.nil?
+  end
+
+  def add_dice_watchers(new_dice)
+    #
+    # table state uses dice values to alter its on/off state
+    # watch and check for these transitions on each roll.
+    # then we check our own watchers for objects watching for
+    # changes in our table state.
+    #
+    new_dice.watch_for(:seven, :table_off) do |cb_name, dice|
+      check_watchers
+      table_off if on?
+    end
+
+    new_dice.watch_for(:points, :table_on) do |cb_name, dice|
+      check_watchers
+      if off?
+        table_on(dice.value)
+      elsif dice.value == point
+        table_off
+      end
     end
   end
 
-  def hot_numbers_average
-    point_numbers_rolled.average
-  end
-
-  def numbers
-    point_numbers_rolled.count
-  end
-
   def reset
-    point_numbers_rolled.reset
     clear_point
+  end
+
+  def no_more_bets
+    @betting_allowed = false
+  end
+
+  def place_your_bets
+    @betting_allowed = true
   end
 
   def last_roll
+    #
+    # this is how all table objects should get the
+    # current value of the thrown dice
+    #
     dice.value
-  end
-
-  def table_off
-    clear_point
-    point_numbers_rolled.commit
-  end
-
-  def clear_point
-    @on_off = false
-    @point = nil
-  end
-
-  def table_on_with_point(point)
-    @on_off = true
-    @point = point
-    point_numbers_rolled.reset
-    return
   end
 
   def seven_out?
     on? && dice.seven?
   end
 
-  def on?
-    on_off
+  def point_established?
+    off? && dice.points?
   end
 
-  def off?
-    !on?
+  def point_made?
+    on? && (last_roll == point)
   end
 
-  def point_established?(value=nil)
-    off? && dice.points? && match_roll?(value)
-  end
-
-  def point_made?(value=nil)
-    on? && (last_roll == point) && match_roll?(value)
-  end
-
-  def front_line_winner?(value=nil)
-    off? && dice.winner? && match_roll?(value)
-  end
-
-  def crapped_out?(value=nil)
-    off? && dice.craps? && match_roll?(value)
-  end
-
-  def yo_eleven?
-    front_line_winner?(11)
-  end
-
-  def winner_seven?
-    front_line_winner?(7)
-  end
-
-  def rolled?(value)
-    last_roll == value
-  end
-  
-  def point?(value)
-    point == value
-  end
-
-  def match_roll?(value)
-    value.nil? || rolled?(value)
-  end
-
-  def stickman_calls_roll
-    if point_made?
-      trailer = "===== #{table.tracking_bet_stats.pass_line_point.current_winning_streak + 1} ====="
-      "WINNER!! #{last_roll}. Pay the line.  #{trailer}"
-    elsif seven_out?
-      ("7 out  " + '='*20)
-    elsif winner_seven?
-      "7 Front line winner!!"
-    elsif yo_eleven?
-      "yo 11!!" 
-    elsif crapped_out?
-      "crap!!" 
-    elsif point_established?
-      "the point is #{last_roll}"
-    elsif rolled?(5)
-      "no field 5"
+  def new_state_from_pending
+    case pending
+      when :on
+        table_on
+      when :off
+        table_off
     end
+    @pending = nil
   end
 
   private
 
+  def pending_state(state)
+    @pending = state
+  end
+
+  def table_off
+    clear_point
+  end
+
+  def clear_point
+    @point = nil
+  end
+
+  def table_on(point)
+    @point = point
+    point_numbers_rolled.reset
+    return
+  end
 
 end

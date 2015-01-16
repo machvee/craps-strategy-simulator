@@ -1,3 +1,31 @@
+  =begin
+  def hot_numbers_average
+    point_numbers_rolled.average
+  end
+
+  def numbers
+    point_numbers_rolled.count
+  end
+
+  def reset
+    point_numbers_rolled.reset
+  end
+
+  point_numbers_rolled.commit
+
+  attr_reader  :numbers # history of number of rolls between ON and OFF
+  attr_reader  :point_numbers_rolled
+  attr_reader  :table_heat
+
+  from table_state.rb
+  delegate :is_hot?, :is_good?, :is_choppy?, :is_cold?,
+           :heat_index_in_words,
+           :heat_index, to: :table_heat
+
+    @point_numbers_rolled = options[:frequency_counter] || Measure.new('point_numbers_rolled', history_length: history_length)
+    point_numbers_rolled.incr
+    @table_heat = options[:table_heat] || TableHeat.new(self, history_length)
+    =end
 class TableHeat
 
   attr_reader :table_state

@@ -2,7 +2,6 @@ class Shooter
   attr_reader   :table
   attr_reader   :player
   attr_reader   :last_shooter
-  attr_accessor :dice
   attr_reader   :dice_stats  # across all rolls on this table
   attr_reader   :total_rolls # across all shooters
 
@@ -14,7 +13,7 @@ class Shooter
     @table = table
     no_shooter
     init_stats(roll_history_length)
-    setup_callbacks
+    add_watchers_to(table.table_state)
   end
 
   def set
@@ -35,7 +34,7 @@ class Shooter
         ns = 0 if (ns == players.length)
       end
       @last_shooter = @player = players[ns]
-      @dice = dice_tray.take_dice
+      select_dice
       @start_point_roll_count = nil
     end
     player
@@ -97,6 +96,10 @@ class Shooter
 
   private
   
+  def select_dice(offsets=nil)
+    dice = table.select_dice(offsets)
+  end
+
   def init_stats(roll_history_length)
     @dice_stats = RollStats.new("dice", table: table)
     @dice_stats.add_stats
@@ -105,8 +108,8 @@ class Shooter
     @start_point_roll_count = nil
   end
 
-  def setup_callbacks
-    table.table_state.on(:seven_out) do
+  def add_watchers_to(table_state)
+    table_state.watch("seven_out", Proc.new {|ts| ts.seven_out?}) do
       player.shooter_stats.commit
       done
     end

@@ -5,8 +5,11 @@ class Table
   attr_reader    :tracking_bet_stats   # based on outcome of tracking_bets
   attr_reader    :player_bet_stats     # rolled up from bet_stats on player bets
   attr_reader    :table_state
+  attr_reader    :table_heat
   attr_reader    :config
   attr_reader    :dice_tray
+  attr_reader    :stickman
+  attr_accessor  :dice
   attr_reader    :seed                 # the seed used by the dice_tray prng (for Table.reruns)
   attr_reader    :tracking_strategy    # makes the tracking bets
   attr_reader    :tracking_player
@@ -18,9 +21,10 @@ class Table
   attr_accessor  :quiet_table # not verbose about all actions
   attr_accessor  :pause_option # stop after each roll and prompt stdin if true
 
-  delegate :on?, :off?, :is_hot?, :is_good?, :is_choppy?, :is_cold?, to: :table_state
+  delegate :on?, :off?, :last_roll,                     to: :table_state
+  delegate :is_hot?, :is_good?, :is_choppy?, :is_cold?, to: :table_heat
 
-  delegate :dice, :total_rolls, to: :shooter
+  delegate :total_rolls,        to: :shooter
   delegate :min_bet, :max_bet,  to: :config
   delegate :seed,               to: :dice_tray
 
@@ -48,7 +52,9 @@ class Table
     @table_state = TableState.new(self, opts[:table_heat_history_points])
     table_state.table_off
 
-    setup_callback_every_time_the_table_goes_seven_out
+    @stickman = Stickman.new(self)
+
+    setup_watcher_for_on_seven_out
 
     #
     # house is the houses money Account
@@ -93,10 +99,6 @@ class Table
     player_strategies.each {|strategy| strategy.reset}
   end
 
-  def last_roll
-    shooter.dice.value
-  end
-
   def max_odds(number)
     config.max_odds(number)
   end
@@ -119,11 +121,21 @@ class Table
     return
   end
 
+  def select_dice(offsets=nil)
+    #
+    # called by the Shooter, this chooses two dice at (random/specific) offsets
+    # and sets the dice for the table and the shooter's run
+    #
+    @dice = dice_tray.take_dice(offsets)
+    table_state.add_dice_watchers(dice)
+  end
+
   def roll
     tracking_strategy.make_bets
     shooter_rolls
     settle_bets
-    table_state.update
+    YOU ARE HERE ^^ settle_bets should be done with WIN/LOSE/MORPH watchers on table_state.  table_state needs 'dice value rolled' watchers
+    # table_state.update >>>> no longer needed because we have dice watchers in table_state now
   end
 
   def new_player(name, start_amount, bet_unit=nil)
@@ -195,12 +207,13 @@ class Table
   end
 
   def announce_roll
-    status '%d: %s rolls: %2d %s %s' %
-      [shooter.num_rolls,
-       shooter.player.name,
-       last_roll,
-       shooter.dice.inspect,
-       table_state.stickman_calls_roll]
+    status '%d: %s rolls: %2d %s %s' % [
+      shooter.num_rolls,
+      shooter.player.name,
+      last_roll,
+      dice.inspect,
+      stickman.call
+    ]
   end
 
   def find_bet_box(bet_short_name, number=nil)
@@ -232,8 +245,8 @@ class Table
 
   private
 
-  def setup_callback_every_time_the_table_goes_seven_out
-    table_state.on(:seven_out) do |tbl|
+  def setup_watcher_for_on_seven_out
+    table_state.watch_for(:seven_out, :reset_player_strategies) do |cb_name, t_state|
       reset_player_strategies
     end
   end

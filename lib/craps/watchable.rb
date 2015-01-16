@@ -28,7 +28,7 @@ module Watchable
     end
 
     def check(obj)
-      invoke_callbacks if fire?(obj)
+      invoke_callbacks(obj) if fire?(obj)
     end
 
     def clear
@@ -44,7 +44,7 @@ module Watchable
       @callback_procs.present? && !!condition.call(obj)
     end
 
-    def invoke_callbacks
+    def invoke_callbacks(obj)
       #
       # iterate through all the registered callbacks and
       # invoke them.  Then, based on the callback type
@@ -52,7 +52,7 @@ module Watchable
       #
       @callback_procs.each_pair do |name, callback|
 
-        callback.callback_proc.call
+        callback.callback_proc.call(name, obj)
 
         case callback.callback_type
           when CallbackType::ONCE
