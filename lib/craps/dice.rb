@@ -13,12 +13,18 @@ class DefaultSeeder
     # strategy to strategy).  Pass no seed argument to ensure
     # that the Dice will have a 'psuedo-random' roll sequence 
     #
-    @seed = opt_seed || Random.new_seed
+    @seed = opt_seed || gen_random_seed
     @prng = Random.new(seed)
   end
 
   def rand
     prng.rand(VERY_BIG_NUMBER)
+  end
+
+  private
+  
+  def gen_random_seed
+    Random.new_seed
   end
 end
 

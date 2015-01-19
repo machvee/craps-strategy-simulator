@@ -1,30 +1,25 @@
 class DiceTray
   #
-  # a craps table dice tray.  A shooter may take any 2 dice from it.  The dice know
-  # which tray they came from so when rolled, can automatically update the RollStats
-  # kept here.  The dice know how to be returned to this tray as well when the shooter
-  # seven_out's
+  # a craps table dice tray.  The stickman owns it and offers it to a shooter who may take any 2 random
+  # dice from it.  The dice are returned to this tray as well when the shooter would seven_out.
+  #
+  # options:
+  #   :dice_seed        - pass in a seed value to guarantee a repeatable sequence
+  #   :num_dice_in_tray - change the number of dice that are in the tray from the default
   #
   DEFAULT_NUM_TRAY_DIE=8
   NUM_SHOOTER_DIE=2
 
-  attr_reader :table
-  attr_reader :tray
-  attr_reader :metadice
   attr_reader :num_dice
+  attr_reader :tray
   attr_reader :seed
+  attr_reader :metadice # a static pair of dice never rolled, but useful in getting meta-info about 2 dice
 
-  delegate :seed, to: :tray
-
-  def initialize(table, die_seeder, num_dice_in_tray=DEFAULT_NUM_TRAY_DIE)
-    @table = table
-    @num_dice = num_dice_in_tray
-    reset(die_seeder)
+  def initialize(options={})
+    @num_dice = options[:num_dice_in_tray]||DEFAULT_NUM_TRAY_DIE
+    @seed = options[:dice_seed]||gen_random_seed
+    set_tray_of_dice
     @metadice = CrapsDice.new(NUM_SHOOTER_DIE)
-  end
-
-  def reset(die_seeder)
-    @tray = CrapsDice.new(num_dice, die_seeder)
   end
 
   def take_dice(offsets=nil)
@@ -38,7 +33,22 @@ class DiceTray
     tray.join(dice)
   end
 
+  def reset
+    set_tray_of_dice
+  end
+
   def dice_value_range
     @dvr ||= metadice.value_range
   end
+
+  private 
+
+  def set_tray_of_dice
+    @tray = CrapsDice.new(num_dice, DefaultSeeder.new(seed))
+  end
+
+  def gen_random_seed
+    Random.new_seed
+  end
+
 end
