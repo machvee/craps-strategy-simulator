@@ -2,8 +2,9 @@ class CrapsDice < Dice
   #
   # regular Dice but with Craps Semantics
   #
+  RANGE   = 2..12
   CRAPS   = [2,3,12]
-  HORN    = [2,3,11,12]
+  HORN    = CRAPS+[11]
   WINNERS = [7,11]
   HARDS   = [4,6,8,10]
   POINTS  = [4,5,6,8,9,10]
@@ -36,12 +37,12 @@ class CrapsDice < Dice
     CRAPS.include?(value)
   end
 
-  def hard?(hard_value)
-    value == hard_value && same?
+  def hard?(hard_value=nil)
+    HARDS.include?(value) && (hard_value.nil? || value == hard_value) && same?
   end
 
-  def easy?(easy_value)
-    value == easy_value && !same?
+  def easy?(easy_value=nil)
+    HARDS.include?(value) && (easy_value.nil? || value == easy_value) && !same?
   end
 
   def points?

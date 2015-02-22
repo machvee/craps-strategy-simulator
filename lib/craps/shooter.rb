@@ -41,7 +41,6 @@ class Shooter
   end
 
   def done
-    return_dice
     @player = nil
   end
 

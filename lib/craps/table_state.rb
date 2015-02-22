@@ -4,7 +4,6 @@ class TableState
 
   attr_reader  :point   # 4,5,6,8,9 or 10
   attr_reader  :table   # table we belong to
-  attr_reader  :pending # set when going :on or :off
 
   #
   # betting is allowed from the point in time that the:
@@ -25,9 +24,9 @@ class TableState
     watcher(:point_made)        {|ts| ts.point_made?}
     watcher(:seven_out)         {|ts| ts.seven_out?}
 
-    pending_state(:off)
-    new_state_from_pending
     @betting_allowed = true
+
+    table_off
   end
 
   def on?
@@ -36,28 +35,6 @@ class TableState
 
   def off?
     point.nil?
-  end
-
-  def add_dice_watchers(new_dice)
-    #
-    # table state uses dice values to alter its on/off state
-    # watch and check for these transitions on each roll.
-    # then we check our own watchers for objects watching for
-    # changes in our table state.
-    #
-    new_dice.watch_for(:seven, :table_off) do |cb_name, dice|
-      check_watchers
-      table_off if on?
-    end
-
-    new_dice.watch_for(:points, :table_on) do |cb_name, dice|
-      check_watchers
-      if off?
-        table_on(dice.value)
-      elsif dice.value == point
-        table_off
-      end
-    end
   end
 
   def reset
@@ -90,16 +67,6 @@ class TableState
 
   def point_made?
     on? && (last_roll == point)
-  end
-
-  def new_state_from_pending
-    case pending
-      when :on
-        table_on
-      when :off
-        table_off
-    end
-    @pending = nil
   end
 
   private

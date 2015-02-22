@@ -7,15 +7,12 @@ class Table
   attr_reader    :table_state
   attr_reader    :table_heat
   attr_reader    :config
-  attr_reader    :dice_tray
   attr_reader    :stickman
   attr_accessor  :dice
-  attr_reader    :seed                 # the seed used by the dice_tray prng (for Table.reruns)
   attr_reader    :tracking_strategy    # makes the tracking bets
   attr_reader    :tracking_player
   attr_reader    :players
   attr_reader    :player_strategies    # bet making strategies tied to players
-  attr_reader    :shooter # one of the above players or nil
   attr_reader    :house   # house Account
   attr_reader    :wagers  # Account holding all active table bets
   attr_accessor  :quiet_table # not verbose about all actions
@@ -23,10 +20,10 @@ class Table
 
   delegate :on?, :off?, :last_roll,                     to: :table_state
   delegate :is_hot?, :is_good?, :is_choppy?, :is_cold?, to: :table_heat
+  delegate :dice, to: :stickman
 
   delegate :total_rolls,        to: :shooter
   delegate :min_bet, :max_bet,  to: :config
-  delegate :seed,               to: :dice_tray
 
   DEFAULT_OPTIONS = {
     config:                    TableConfig.new,
@@ -52,7 +49,11 @@ class Table
     @table_state = TableState.new(self, opts[:table_heat_history_points])
     table_state.table_off
 
-    @stickman = Stickman.new(self)
+    @stickman = Stickman.new(
+      self,
+      dice_tray: DiceTray.new(table_options),
+      shooter: Shooter.new(self)
+    )
 
     setup_watcher_for_on_seven_out
 
@@ -64,8 +65,6 @@ class Table
     @wagers = Account.new('current wagers', 0)
 
     @quiet_table = opts[:quiet_table]
-
-    @dice_tray = DiceTray.new(self, opts[:die_seeder])
 
     @player_bet_stats = CountersStatsCollection.new(
                           "player bet results",
@@ -82,7 +81,6 @@ class Table
     @tracking_strategy = TrackingPlayer::TRACKING_STRATEGY.new(tracking_player)
     tracking_strategy.set
 
-    @shooter = Shooter.new(self)
   end
 
   def set_player_strategy(strategy)
@@ -119,15 +117,6 @@ class Table
     end
     optionally_pause
     return
-  end
-
-  def select_dice(offsets=nil)
-    #
-    # called by the Shooter, this chooses two dice at (random/specific) offsets
-    # and sets the dice for the table and the shooter's run
-    #
-    @dice = dice_tray.take_dice(offsets)
-    table_state.add_dice_watchers(dice)
   end
 
   def roll
@@ -174,7 +163,7 @@ class Table
     players.any? {|p| p.bets.length > 0}
   end
 
-  def reset(dice_seed=nil)
+  def reset
     #
     # this is destructive to the current state of the table and accounts.
     # use this call to set the table and player state back to the point
@@ -191,30 +180,18 @@ class Table
     wagers.reset
     bet_boxes.each {|bb| bb.reset}
     players.each {|p| p.reset}
-    shooter.reset
-    dice_tray.reset(DefaultSeeder.new(dice_seed||seed))
+    stickman.reset
     return
   end
 
   def shooter_rolls
-    shooter.set
-    shooter.roll
-    announce_roll
+    stickman.give_shooter_dice_and_let_him_roll
   end
 
   def status(str, color=:white)
     puts(str.colorize(color)) unless quiet_table
   end
 
-  def announce_roll
-    status '%d: %s rolls: %2d %s %s' % [
-      shooter.num_rolls,
-      shooter.player.name,
-      last_roll,
-      dice.inspect,
-      stickman.call
-    ]
-  end
 
   def find_bet_box(bet_short_name, number=nil)
     bet_boxes.find {|bet| bet.short_name == bet_short_name && bet.number == number} ||
@@ -239,7 +216,7 @@ class Table
     puts '-'*100
     tracking_bet_stats.print(BET_STATS_HEADERS)
     puts '-'*100
-    shooter.roll_stats.print
+    stickman.shooter.roll_stats.print
     puts "\n"
   end
 

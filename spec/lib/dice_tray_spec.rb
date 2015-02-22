@@ -58,6 +58,24 @@ describe DiceTray do
     dice2 = @dice_tray2.take_dice
     values2 = []
     100.times {values2 << dice2.roll}
-    expect(values1).to match_array(values1)
+    v2iter = values2.each
+    values1.each { |v1| expect(v1).to equal(v2iter.next)}
+  end
+
+  it "should allow the tray of dice to be randomized by position and die value" do
+    seed = 1979488777654
+    @dice_tray1 = DiceTray.new(dice_seed: seed)
+    @dice_tray2 = DiceTray.new(dice_seed: seed)
+    expect(@dice_tray1.seed).to equal(seed)
+    expect(@dice_tray2.seed).to equal(seed)
+    dice1 = @dice_tray1.take_dice
+    values1 = []
+    329.times {values1 << dice1.roll}
+
+    values2 = []
+    @dice_tray2.randomize
+    dice2 = @dice_tray2.take_dice
+    329.times {values2 << dice2.roll}
+    expect(values1.sort).not_to equal(values2.sort)
   end
 end

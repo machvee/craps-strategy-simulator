@@ -13,35 +13,55 @@ class DiceTray
   attr_reader :num_dice
   attr_reader :tray
   attr_reader :seed
-  attr_reader :metadice # a static pair of dice never rolled, but useful in getting meta-info about 2 dice
 
   def initialize(options={})
     @num_dice = options[:num_dice_in_tray]||DEFAULT_NUM_TRAY_DIE
     @seed = options[:dice_seed]||gen_random_seed
     set_tray_of_dice
-    @metadice = CrapsDice.new(NUM_SHOOTER_DIE)
   end
 
   def take_dice(offsets=nil)
     raise "dice are out" unless tray.count == @num_dice
     raise "take any #{NUM_SHOOTER_DIE} dice" if offsets.length != NUM_SHOOTER_DIE unless offsets.nil?
-    dice = offsets.nil? ? tray.extract(NUM_SHOOTER_DIE) : tray.extract(offsets)
-    dice
+    take_a_pair_of_dice_or_extact_die_at_specific_offsets(offsets)
+  end
+
+  def randomize
+    #
+    # roll dice around and change around offsets
+    #
+    2.times do
+      tray.shuffle!
+      3.times {tray.roll}
+    end
+    self
   end
 
   def return_dice(dice)
     tray.join(dice)
+    self
   end
 
   def reset
     set_tray_of_dice
+    self
   end
 
   def dice_value_range
-    @dvr ||= metadice.value_range
+    @dvr ||= begin
+      CrapsDice.new(NUM_SHOOTER_DIE).value_range
+    end
+  end
+
+  def inspect
+    @tray.inspect
   end
 
   private 
+
+  def take_a_pair_of_dice_or_extact_die_at_specific_offsets(offsets)
+    offsets.nil? ? tray.extract(NUM_SHOOTER_DIE) : tray.extract(offsets)
+  end
 
   def set_tray_of_dice
     @tray = CrapsDice.new(num_dice, DefaultSeeder.new(seed))
