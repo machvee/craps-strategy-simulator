@@ -1,7 +1,7 @@
 require 'die'
 class DefaultSeeder
 
-  VERY_BIG_NUMBER=211308946028030853166801005918724002264
+  VERY_BIG_NUMBER=211_308_946_028_030_853_166_801_005_918_724_002_264
 
   attr_reader :prng
   attr_reader :seed
@@ -13,17 +13,27 @@ class DefaultSeeder
     # strategy to strategy).  Pass no seed argument to ensure
     # that the Dice will have a 'psuedo-random' roll sequence 
     #
-    @seed = opt_seed || Random.new_seed
+    @seed = opt_seed || gen_random_seed
     @prng = Random.new(seed)
   end
 
   def rand
     prng.rand(VERY_BIG_NUMBER)
   end
+
+  private
+  
+  def gen_random_seed
+    Random.new_seed
+  end
 end
 
 
 class Dice
+
+  include Watchable
+  include Enumerable
+
   attr_reader   :set
   attr_reader   :value
   attr_reader   :seeder
@@ -31,14 +41,41 @@ class Dice
 
   delegate :seed, to: :seeder
 
-  include Enumerable
-
-  def initialize(set_size, seeder=nil)
+  def initialize(num_die, seeder=nil)
     @seeder = seeder||DefaultSeeder.new
     @num_rolls = 0
-    @set = []
-    set_size.times {set << Die.new(@seeder.rand)}
+
+    create_dice_set(num_die)
+    setup_watchers
     shake_dice
+  end
+
+  def roll
+    @num_rolls += 1
+    shake_dice
+    check_watchers
+    value
+  end
+
+  def shuffle!
+    set.shuffle!
+  end
+
+  def gather(num_rolls)
+    a = []
+    num_rolls.times {
+      a << roll
+    }
+    a
+  end
+
+  def print(sorted=false, horizontal_print_grouping=6)
+    nr = Die::NUM_PATTERN_ROWS
+    in_dice_groups_of(sorted, horizontal_print_grouping) do |da|
+      0.upto(nr-1) do |i|
+        puts da.map {|die| die.pattern(i)}.join("  ")
+      end
+    end
   end
 
   def min_value
@@ -47,6 +84,16 @@ class Dice
 
   def max_value
     set.length * Die::SIDES
+  end
+
+  def value_range
+    min_value..max_value
+  end
+
+  def each
+    set.each do |d|
+      yield d
+    end
   end
 
   def extract(arg)
@@ -72,39 +119,6 @@ class Dice
     other_dice.count.times do
       self.add(other_dice.remove)
     end
-  end
-
-  def roll
-    @num_rolls += 1
-    shake_dice
-    @value
-  end
-
-  def gather(num_rolls)
-    a = []
-    num_rolls.times {
-      a << roll
-    }
-    a
-  end
-
-  def each
-    set.each do |d|
-      yield d
-    end
-  end
-
-  def print(sorted=false, horizontal_print_grouping=6)
-    nr = Die::NUM_PATTERN_ROWS
-    in_dice_groups_of(sorted, horizontal_print_grouping) do |da|
-      0.upto(nr-1) do |i|
-        puts da.map {|die| die.pattern(i)}.join("  ")
-      end
-    end
-  end
-
-  def value_range
-    min_value..max_value
   end
 
   def to_s
@@ -137,6 +151,34 @@ class Dice
 
   private
 
+  def create_dice_set(num_die)
+    @set = []
+    num_die.times {set << Die.new(seeder.rand)}
+  end
+
+  def setup_watchers
+    #
+    # dice users an set up callbacks based on roll values
+    #  e.g. dice.watch_for(:rolled_2) do
+    #         @snake_eyes += 1
+    #       end
+    #    
+    #       dice.watch_for(:rolled_11) do
+    #         puts "yo!"
+    #       end
+    #
+    #
+    value_range.each do |val|
+      watcher("rolled_#{val}".to_sym) { |d| d.value == val }
+    end
+
+    additional_watchers
+  end
+
+  def additional_watchers
+    # override in subclass with more watchers if desired
+  end
+
   def shake_dice
     @value = set.inject(0) { |s, d| s += d.roll }
   end
@@ -152,6 +194,6 @@ class Dice
   end
 
   def random_offsets(number_of_dice)
-    [*0..(count-1)].shuffle(random: Random.new(@seeder.rand))[0,number_of_dice]
+    [*0..(count-1)].shuffle(random: Random.new(seeder.rand))[0,number_of_dice]
   end
 end
