@@ -44,8 +44,8 @@ class Run
     @run_stopper  = RunStopper.new(player, opts[:stop])
   end
 
-  def start(seed=nil, &block)
-    table.reset(seed)
+  def start(&block)
+    table.reset
     setup_player
     table.pause_option = pause
     until run_stopper.stop? do

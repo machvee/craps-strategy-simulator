@@ -1,35 +1,52 @@
 class DiceTray
   #
-  # a craps table dice tray.  A shooter may take any 2 dice from it.  The dice know
-  # which tray they came from so when rolled, can automatically update the RollStats
-  # kept here.  The dice know how to be returned to this tray as well when the shooter
-  # seven_out's
+  # a tray of 8 craps dice.  A shooter may take any 2 dice from it.
   #
   DEFAULT_NUM_TRAY_DIE=8
   NUM_SHOOTER_DIE=2
 
   attr_reader :tray
-  attr_reader :metadice
   attr_reader :num_dice
   attr_reader :seed
 
-  delegate :seed, to: :tray
-
-  def initialize(table, die_seeder, num_dice_in_tray=DEFAULT_NUM_TRAY_DIE)
-    @num_dice = num_dice_in_tray
-    reset(die_seeder)
-    @metadice = CrapsDice.new(NUM_SHOOTER_DIE)
-  end
-
-  def reset(die_seeder)
-    @tray = CrapsDice.new(num_dice, die_seeder)
+  def initialize(options={})
+    @num_dice = options[:num_dice_in_tray]||DEFAULT_NUM_TRAY_DIE
+    @seed = options[:seed]||gen_random_seed
+    set_tray_of_dice
   end
 
   def take_dice(offsets=nil)
     raise "dice are out" unless tray.count == @num_dice
-    raise "take any #{NUM_SHOOTER_DIE} dice" if \
-      offsets.length != NUM_SHOOTER_DIE unless offsets.nil?
-    offsets.nil? ? tray.extract(NUM_SHOOTER_DIE) : tray.extract(offsets)
+    if offsets.nil?
+      randomize
+      tray.extract(NUM_SHOOTER_DIE)
+    else
+      raise "take any #{NUM_SHOOTER_DIE} dice" if offsets.length != NUM_SHOOTER_DIE
+      tray.extract(offsets)
+    end
+  end
+
+  def reset
+    set_tray_of_dice
+  end
+
+  def randomize
+    #
+    # roll dice around and change around offsets
+    #
+    2.times do
+      tray.shuffle!
+      3.times {tray.roll}
+    end
+    self
+  end
+
+  def set_tray_of_dice
+    @tray = CrapsDice.new(num_dice, DefaultSeeder.new(seed))
+  end
+
+  def gen_random_seed
+    Random.new_seed
   end
 
   def return_dice(dice)
@@ -37,6 +54,8 @@ class DiceTray
   end
 
   def dice_value_range
-    @dvr ||= metadice.value_range
+    @dvr ||= begin
+      CrapsDice.new(NUM_SHOOTER_DIE).value_range
+    end
   end
 end

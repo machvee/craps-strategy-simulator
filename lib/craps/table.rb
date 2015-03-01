@@ -26,7 +26,7 @@ class Table
 
   DEFAULT_OPTIONS = {
     config:                    TableConfig.new,
-    die_seeder:                nil,
+    dice_seed:                 nil,
     quiet_table:               false,
     table_heat_history_points: 15
   }
@@ -59,7 +59,7 @@ class Table
 
     @quiet_table = opts[:quiet_table]
 
-    @dice_tray = DiceTray.new(self, opts[:die_seeder])
+    @dice_tray = DiceTray.new(opts)
 
     @player_bet_stats = CountersStatsCollection.new(
                           "player bet results",
@@ -162,7 +162,7 @@ class Table
     players.any? {|p| p.bets.length > 0}
   end
 
-  def reset(dice_seed=nil)
+  def reset
     #
     # this is destructive to the current state of the table and accounts.
     # use this call to set the table and player state back to the point
@@ -180,7 +180,7 @@ class Table
     bet_boxes.each {|bb| bb.reset}
     players.each {|p| p.reset}
     shooter.reset
-    dice_tray.reset(DefaultSeeder.new(dice_seed||seed))
+    dice_tray.reset
     return
   end
 
