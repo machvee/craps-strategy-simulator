@@ -76,7 +76,7 @@ class TableHeat
     win_loss_record = pass_line_bet_stat.last_counts(history_length)
     front_line_winners = win_loss_record[Stat::WON]/(history_length * 1.0)
 
-    hot_numbers_average = table_state.hot_numbers_average/(HOT_NUMBERS_STREAK_INDEX*1.0)
+    hot_numbers_average = table_state.hot_numbers_average.to_f/(HOT_NUMBERS_STREAK_INDEX*1.0)
 
     [points_won, front_line_winners, hot_numbers_average]
   end
